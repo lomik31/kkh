@@ -10,6 +10,7 @@ import shutil
 import datetime
 import schedule
 import json
+import requests
 
 with open("usrs.json", encoding="utf-8") as file_readed:
     file_readed = json.load(file_readed)
@@ -85,8 +86,9 @@ def updateUsersNameInFile():
     dict = rec_file.updateUserName(file_readed)
     for i in dict:
         try:
-            i[1] = bot.get_chat(int(i[0])).first_name
-            i[2] = bot.get_chat(int(i[0])).last_name
+            fullinfo = bot.get_chat(int(i[0]))
+            i[1] = fullinfo.first_name
+            i[2] = fullinfo.last_name
         except: pass
     rec_file.updateUserNameWrite(dict, file_readed)
 def schedule_checker():
@@ -278,9 +280,9 @@ def check_messages(message, message_text):
     elif (message_text[0] == "топ"):
         if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
         kmd.userTop(message, message_text)
-    elif (message_text[0] == "chatinfo"):
+    elif (message_text[0] == "бит"):
         if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.chatInfo(message, message_text)
+        kmd.btcBet(message, message_text)
     else:
         return False
 def repeat_command(message):
@@ -486,7 +488,7 @@ class kmd:
         rec_file.set_active_passive_keyboard(message.chat.id, False, bot.get_chat(message.chat.id).type, file_readed)
     def moneta(message, message_text):
         if len(message_text) < 3: return bot.send_message(message.chat.id, "Использование: монета <ставка/всё> <орел/решка>")
-        if message_text[1] == "все": bot.send_message(message.chat.id, rec_file.moneta_stavka(message.from_user.id, str(rec_file.get_balance(message.from_user.id, file_readed)), message_text[2], file_readed))
+        if message_text[1] == "все" or message_text[1] == "всё": bot.send_message(message.chat.id, rec_file.moneta_stavka(message.from_user.id, str(rec_file.get_balance(message.from_user.id, file_readed)), message_text[2], file_readed))
         else:
             sum = rec_file.ob_k_chisla(message_text[1])
             bot.send_message(message.chat.id, rec_file.moneta_stavka(message.from_user.id, sum, message_text[2], file_readed))
@@ -807,10 +809,10 @@ class kmd:
             bot.send_message(message.chat.id, "Посылает игрока (1.000.000 КШ)\nПослать <id пользователя>");
         elif (message_text[1] == "послатьанон"):
             bot.send_message(message.chat.id, "Анонимно посылает игрока (3.000.000 КШ)\nПослатьанон <id пользователя>");
-        elif (message_text[1] == "chatinfo"):
-            bot.send_message(message.chat.id, "Передаёт всю информацию о чате\nchatinfo <id чата>");
         elif (message_text[1] == "топ"):
             bot.send_message(message.chat.id, "Выдаёт топ всех пользователей\nТоп [<b>баланс</b>/клик/сек] [страница]", parse_mode="HTML");
+        elif (message_text[1] == "бит"):
+            bot.send_message(message.chat.id, "Ставка на курс биткоина\nбит <ставка/все> <вверх/вниз>");
     def delPromo(message, message_text):
         if (rec_file.get_admin(message.from_user.id, file_readed) == False): return;
         if (len(message_text) < 3): return bot.send_message(message.chat.id, "Использование: промо удалить <название>");
@@ -870,6 +872,31 @@ class kmd:
                 except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "с", message.from_user.id, 1))
         else:
             bot.send_message(message.chat.id, "Использование: топ [<b>баланс</b>/клик/сек] [страница]", parse_mode="HTML")
-
+    def btcBet(message, message_text):
+        if (len(message_text) < 3): return bot.send_message(message.chat.id, "Использование: бит <ставка> <вверх/вниз>")
+        try: betAmount = int(rec_file.ob_k_chisla(message_text[1]))
+        except: 
+            if (message_text[1] == "#r"): betAmount = random.randint(1, rec_file.get_balance(message.from_user.id, file_readed))
+            elif (message_text[1] == "все") or (message_text[1] == "всё"): betAmount = rec_file.get_balance(message.from_user.id, file_readed)
+            else: return bot.send_message(message.chat.id, "Ставка должна иметь численный вид")
+        variants = ["вверх", "вниз"]
+        if (message_text[2] not in variants):
+            if message_text[2] != "#r": return bot.send_message(message.chat.id, "Использование: бит <ставка> <вверх/вниз>")
+            else: message_text[2] = random.choice(variants)
+            bot.send_message(message.chat.id, f"Ваша ставка {rec_file.ob_chisla(betAmount)} КШ, ждем минуту!")
+            Thread(target=bitcoinBet, args=(message.from_user.id, message_text[2], betAmount, message.chat.id)).start()
+def bitcoinBet(id, bet, betAmount, chatid):
+    startPrice = float(requests.get("https://blockchain.info/ru/ticker").json()["RUB"]["sell"])
+    time.sleep(60)
+    endPrice = float(requests.get("https://blockchain.info/ru/ticker").json()["RUB"]["sell"])
+    if (bet == "вверх") and (startPrice < endPrice):
+        rec_file.append_balance(id, betAmount, file_readed)
+        return bot.send_message(chatid, f"Вы выиграли!\nКурс BTC изменился на {round(endPrice - startPrice, 2)} RUB.\nВаш выигрыш: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
+    elif (bet == "вниз") and (startPrice > endPrice):
+        rec_file.append_balance(id, betAmount, file_readed)
+        return bot.send_message(chatid, f"Вы выиграли!\nКурс BTC изменился на {round(endPrice - startPrice, 2)} RUB.\nВаш выигрыш: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
+    else:
+        rec_file.append_balance(id, -betAmount, file_readed)
+        return bot.send_message(chatid, f"Вы проиграли!\nКурс BTC изменился на {round(endPrice - startPrice, 2)} RUB.\nПроиграно {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
 bot.polling(none_stop=True, interval=1, timeout=123)
 #962 -> 630
