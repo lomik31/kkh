@@ -30,7 +30,7 @@ def start_command(message):
     else:
         if str(message.from_user.id) not in file_readed["users"].keys():
             rec_file.append_id(message.from_user.id, bot.get_chat(message.chat.id).type, None, None, file_readed);
-            bot.send_message(message.chat.id, config["messages"]["startCommand"], disable_web_page_preview=True, reply_markup=main_menu_buttons());
+            bot.send_message(message.chat.id, config["messages"]["startCommand"], disable_web_page_preview=True, reply_markup=main_menu_buttons(), parse_mode="MARKDOWN");
         else:
             sendmessage_check_active_keyboard(message.chat.id, message.from_user.id, bot.get_chat(message.chat.id).type, config["messages"]["startCommand"]);
 
@@ -136,17 +136,17 @@ def message_not_enough_money_sec(user_message):
     return f"Недостаточно средств. Для покупки ещё необходимо {rec_file.ob_chisla(rec_file.cal_boost_sec(user_message.from_user.id, file_readed) - rec_file.get_balance(user_message.from_user.id, file_readed))} КШ"
 def message_not_enough_money_boost_balance(user_message):
     return f"Недостаточно средств. Для покупки ещё необходимо {rec_file.ob_chisla(rec_file.cal_boost_balance(user_message.from_user.id, file_readed) - rec_file.get_balance(user_message.from_user.id, file_readed))} КШ"
-def sendmessage_check_active_keyboard(chatid, userid, userOrGroup ,send_message):
+def sendmessage_check_active_keyboard(chatid, userid, userOrGroup, send_message):
     if (userOrGroup == "private"):
         if rec_file.get_keyboard(userid, file_readed):
-            if rec_file.get_active_passive_keyboard(userid, file_readed) == 1: bot.send_message(chatid, send_message, reply_markup=upgades_buttons(userid), disable_web_page_preview = True)#отправляется с обновленными ценами в клавиатуре
-            else: bot.send_message(chatid, send_message, disable_web_page_preview = True)#отправляется без клавиатуры
-        else: bot.send_message(chatid, send_message, disable_web_page_preview = True)
+            if rec_file.get_active_passive_keyboard(userid, file_readed) == 1: bot.send_message(chatid, send_message, reply_markup=upgades_buttons(userid), disable_web_page_preview = True, parse_mode="MARKDOWN")#отправляется с обновленными ценами в клавиатуре
+            else: bot.send_message(chatid, send_message, disable_web_page_preview = True, parse_mode="MARKDOWN")#отправляется без клавиатуры
+        else: bot.send_message(chatid, send_message, disable_web_page_preview = True, parse_mode="MARKDOWN")
     else:
         if (file_readed["groups"][str(chatid)]["keyboard"]):
-            if (file_readed["groups"][str(chatid)]["activeKeyboard"]): bot.send_message(chatid, send_message, reply_markup=upgades_buttons(userid), disable_web_page_preview = True)#отправляется с обновленными ценами в клавиатуре
-            else: bot.send_message(chatid, send_message, disable_web_page_preview = True)#отправляется без клавиатуры
-        else: bot.send_message(chatid, send_message, disable_web_page_preview = True)
+            if (file_readed["groups"][str(chatid)]["activeKeyboard"]): bot.send_message(chatid, send_message, reply_markup=upgades_buttons(userid), disable_web_page_preview = True, parse_mode="MARKDOWN")#отправляется с обновленными ценами в клавиатуре
+            else: bot.send_message(chatid, send_message, disable_web_page_preview = True, parse_mode="MARKDOWN")#отправляется без клавиатуры
+        else: bot.send_message(chatid, send_message, disable_web_page_preview = True, parse_mode="MARKDOWN")
 def message_max_skidka():
     return "Достигнут максимум апгрейдов скидки"
 def message_max_boost_balance():
