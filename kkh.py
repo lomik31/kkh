@@ -879,12 +879,14 @@ class kmd:
             if (message_text[1] == "#r"): betAmount = random.randint(1, rec_file.get_balance(message.from_user.id, file_readed))
             elif (message_text[1] == "все") or (message_text[1] == "всё"): betAmount = rec_file.get_balance(message.from_user.id, file_readed)
             else: return bot.send_message(message.chat.id, "Ставка должна иметь численный вид")
-        variants = ["вверх", "вниз"]
-        if (message_text[2] not in variants):
-            if message_text[2] != "#r": return bot.send_message(message.chat.id, "Использование: бит <ставка> <вверх/вниз>")
-            else: message_text[2] = random.choice(variants)
+        if (0 < betAmount < rec_file.get_balance(message.from_user.id, file_readed)):
+            variants = ["вверх", "вниз"]
+            if (message_text[2] not in variants):
+                if message_text[2] != "#r": return bot.send_message(message.chat.id, "Использование: бит <ставка> <вверх/вниз>")
+                else: message_text[2] = random.choice(variants)
             bot.send_message(message.chat.id, f"Ваша ставка {rec_file.ob_chisla(betAmount)} КШ, ждем минуту!")
             Thread(target=bitcoinBet, args=(message.from_user.id, message_text[2], betAmount, message.chat.id)).start()
+        else: return bot.send_message(message.chat.id, "Неверная ставка (меньше нуля или больше вашего баланса)")
 def bitcoinBet(id, bet, betAmount, chatid):
     startPrice = float(requests.get("https://blockchain.info/ru/ticker").json()["RUB"]["sell"])
     time.sleep(60)
