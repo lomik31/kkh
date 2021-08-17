@@ -16,7 +16,7 @@ with open("usrs.json", encoding="utf-8") as file_readed:
 with open("config.json", encoding="utf-8") as config:
     config = json.load(config)
 
-bot = telebot.TeleBot(config["telegramToken"], parse_mode = "Markdown")
+bot = telebot.TeleBot(config["telegramToken"])
 y = yadisk.YaDisk(token=config["yandexDiskToken"])
 
 @bot.message_handler(commands=["start"])
@@ -118,7 +118,7 @@ def upgades_buttons(id):
         button_skidka = types.KeyboardButton(message_max_skidka())
     else:
         button_skidka = types.KeyboardButton(f"+1% скидки ({rec_file.ob_chisla(rec_file.cal_boost_skidka(id, file_readed))} КШ)")
-    if rec_file.get_boost_balance(id, file_readed) >= 45:
+    if rec_file.get_boost_balance(id, file_readed) >= 15:
         button_boost_balance = types.KeyboardButton(message_max_boost_balance())
     else:
         button_boost_balance = types.KeyboardButton(f"+1% баланса/день ({rec_file.ob_chisla(rec_file.cal_boost_balance(id, file_readed))} КШ)")
@@ -422,7 +422,7 @@ class kmd:
             if rec_file.get_skidka(message.from_user.id, file_readed) < 25: bot.send_message(message.chat.id, f"Цена за {rec_file.get_skidka(message.from_user.id, file_readed) + 1} апгрейд со скидкой {rec_file.get_skidka(message.from_user.id, file_readed)}%: {rec_file.ob_chisla(rec_file.cal_boost_skidka(message.from_user.id, file_readed))} КШ")
             else: bot.send_message(message.chat.id, message_max_skidka())
         elif message_text[1] == "бб" or message_text[1] == "+бб" or message_text[1] == "баланс" or message_text[1] == "баланса" or message_text[1] == "+баланса" or message_text[1] == "+баланс" or message_text[1] == "баланс/день" or message_text[1] == "+баланс/день":
-            if rec_file.get_boost_balance(message.from_user.id, file_readed) <15: bot.send_message(message.chat.id, f"Цена за {rec_file.get_boost_balance(message.from_user.id, file_readed) + 1} апгрейд со скидкой {rec_file.get_skidka(message.from_user.id, file_readed)}%: {rec_file.ob_chisla(rec_file.cal_boost_balance(message.from_user.id, file_readed))} КШ")
+            if rec_file.get_boost_balance(message.from_user.id, file_readed) < 15: bot.send_message(message.chat.id, f"Цена за {rec_file.get_boost_balance(message.from_user.id, file_readed) + 1} апгрейд со скидкой {rec_file.get_skidka(message.from_user.id, file_readed)}%: {rec_file.ob_chisla(rec_file.cal_boost_balance(message.from_user.id, file_readed))} КШ")
             else: bot.send_message(message.chat.id, message_max_boost_balance())
         else: bot.send_message(message.chat.id, "Неизвестный тип")
     def add_money(message, message_text):
@@ -652,7 +652,7 @@ class kmd:
             file_readed["users"][str(message.from_user.id)]["spendKkhUpgrades"] += rec_file.cal_boost_balance(message.from_user.id, file_readed)
             sendmessage_check_active_keyboard(message.chat.id, message.from_user.id, bot.get_chat(message.chat.id).type, message_bought_upgrade(message, 1))
         elif len(message_text) >= 2:
-            if rec_file.get_balance(message.from_user.id, file_readed) < rec_file.cal_boost_balance(message.from_user.id, file_readed): return bot.send_message(message.chat.id, message_not_enough_money_boost_balance(message))
+            if rec_file.get_balance(message.from_user.id, file_readed) >= rec_file.cal_boost_balance(message.from_user.id, file_readed): return bot.send_message(message.chat.id, message_not_enough_money_boost_balance(message))
             a = 0
             try:
                 for i in range(0, int(message_text[1])):
@@ -671,13 +671,14 @@ class kmd:
                         rec_file.append_boost_balance(message.from_user.id, 1, file_readed)
                         sendmessage_check_active_keyboard(message.chat.id, message.from_user.id, bot.get_chat(message.chat.id).type, message_bought_upgrade(message, 1))
                     elif message_text[1] == "все" or message_text[1] == "всё":
+                        print(rec_file.cal_boost_balance(message.from_user.id, file_readed))
                         if rec_file.get_balance(message.from_user.id, file_readed) < rec_file.cal_boost_balance(message.from_user.id, file_readed): return bot.send_message(message.chat.id, message_not_enough_money_boost_balance(message))
-                        while rec_file.get_balance(message.from_user.id, file_readed) >= rec_file.cal_boost_balance(message.from_user.id, file_readed) and rec_file.get_boost_balance(message.from_user.id, file_readed) < 15:
+                        while rec_file.get_balance(message.from_user.id, file_readed) >= rec_file.cal_boost_balance(message.from_user.id, file_readed):
                             rec_file.append_balance(message.from_user.id, -rec_file.cal_boost_balance(message.from_user.id, file_readed), file_readed)
                             file_readed["users"][str(message.from_user.id)]["spendKkhUpgrades"] += rec_file.cal_boost_balance(message.from_user.id, file_readed)
                             rec_file.append_boost_balance(message.from_user.id, 1, file_readed)
                             a += 1
-                        sendmessage_check_active_keyboard(message.chat.id, message.from_user.id, bot.get_chat(message.chat.id).type, message_bought_upgrade(message, a))
+                            sendmessage_check_active_keyboard(message.chat.id, message.from_user.id, bot.get_chat(message.chat.id).type, message_bought_upgrade(message, a))
                     else:
                         sendmessage_check_active_keyboard(message.chat.id, message.from_user.id, bot.get_chat(message.chat.id).type, "Неверный параметр +сек [кол-во апгрейдов]")
                 except:
@@ -858,7 +859,9 @@ class kmd:
                 try:
                     page = int(message_text[2])
                     bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "б", message.from_user.id, page), parse_mode="HTML")
-                except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "б", message.from_user.id, 1), parse_mode="HTML")
+                except Exception as e:
+                    print(e)
+                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "б", message.from_user.id, 1), parse_mode="HTML")
         elif (len(message_text) >= 2) and (message_text[1] == "клик"):
             if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "к", message.from_user.id, 1), parse_mode="HTML")
             else: 
