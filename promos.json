@@ -1,0 +1,48 @@
+{
+    "allPromos": {
+        "default": {
+            "activationLimit": -1,
+            "activatedTimes": 0,
+            "validity": -1,
+            "balance": 0,
+            "click": 0,
+            "sec": 0,
+            "sale": 0,
+            "multiplier": 0,
+            "balanceBoost": 0
+        },
+        "cumvoop2021": {
+            "activationLimit": -1,
+            "activatedTimes": 9,
+            "validity": -1,
+            "balance": 0,
+            "click": 0,
+            "sec": 0,
+            "sale": 0,
+            "multiplier": 1,
+            "balanceBoost": 0
+        },
+        "neвмартин": {
+            "activationLimit": -1,
+            "activatedTimes": 17,
+            "validity": -1,
+            "balance": -200,
+            "click": 0,
+            "sec": 0,
+            "sale": 0,
+            "multiplier": 0,
+            "balanceBoost": 0
+        },
+        "бета": {
+            "activationLimit": -1,
+            "activatedTimes": 19,
+            "validity": 1627900260.5779939,
+            "balance": 1000,
+            "click": 0,
+            "sec": 0,
+            "sale": 0,
+            "multiplier": 0,
+            "balanceBoost": 0
+        }
+    }
+}
