@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#test
 import telebot
 from telebot import types
 import time
