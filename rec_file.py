@@ -120,46 +120,73 @@ def cal_boost_click(id,fileRead):
     nac_cena=100 #изначальная цена
     procent=15 #процент стоимости следующего буста
     boost_level=int(fileRead["users"][str(id)]["click"])
-    skidka=100-int(fileRead["users"][str(id)]["sale"])
+    skidka=int(fileRead["users"][str(id)]["sale"])
+    if (skidka==0):
+        if (boost_level==0):
+            return nac_cena
+        for i in range(0,boost_level):
+            nac_cena=nac_cena*(100+procent)//100
+        return nac_cena
     if (boost_level==1):
-        return nac_cena*(100-skidka)//100
+        nac_cena=nac_cena*skidka//100
+        return nac_cena
     for i in range(0,boost_level):
         nac_cena=nac_cena*(100+procent)//100
-    nac_cena=nac_cena*(100-skidka)//100
+    nac_cena=nac_cena*skidka//100
     return nac_cena
 def cal_boost_sec(id,fileRead):
     nac_cena=300 #изначальная цена
     procent=15 #процент стоимости следующего буста
     boost_level=int(fileRead["users"][str(id)]["sec"])
-    skidka=100-int(fileRead["users"][str(id)]["sale"])
-    if (boost_level==0):
+    skidka=int(fileRead["users"][str(id)]["sale"])
+    if (skidka==0):
+        if (boost_level==0):
+            return nac_cena
+        for i in range(0,boost_level):
+            nac_cena=nac_cena*(100+procent)//100
         return nac_cena
-    for i in range(0,boost_level):
-        nac_cena=nac_cena*(100+procent)//100
-    nac_cena=nac_cena*(100-skidka)//100
-    return nac_cena
-def cal_boost_skidka(id,fileRead):
-    nac_cena=7500 #изначальная цена
-    procent=15 #процент стоимости следующего буста
-    boost_level=100-int(fileRead["users"][str(id)]["sale"])
-    skidka=100-int(fileRead["users"][str(id)]["sale"])
-    if (boost_level==0):
-        return nac_cena
-    for i in range(0,boost_level):
-        nac_cena=nac_cena*(100+procent)//100
-    nac_cena=nac_cena*(100-skidka)//100
-    return nac_cena
-def cal_boost_balance(id,fileRead):
-    nac_cena=15000000 #изначальная цена
-    procent=75 #процент стоимости следующего буста
-    boost_level=int(fileRead["users"][str(id)]["balanceBoost"])
-    skidka=100-int(fileRead["users"][str(id)]["sale"])
     if (boost_level==0):
         nac_cena=nac_cena*skidka//100
         return nac_cena
     for i in range(0,boost_level):
         nac_cena=nac_cena*(100+procent)//100
-    nac_cena=nac_cena*(100-skidka)//100
+    nac_cena=nac_cena*skidka//100
+    return nac_cena
+def cal_boost_skidka(id,fileRead):
+    nac_cena=7500 #изначальная цена
+    procent=15 #процент стоимости следующего буста
+    boost_level=100-int(fileRead["users"][str(id)]["sale"])
+    skidka=int(fileRead["users"][str(id)]["sale"])
+    if (skidka==0):
+        if (boost_level==0):
+            return nac_cena
+        for i in range(0,boost_level):
+            nac_cena=nac_cena*(100+procent)//100
+        return nac_cena
+    if (boost_level==0):
+        nac_cena=nac_cena*skidka//100
+        return nac_cena
+    for i in range(0,boost_level):
+        nac_cena=nac_cena*(100+procent)//100
+    nac_cena=nac_cena*skidka//100
+    return nac_cena
+def cal_boost_balance(id,fileRead):
+    nac_cena=15000000 #изначальная цена
+    procent=75 #процент стоимости следующего буста
+    boost_level=int(fileRead["users"][str(id)]["balanceBoost"])
+    skidka=int(fileRead["users"][str(id)]["sale"])
+    if (skidka==0):
+        if (boost_level==0):
+            return nac_cena
+        for i in range(0,boost_level):
+            nac_cena=nac_cena*(100+procent)//100
+        return nac_cena
+    if (boost_level==0):
+        nac_cena=nac_cena*skidka//100
+        return nac_cena
+    for i in range(0,boost_level):
+        nac_cena=nac_cena*(100+procent)//100
+    nac_cena=nac_cena*skidka//100
     return nac_cena
 #keyboard
 def keyboard_on(id,chatType,fileRead):
@@ -532,6 +559,8 @@ def leaderboard(fileRead, topmode, caller_id, page):
         tofind="sec"
     elif (topmode=="к" or topmode=="клик"):
         tofind="click"
+    elif (topmode=="бб" or topmode=="балансбуст"):
+        tofind="balanceBoost"
         
     if (tofind=="0"):
         return "По этому значению не может быть составлена доска лидеров!"
@@ -553,15 +582,25 @@ def leaderboard2nd_step(fileRead, massive, topmode, caller_id, page):
     okrugleno=len(massive)//10
     if (str(len(massive))[-1]!="0"):
         okrugleno+=1
-    if (page>okrugleno or page<=0):
+    if (page>okrugleno and page!=2281337):# or page<=0):
         return "Выберите правильную страницу (1-"+str(okrugleno)+")"
+    msg=""
+    start_page=0+10*(page-1)
+    if (page==2281337):
+        start_page=0
+        page=okrugleno
+        print(start_page, page)
+        msg+="Ты нахуй страницу отладки открыл а \n"
+        print(msg)
     t1="balance"
     t2="sec"
     t3="click"
+    t4="balanceBoost"
     t1ru=" КШ"
     t2ru="/сек"
     t3ru="/клик"
-    msg="Доска лидеров по категории "
+    t4ru="% баланса/день"
+    msg+="Доска лидеров по категории "
     if (topmode=="б" or topmode=="баланс"):
         msg+="\"Баланс\""
     elif (topmode=="с" or topmode=="сек"):
@@ -572,14 +611,18 @@ def leaderboard2nd_step(fileRead, massive, topmode, caller_id, page):
         msg+="\"КШ за клик\""
         t1,t2,t3="click","balance","sec"
         t1ru,t2ru,t3ru="/клик"," КШ","/сек"
+    elif (topmode=="бб" or topmode=="балансбуст"):
+        msg+="\"% баланса за день\""
+        t1,t2,t3,t4="balanceBoost","balance","sec","click"
+        t1ru,t2ru,t3ru,t4ru="% баланса/день"," КШ","/сек","/клик"
     msg+="\n\n"
-    for i in range(0+10*(page-1), 10*page):
+    for i in range(start_page, 10*page):
         if (i<len(massive)):
-            msg=msg+f"#{massive[i][0]}: {massive[i][2]} ({massive[i][1]}): {ob_chisla(fileRead['users'][str(massive[i][1])][t1])}{t1ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t3])}{t3ru}"+"\n"#str(massive[i][0])+"-е место: "+str(massive[i][2])+" ("+str(massive[i][1])+")\n"+str(fileRead["users"][str(massive[i][1])][t1])+str(fileRead["users"][str(massive[i][1])][t2])+str(fileRead["users"][str(massive[i][1])][t3])+"\n"
+            msg=msg+f"#{massive[i][0]}: {massive[i][2]} ({massive[i][1]}): {ob_chisla(fileRead['users'][str(massive[i][1])][t1])}{t1ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t4])}{t4ru}"+"\n"#str(massive[i][0])+"-е место: "+str(massive[i][2])+" ("+str(massive[i][1])+")\n"+str(fileRead["users"][str(massive[i][1])][t1])+str(fileRead["users"][str(massive[i][1])][t2])+str(fileRead["users"][str(massive[i][1])][t3])+"\n"
     msg+="__________\n"
     for i in massive:
         if (i[1]==caller_id):
-            msg+=f"Вы: #{i[0]}: {ob_chisla(fileRead['users'][str(caller_id)][t1])}{t1ru}, {ob_chisla(fileRead['users'][str(caller_id)][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(caller_id)][t3])}{t3ru}"
+            msg+=f"Вы: #{i[0]}: {ob_chisla(fileRead['users'][str(caller_id)][t1])}{t1ru}, {ob_chisla(fileRead['users'][str(caller_id)][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(caller_id)][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(caller_id)][t4])}{t4ru}"
     msg+="\n\nСтраница "+str(page)+"/"+str(okrugleno)
     return msg
 #530
