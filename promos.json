@@ -13,7 +13,7 @@
         },
         "cumvoop2021": {
             "activationLimit": -1,
-            "activatedTimes": 9,
+            "activatedTimes": 11,
             "validity": -1,
             "balance": 0,
             "click": 0,
@@ -40,6 +40,17 @@
             "balance": 1000,
             "click": 0,
             "sec": 0,
+            "sale": 0,
+            "multiplier": 0,
+            "balanceBoost": 0
+        },
+        "рандомпромо27933": {
+            "activationLimit": 2,
+            "activatedTimes": 2,
+            "validity": -1,
+            "balance": 10000000,
+            "click": 0,
+            "sec": -5,
             "sale": 0,
             "multiplier": 0,
             "balanceBoost": 0
