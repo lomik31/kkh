@@ -78,8 +78,7 @@ def updateUserName(fileRead):
 def updateUserNameWrite(dict, fileRead):
     for i in dict:
         fileRead["users"][i[0]]["firstName"] = i[1]
-        if (i[2] != None):
-            fileRead["users"][i[0]]["lastName"] = i[2]
+        fileRead["users"][i[0]]["lastName"] = i[2]
     return fileRead
 #get
 def get_balance(id,fileRead): return int(fileRead["users"][str(id)]["balance"])
