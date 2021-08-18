@@ -878,8 +878,14 @@ class kmd:
         except: 
             if (message_text[1] == "#r"): betAmount = random.randint(1, rec_file.get_balance(message.from_user.id, file_readed))
             elif (message_text[1] == "все") or (message_text[1] == "всё"): betAmount = rec_file.get_balance(message.from_user.id, file_readed)
+            elif (message_text[1][-1] == "%"):
+                message_text[1] = message_text[1][:-1]
+                try: message_text[1] = int(message_text[1])
+                except: return bot.send_message(message.chat.id, "Неверное использование процентной ставки. Процентная ставка должна быть не менее 1 и не более 100% от вашего баланса и иметь численное значение!")
+                if (0 < message_text[1] <= 100): betAmount = rec_file.get_balance(message.from_user.id, file_readed) * message_text[1] // 100
+                else: return bot.send_message(message.chat.id, "Неверное использование процентной ставки. Процентная ставка должна быть не менее 1 и не более 100% от вашего баланса!")
             else: return bot.send_message(message.chat.id, "Ставка должна иметь численный вид")
-        if (0 < betAmount < rec_file.get_balance(message.from_user.id, file_readed)):
+        if (0 < betAmount <= rec_file.get_balance(message.from_user.id, file_readed)):
             variants = ["вверх", "вниз"]
             if (message_text[2] not in variants):
                 if message_text[2] != "#r": return bot.send_message(message.chat.id, "Использование: бит <ставка> <вверх/вниз>")
