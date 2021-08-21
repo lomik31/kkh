@@ -624,4 +624,16 @@ def leaderboard2nd_step(fileRead, massive, topmode, caller_id, page):
             msg+=f"Вы: #{i[0]}: {ob_chisla(fileRead['users'][str(caller_id)][t1])}{t1ru}, {ob_chisla(fileRead['users'][str(caller_id)][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(caller_id)][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(caller_id)][t4])}{t4ru}"
     msg+="\n\nСтраница "+str(page)+"/"+str(okrugleno)
     return msg
+
+def chooseNewWinner(timeLastActivity, fileRead):
+    try: timeLastActivity = int(timeLastActivity)
+    except: return False
+    winnerId = random.choice(list(fileRead["users"].keys()))
+    if (winnerId != "default"):
+        if (get_time_now() - fileRead["users"][winnerId]["timeLastCommand"]) < timeLastActivity:
+            try: return int(winnerId)
+            except: return chooseNewWinner(timeLastActivity, fileRead)
+        else: return chooseNewWinner(timeLastActivity, fileRead)
+    else: return chooseNewWinner(timeLastActivity, fileRead)
+
 #530

@@ -91,6 +91,34 @@ def updateUsersNameInFile():
             i[2] = fullinfo.last_name
         except: pass
     rec_file.updateUserNameWrite(dict, file_readed)
+def weeklyLotteryLostMoneyCoin():
+        lastWeekCoinSum = file_readed["sharedData"]["weeklyData"]["lostCoin"] - file_readed["sharedData"]["weeklyData"]["winCoin"]
+        file_readed["sharedData"]["weeklyData"]["winCoin"], file_readed["sharedData"]["weeklyData"]["lostCoin"] = 0, 0
+        for i in file_readed["users"].keys():
+            file_readed["sharedData"]["weeklyData"]["winCoin"] += file_readed["users"][i]["wonMoneta"]
+            file_readed["sharedData"]["weeklyData"]["lostCoin"] += file_readed["users"][i]["lostMoneta"]
+        thisWeekCoinSum = file_readed["sharedData"]["weeklyData"]["lostCoin"] - file_readed["sharedData"]["weeklyData"]["winCoin"] - lastWeekCoinSum
+        if thisWeekCoinSum <= 0: return bot.send_message(357694314, "разыгрывать нечего")
+        id = rec_file.chooseNewWinner(604800, file_readed)
+        sum = int(thisWeekCoinSum * 0.3)
+        rec_file.append_balance(id, sum, file_readed)
+        bot.send_message(id, f"Поздравляем!\nВы выиграли в еженедельном конкурсе {rec_file.ob_chisla(sum)} КШ!\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
+        id = rec_file.chooseNewWinner(604800, file_readed)
+        sum = int(thisWeekCoinSum * 0.25)
+        rec_file.append_balance(id, sum, file_readed)
+        bot.send_message(id, f"Поздравляем!\nВы выиграли в еженедельном конкурсе {rec_file.ob_chisla(sum)} КШ!\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
+        id = rec_file.chooseNewWinner(604800, file_readed)
+        sum = int(thisWeekCoinSum * 0.2)
+        rec_file.append_balance(id, sum, file_readed)
+        bot.send_message(id, f"Поздравляем!\nВы выиграли в еженедельном конкурсе {rec_file.ob_chisla(sum)} КШ!\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
+        id = rec_file.chooseNewWinner(604800, file_readed)
+        sum = int(thisWeekCoinSum * 0.15)
+        rec_file.append_balance(id, sum, file_readed)
+        bot.send_message(id, f"Поздравляем!\nВы выиграли в еженедельном конкурсе {rec_file.ob_chisla(sum)} КШ!\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
+        id = rec_file.chooseNewWinner(604800, file_readed)
+        sum = int(thisWeekCoinSum * 0.1)
+        rec_file.append_balance(id, sum, file_readed)
+        bot.send_message(id, f"Поздравляем!\nВы выиграли в еженедельном конкурсе {rec_file.ob_chisla(sum)} КШ!\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
 def schedule_checker():
     while True:
         schedule.run_pending()
@@ -99,6 +127,7 @@ Thread(target=whiletrue).start()
 Thread(target=backup_whiletrue).start()
 schedule.every().day.at("00:00").do(rec_file.balance_boost_nachislenie, file_readed)
 schedule.every().day.at("04:20").do(updateUsersNameInFile)
+schedule.every().monday.at("00:00").do(weeklyLotteryLostMoneyCoin)
 Thread(target=schedule_checker).start()
 
 #кнопки
@@ -283,6 +312,10 @@ def check_messages(message, message_text):
     elif (message_text[0] == "бит"):
         if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
         kmd.btcBet(message, message_text)
+    elif (message_text[0] == "монетарозыгрыш"):
+        if (rec_file.get_admin(message.from_user.id, file_readed) == False): return
+        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
+        weeklyLotteryLostMoneyCoin()
     else:
         return False
 def repeat_command(message):
@@ -813,6 +846,8 @@ class kmd:
             bot.send_message(message.chat.id, "Выдаёт топ всех пользователей\nТоп [<b>баланс</b>/клик/сек] [страница]", parse_mode="HTML");
         elif (message_text[1] == "бит"):
             bot.send_message(message.chat.id, "Ставка на курс биткоина\nбит <ставка/все> <вверх/вниз>");
+        elif (message_text[1] == "монетарозыгрыш"):
+            bot.send_message(message.chat.id, "Принудительно проводит еженедельный розыгрыш проигранных денег в монете");
     def delPromo(message, message_text):
         if (rec_file.get_admin(message.from_user.id, file_readed) == False): return;
         if (len(message_text) < 3): return bot.send_message(message.chat.id, "Использование: промо удалить <название>");
