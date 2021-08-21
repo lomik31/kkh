@@ -102,23 +102,28 @@ def weeklyLotteryLostMoneyCoin():
         id = rec_file.chooseNewWinner(604800, file_readed)
         sum = int(thisWeekCoinSum * 0.3)
         rec_file.append_balance(id, sum, file_readed)
-        bot.send_message(id, f"Поздравляем!\nВы выиграли в еженедельном конкурсе {rec_file.ob_chisla(sum)} КШ!\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
+        try: bot.send_message(id, f"Поздравляем!\nВы выиграли в еженедельном конкурсе {rec_file.ob_chisla(sum)} КШ!\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
+        except: pass
         id = rec_file.chooseNewWinner(604800, file_readed)
         sum = int(thisWeekCoinSum * 0.25)
         rec_file.append_balance(id, sum, file_readed)
-        bot.send_message(id, f"Поздравляем!\nВы выиграли в еженедельном конкурсе {rec_file.ob_chisla(sum)} КШ!\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
+        try: bot.send_message(id, f"Поздравляем!\nВы выиграли в еженедельном конкурсе {rec_file.ob_chisla(sum)} КШ!\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
+        except: pass
         id = rec_file.chooseNewWinner(604800, file_readed)
         sum = int(thisWeekCoinSum * 0.2)
         rec_file.append_balance(id, sum, file_readed)
-        bot.send_message(id, f"Поздравляем!\nВы выиграли в еженедельном конкурсе {rec_file.ob_chisla(sum)} КШ!\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
+        try: bot.send_message(id, f"Поздравляем!\nВы выиграли в еженедельном конкурсе {rec_file.ob_chisla(sum)} КШ!\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
+        except: pass
         id = rec_file.chooseNewWinner(604800, file_readed)
         sum = int(thisWeekCoinSum * 0.15)
         rec_file.append_balance(id, sum, file_readed)
-        bot.send_message(id, f"Поздравляем!\nВы выиграли в еженедельном конкурсе {rec_file.ob_chisla(sum)} КШ!\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
+        try: bot.send_message(id, f"Поздравляем!\nВы выиграли в еженедельном конкурсе {rec_file.ob_chisla(sum)} КШ!\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
+        except: pass
         id = rec_file.chooseNewWinner(604800, file_readed)
         sum = int(thisWeekCoinSum * 0.1)
         rec_file.append_balance(id, sum, file_readed)
-        bot.send_message(id, f"Поздравляем!\nВы выиграли в еженедельном конкурсе {rec_file.ob_chisla(sum)} КШ!\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
+        try: bot.send_message(id, f"Поздравляем!\nВы выиграли в еженедельном конкурсе {rec_file.ob_chisla(sum)} КШ!\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
+        except: pass
 def schedule_checker():
     while True:
         schedule.run_pending()
