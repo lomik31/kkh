@@ -479,7 +479,7 @@ class kmd:
                 if userid not in rec_file.get_ids(file_readed): return bot.send_message(message.chat.id, "Юзер не найден!")
                 rec_file.append_balance(userid, int(rec_file.ob_k_chisla(sum)), file_readed)
                 file_readed["users"][str(userid)]["othersProceeds"] += int(rec_file.ob_k_chisla(sum))
-                bot.send_message(message.chat.id, f"Пользователю `{userid}` начислено {rec_file.ob_chisla(sum)} КШ", parse_mode="MARKDOWN")
+                bot.send_message(message.chat.id, f"Пользователю {rec_file.getFullName(userid, file_readed)}(`{userid}`) начислено {rec_file.ob_chisla(sum)} КШ", parse_mode="MARKDOWN")
                 bot.send_message(userid, f"Вам начислено {rec_file.ob_chisla(sum)} КШ администратором")
             except ValueError:
                 try:
@@ -493,7 +493,7 @@ class kmd:
         else:
             pass
     def balance(message, message_text):
-        if len(message_text) == 1: bot.send_message(message.chat.id, f"id: `{message.from_user.id}`\nАпгрейды: {file_readed['users'][str(message.from_user.id)]['sec']}/сек; {file_readed['users'][str(message.from_user.id)]['click']}/клик; {rec_file.get_skidka(message.from_user.id, file_readed)}% скидки; {rec_file.get_boost_balance(message.from_user.id, file_readed)}% баланса/день\nБаланс: {rec_file.ob_chisla(file_readed['users'][str(message.from_user.id)]['balance'])} КШ", parse_mode="MARKDOWN")
+        if len(message_text) == 1: bot.send_message(message.chat.id, f"Имя: {rec_file.getFullName(message.from_user.id, file_readed)}\nid: `{message.from_user.id}`\nАпгрейды: {file_readed['users'][str(message.from_user.id)]['sec']}/сек; {file_readed['users'][str(message.from_user.id)]['click']}/клик; {rec_file.get_skidka(message.from_user.id, file_readed)}% скидки; {rec_file.get_boost_balance(message.from_user.id, file_readed)}% баланса/день\nБаланс: {rec_file.ob_chisla(file_readed['users'][str(message.from_user.id)]['balance'])} КШ", parse_mode="MARKDOWN")
         elif len(message_text) >= 2:
             try:
                 if message_text[1] == "_":
@@ -502,7 +502,7 @@ class kmd:
                     else: userid = 0
                 else: userid = int(message_text[1])
                 if userid not in rec_file.get_ids(file_readed): return bot.send_message(message.chat.id, "id не найден")
-                bot.send_message(message.chat.id, f"id: `{userid}`\nАпгрейды: {file_readed['users'][str(userid)]['sec']}/сек; {file_readed['users'][str(userid)]['click']}/клик; {rec_file.get_skidka(userid, file_readed)}% скидки; {rec_file.get_boost_balance(userid, file_readed)}% баланса/день\nБаланс: {rec_file.ob_chisla(file_readed['users'][str(userid)]['balance'])} КШ", parse_mode="MARKDOWN")
+                bot.send_message(message.chat.id, f"Имя: {rec_file.getFullName(userid, file_readed)}\nid: `{userid}`\nАпгрейды: {file_readed['users'][str(userid)]['sec']}/сек; {file_readed['users'][str(userid)]['click']}/клик; {rec_file.get_skidka(userid, file_readed)}% скидки; {rec_file.get_boost_balance(userid, file_readed)}% баланса/день\nБаланс: {rec_file.ob_chisla(file_readed['users'][str(userid)]['balance'])} КШ", parse_mode="MARKDOWN")
             except ValueError: bot.send_message(message.chat.id, "Использование: Баланс/б [id]")
     def upgrades(message, message_text):
         rec_file.set_active_passive_keyboard(message.chat.id, True, bot.get_chat(message.chat.id).type, file_readed)
@@ -546,7 +546,7 @@ class kmd:
                     else: a = int(message_text[1])
                     if a not in rec_file.get_ids(file_readed): return bot.send_message(message.chat.id, "Такой id не найден!")
                     rec_file.clear_id(a, file_readed)
-                    bot.send_message(message.chat.id, f"Прогресс пользователя `{a}` успешно сброшен!", parse_mode="MARKDOWN")
+                    bot.send_message(message.chat.id, f"Прогресс пользователя {rec_file.getFullName(a, file_readed)} (`{a}`) успешно сброшен!", parse_mode="MARKDOWN")
                     sendmessage_check_active_keyboard(a, a, bot.get_chat(message.chat.id).type, "Ваш прогресс сброшен администратором!")
                 except ValueError: return bot.send_message(message.chat.id, "Использование: сброс <подтвердить/справка/id юзера>")
             if rec_file.get_admin(message.from_user.id, file_readed) == 0: bot.send_message(message.chat.id, "Использование: сброс <подтвердить/справка>")
@@ -581,12 +581,12 @@ class kmd:
             file_readed["users"][str(message.from_user.id)]["paidKkh"] += sum
             rec_file.append_balance(poly4atel, sum, file_readed)
             file_readed["users"][str(poly4atel)]["receivedKkh"] += sum
-            send_message = f"Перевод {rec_file.ob_chisla(sum)} КШ пользователю {poly4atel} выполнен успешно!"
+            send_message = f"Перевод {rec_file.ob_chisla(sum)} КШ пользователю {rec_file.getFullName(poly4atel, file_readed)} выполнен успешно!"
             if len(message_text) >= 4:
                 comment = message.text.split(" ", 3)[-1]
                 send_message = f"{send_message}\nКомментарий к переводу: {comment}"
             bot.send_message(message.chat.id, send_message)
-            send_message = f"Получен перевод {rec_file.ob_chisla(sum)} КШ от пользователя {message.from_user.id}"
+            send_message = f"Получен перевод {rec_file.ob_chisla(sum)} КШ от пользователя {message.from_user.id} ({rec_file.getFullName(message.from_user.id, file_readed)})"
             if len(message_text) >= 4: send_message = f"{send_message}\nСообщение: {comment} "
             bot.send_message(poly4atel, send_message) 
         except ValueError: bot.send_message(message.chat.id, "Неверное id получателя! id должно содержать только цифры")
@@ -604,7 +604,7 @@ class kmd:
                     if user not in rec_file.get_ids(file_readed): return bot.send_message(message.chat.id, f"Пользователь `{message_text[2]}` не найден", parse_mode="MARKDOWN")
                     if rec_file.get_admin(user, file_readed): return bot.send_message(message.chat.id, f"Пользователь `{message_text[2]}` уже имеет права администратора", parse_mode="MARKDOWN")
                     rec_file.set_admin(user, file_readed)
-                    bot.send_message(message.chat.id, f"Пользователь `{message_text[2]}` назначен администратором!", parse_mode="MARKDOWN")
+                    bot.send_message(message.chat.id, f"Пользователь {rec_file.getFullName(user, file_readed)} ({message_text[2]}) назначен администратором!")
                     bot.send_message(user, "Вас назначили администратором, ведите себя хорошо!")
                 elif message_text[1] == "удалить" or message_text[1] == "снять":
                     if len(message_text) < 3: return bot.send_message(message.chat.id, "Использование: админ удалить <id>")
@@ -614,9 +614,9 @@ class kmd:
                         elif (message_text[2] == "_") and (message.reply_to_message != None): user = message.reply_to_message.from_user.id;
                         else: return bot.send_message(message.chat.id, "Использование: админ удалить <id>")
                     if user not in rec_file.get_ids(file_readed): return bot.send_message(message.chat.id, f"Пользователь `{message_text[2]}` не найден", parse_mode="MARKDOWN")
-                    if rec_file.get_admin(user, file_readed) == False: return bot.send_message(message.chat.id, f"Пользователь `{message_text[2]}` не имеет прав администратора!", parse_mode="MARKDOWN")
+                    if rec_file.get_admin(user, file_readed) == False: return bot.send_message(message.chat.id, f"Пользователь {rec_file.getFullName(user, file_readed)} ({message_text[2]}) не имеет прав администратора!")
                     rec_file.unset_admin(user, file_readed)
-                    bot.send_message(message.chat.id, f"С пользователя `{message_text[2]}` сняты права администратора!", parse_mode="MARKDOWN")
+                    bot.send_message(message.chat.id, f"С пользователя {rec_file.getFullName(user, file_readed)} ({message_text[2]}) сняты права администратора!")
                     bot.send_message(user, "С вас сняты права администатора!")  
                 else: bot.send_message(message.chat.id, "Использование: админ [добавить/удалить] <id>")
         else:
@@ -761,8 +761,9 @@ class kmd:
                 else: return bot.send_message(message.chat.id, "ID дожден состоять только из цифр!")
             return bot.send_message(message.chat.id, "ID дожден состоять только из цифр!")
         if id not in rec_file.get_ids(file_readed): return bot.send_message(message.chat.id, "ID не найден")
+        name = {rec_file.getFullName(id, file_readed)}
         rec_file.remove_id(id, file_readed)
-        bot.send_message(message.chat.id, "ID удалён из бд")
+        bot.send_message(message.chat.id, f"{name}: ID удалён из бд")
     def userlist(message, message_text):
         if rec_file.get_admin(message.from_user.id, file_readed) == False: return
         send_message = f"Вот id всех {len(file_readed['users'].keys()) - 1} пользователей:"
@@ -870,14 +871,14 @@ class kmd:
             if (rec_file.get_balance(message.from_user.id, file_readed) < 1000000): return bot.send_message(message.chat.id, "У вас недостаточно КШ!");
             rec_file.append_balance(message.from_user.id, -1000000, file_readed);
             file_readed["users"][str(message.from_user.id)]["othersSpends"] += 1000000
-            bot.send_message(id, f"Вас послал нахуй пользователь `{message.from_user.id}`", parse_mode="MARKDOWN");
-            bot.send_message(message.chat.id, f"Вы послали нахуй игрока `{id}`", parse_mode="MARKDOWN");
+            bot.send_message(id, f"Вас послал нахуй пользователь {rec_file.getFullName(message.from_user.id, file_readed)} ({message.from_user.id})");
+            bot.send_message(message.chat.id, f"Вы послали нахуй игрока {rec_file.getFullName(id, file_readed)} ({id})");
         elif (message_text[0] == "послатьанон"):
             if (rec_file.get_balance(message.from_user.id, file_readed) < 3000000): return bot.send_message(message.chat.id, "У вас недостаточно КШ!");
             rec_file.append_balance(message.from_user.id, -3000000, file_readed);
             file_readed["users"][str(message.from_user.id)]["othersSpends"] += 3000000
             bot.send_message(id, f"Вас анонимно послали нахуй");
-            bot.send_message(message.chat.id, f"Вы анонимно послали нахуй игрока `{id}`", parse_mode="MARKDOWN");
+            bot.send_message(message.chat.id, f"Вы анонимно послали нахуй игрока {rec_file.getFullName(id, file_readed)} ({id})");
     def promoInf(message, message_text):
         if (rec_file.get_admin(message.from_user.id, file_readed) == False): return
         if (len(message_text) < 3): return bot.send_message(message.chat.id, "Использование: промо инфо <название промокода>")
@@ -947,4 +948,5 @@ def bitcoinBet(id, bet, betAmount, chatid):
         rec_file.append_balance(id, -betAmount, file_readed)
         return bot.send_message(chatid, f"Вы проиграли!\nКурс BTC изменился на {round(endPrice - startPrice, 2)} RUB.\nПроиграно {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
 bot.polling(none_stop=True, interval=1, timeout=123)
+
 #962 -> 630
