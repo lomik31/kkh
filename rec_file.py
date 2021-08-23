@@ -315,7 +315,7 @@ def moneta_stavka(id,stavka,or_or_re,fileRead):
             except:
                 return ("Использование: монета <ставка/всё> <орел/решка>")
             stavka=int(stavka)
-            if (stavka<=0 or stavka<get_balance(id, fileRead)):
+            if (stavka<=0 or stavka>get_balance(id, fileRead)):
                 return ("Неверная ставка (меньше нуля или больше вашего баланса)")
         if (or_or_re=="#r"):
             or_or_re=random.randint(1,2)
