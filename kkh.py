@@ -19,6 +19,7 @@ with open("config.json", encoding="utf-8") as config:
 
 bot = telebot.TeleBot(config["telegramToken"])
 y = yadisk.YaDisk(token=config["yandexDiskToken"])
+a = [357694314]
 
 @bot.message_handler(commands=["start"])
 def start_command(message):
@@ -200,6 +201,7 @@ def manual_backup():
     return "Бэкап успешно выполнен и загружен на сервер!"
 
 def check_messages(message, message_text):
+    if message.from_user.id not in a: return
     if message.text.lower() == "клик" or message.text == "🔮":
         if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
         kmd.click(message, message_text)
