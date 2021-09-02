@@ -894,7 +894,7 @@ class kmd:
         bot.send_message(message.chat.id, rec_file.promo_list())
     def allUserTop(message, message_text):
         if (len(message_text) < 2) or ((len(message_text) >= 2) and message_text[1] == "баланс"):
-            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "б", message.from_user.id, 1, True))
+            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "б", message.from_user.id, 1, False))
             else: 
                 try:
                     page = int(message_text[2])
