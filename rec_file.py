@@ -564,10 +564,9 @@ def leaderboard(fileRead, topmode, caller_id, page, active_top):
         
     if (tofind=="0"):
         return "По этому значению не может быть составлена доска лидеров!"
-    
     for i in fileRead["users"].keys():
         if (i!="default"):
-            if (active_top==False and time.time()-i["timeLastCommand"]>1814400):
+            if (active_top==False):
                 place=place+1
                 try:
                     int(fileRead["users"][i][tofind])
@@ -575,11 +574,22 @@ def leaderboard(fileRead, topmode, caller_id, page, active_top):
                     return "Произошла ошибка, напиши об этом сообщении @Martin_Verner"
                 znmas.append(int(fileRead["users"][i][tofind]))
                 idlist.append(int(i))
+            else:
+                if (time.time()-int(fileRead["users"][i]["timeLastCommand"])<1814400):
+                    place=place+1
+                    try:
+                        int(fileRead["users"][i][tofind])
+                    except:
+                        return "Произошла ошибка, напиши об этом сообщении @Martin_Verner"
+                    znmas.append(int(fileRead["users"][i][tofind]))
+                    idlist.append(int(i))
+    if (len(idlist)==0):
+        return "Активных пользователей нет :("
     result_massive=l_sort(znmas, idlist)
     for i in range(len(result_massive)):
         result_massive[i].append(getFullName(result_massive[i][1], fileRead))
-    return leaderboard2nd_step(fileRead,result_massive,topmode,caller_id,page)
-def leaderboard2nd_step(fileRead, massive, topmode, caller_id, page):
+    return leaderboard2nd_step(fileRead,result_massive,topmode,caller_id,page,active_top)
+def leaderboard2nd_step(fileRead, massive, topmode, caller_id, page, active_top):
     okrugleno=len(massive)//10
     if (str(len(massive))[-1]!="0"):
         okrugleno+=1
@@ -590,9 +600,9 @@ def leaderboard2nd_step(fileRead, massive, topmode, caller_id, page):
     if (page==2281337):
         start_page=0
         page=okrugleno
-        print(start_page, page)
+        #print(start_page, page)
         msg+="Ты нахуй страницу отладки открыл а \n"
-        print(msg)
+        #print(msg)
     t1="balance"
     t2="sec"
     t3="click"
@@ -601,7 +611,10 @@ def leaderboard2nd_step(fileRead, massive, topmode, caller_id, page):
     t2ru="/сек"
     t3ru="/клик"
     t4ru="% баланса/день"
-    msg+="Доска лидеров по категории "
+    msg+="Топ"
+    if (active_top):
+        msg+=" активных"
+    msg+=" по категории "
     if (topmode=="б" or topmode=="баланс"):
         msg+="\"Баланс\""
     elif (topmode=="с" or topmode=="сек"):
@@ -616,6 +629,10 @@ def leaderboard2nd_step(fileRead, massive, topmode, caller_id, page):
         msg+="\"% баланса за день\""
         t1,t2,t3,t4="balanceBoost","balance","sec","click"
         t1ru,t2ru,t3ru,t4ru="% баланса/день"," КШ","/сек","/клик"
+    if (active_top):
+        msg+="\nДля общего топа есть команда \"всетоп\""
+    else:
+        msg+="\nДля топа активных пользователей есть команда \"всетоп\""
     msg+="\n\n"
     for i in range(start_page, 10*page):
         if (i<len(massive)):
