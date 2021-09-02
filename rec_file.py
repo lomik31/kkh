@@ -548,7 +548,7 @@ def l_sort(sort_massive,idlist):
         else:
             result_massive.append([i+1-otnjat,idlist[i]])
     return result_massive
-def leaderboard(fileRead, topmode, caller_id, page):
+def leaderboard(fileRead, topmode, caller_id, page, active_top):
     znmas=[]
     idlist=[]
     place=1
@@ -567,13 +567,14 @@ def leaderboard(fileRead, topmode, caller_id, page):
     
     for i in fileRead["users"].keys():
         if (i!="default"):
-            place=place+1
-            try:
-                int(fileRead["users"][i][tofind])
-            except:
-                return "Произошла ошибка, напиши об этом сообщении @Martin_Verner"
-            znmas.append(int(fileRead["users"][i][tofind]))
-            idlist.append(int(i))
+            if (active_top==False and time.time()-i["timeLastCommand"]>1814400):
+                place=place+1
+                try:
+                    int(fileRead["users"][i][tofind])
+                except:
+                    return "Произошла ошибка, напиши об этом сообщении @Martin_Verner"
+                znmas.append(int(fileRead["users"][i][tofind]))
+                idlist.append(int(i))
     result_massive=l_sort(znmas, idlist)
     for i in range(len(result_massive)):
         result_massive[i].append(getFullName(result_massive[i][1], fileRead))
