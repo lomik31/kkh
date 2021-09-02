@@ -316,6 +316,9 @@ def check_messages(message, message_text):
     elif (message_text[0] == "топ"):
         if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
         kmd.userTop(message, message_text)
+    elif (message_text[0] == "всетоп"):
+        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
+        kmd.allUserTop(message, message_text)
     elif (message_text[0] == "бит"):
         if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
         kmd.btcBet(message, message_text)
@@ -889,30 +892,56 @@ class kmd:
     def promoList(message, message_text):
         if (rec_file.get_admin(message.from_user.id, file_readed) == False): return
         bot.send_message(message.chat.id, rec_file.promo_list())
-    def userTop(message, message_text):
+    def allUserTop(message, message_text):
         if (len(message_text) < 2) or ((len(message_text) >= 2) and message_text[1] == "баланс"):
-            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "б", message.from_user.id, 1))
+            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "б", message.from_user.id, 1, True))
             else: 
                 try:
                     page = int(message_text[2])
-                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "б", message.from_user.id, page))
+                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "б", message.from_user.id, page, False))
                 except Exception as e:
                     print(e)
-                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "б", message.from_user.id, 1))
+                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "б", message.from_user.id, 1, False))
         elif (len(message_text) >= 2) and (message_text[1] == "клик"):
-            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "к", message.from_user.id, 1))
-            else: 
+            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "к", message.from_user.id, 1, False))
+            else:
                 try:
                     page = int(message_text[2])
-                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "к", message.from_user.id, page))
-                except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "к", message.from_user.id, 1))
+                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "к", message.from_user.id, page, False))
+                except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "к", message.from_user.id, 1, False))
         elif (len(message_text) >= 2) and (message_text[1] == "сек"):
-            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "с", message.from_user.id, 1))
+            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "с", message.from_user.id, 1, False))
             else: 
                 try:
                     page = int(message_text[2])
-                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "с", message.from_user.id, page))
-                except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "с", message.from_user.id, 1))
+                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "с", message.from_user.id, page, False))
+                except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "с", message.from_user.id, 1, False))
+        else:
+            bot.send_message(message.chat.id, "Использование: всетоп [<b>баланс</b>/клик/сек] [страница]", parse_mode="HTML")
+    def userTop(message, message_text):
+        if (len(message_text) < 2) or ((len(message_text) >= 2) and message_text[1] == "баланс"):
+            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "б", message.from_user.id, 1, True))
+            else: 
+                try:
+                    page = int(message_text[2])
+                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "б", message.from_user.id, page, True))
+                except Exception as e:
+                    print(e)
+                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "б", message.from_user.id, 1, True))
+        elif (len(message_text) >= 2) and (message_text[1] == "клик"):
+            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "к", message.from_user.id, 1, True))
+            else:
+                try:
+                    page = int(message_text[2])
+                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "к", message.from_user.id, page, True))
+                except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "к", message.from_user.id, 1, True))
+        elif (len(message_text) >= 2) and (message_text[1] == "сек"):
+            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "с", message.from_user.id, 1, True))
+            else: 
+                try:
+                    page = int(message_text[2])
+                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "с", message.from_user.id, page, True))
+                except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "с", message.from_user.id, 1, True))
         else:
             bot.send_message(message.chat.id, "Использование: топ [<b>баланс</b>/клик/сек] [страница]", parse_mode="HTML")
     def btcBet(message, message_text):
@@ -949,6 +978,31 @@ def bitcoinBet(id, bet, betAmount, chatid):
     else:
         rec_file.append_balance(id, -betAmount, file_readed)
         return bot.send_message(chatid, f"Вы проиграли!\nКурс BTC изменился на {round(endPrice - startPrice, 2)} RUB.\nПроиграно {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
+    def roulette(message, message_text):
+        #bot.send_photo(message.chat.id, "AgACAgIAAxkBAAJH1mEmMxMUhNdIJE0IgcY2vMbAUVtPAAIVtDEbXjUwSftZiRoJ5AooAQADAgADcwADIAQ")
+        return
+        try: betAmount = int(rec_file.ob_k_chisla(message_text[1]))
+        except: 
+            if (message_text[1] == "#r"): betAmount = random.randint(1, rec_file.get_balance(message.from_user.id, file_readed))
+            elif (message_text[1] == "все") or (message_text[1] == "всё"): betAmount = rec_file.get_balance(message.from_user.id, file_readed)
+            elif (message_text[1][-1] == "%"):
+                message_text[1] = message_text[1][:-1]
+                try: message_text[1] = int(message_text[1])
+                except: return bot.send_message(message.chat.id, "Неверное использование процентной ставки. Процентная ставка должна быть не менее 1 и не более 100% от вашего баланса и иметь численное значение!")
+                if (0 < message_text[1] <= 100): betAmount = rec_file.get_balance(message.from_user.id, file_readed) * message_text[1] // 100
+                else: return bot.send_message(message.chat.id, "Неверное использование процентной ставки. Процентная ставка должна быть не менее 1 и не более 100% от вашего баланса!")
+            else: return bot.send_message(message.chat.id, "Ставка должна иметь численный вид")
+        
+        red = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]
+        black = [2,4,6,8,10,11,13,15,17,20,22,24,26,28,29,33,35]
+        even = [i for i in range(2,37,2)] #четные
+        odd = [i for i in range(1,36,2)] #нечетные
+        firstLine = [i for i in range(1,13)]
+        secondLine = [i for i in range(13,25)]
+        thirdLine = [i for i in range(25,37)]
+        firstColumn = [i for i in range(1, 35, 3)]
+        secondColumn = [i for i in range(2, 36, 3)]
+        thirdColumn = [i for i in range(3, 37, 3)]
 bot.polling(none_stop=True, interval=1, timeout=123)
 
 #962 -> 630
