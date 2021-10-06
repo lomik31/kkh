@@ -21,7 +21,7 @@ def click_nachislenie(id,fileRead):
     return fileRead
 def balance_boost_nachislenie(fileRead):
     for i in fileRead["users"]:
-        fileRead["users"][i]["balance"] = fileRead["users"][i]["balance"] + fileRead["users"][i]["balance"]*fileRead["users"][i]["balanceBoost"]//100
+        fileRead["users"][i]["balance"] += fileRead["users"][i]["balance"]*fileRead["users"][i]["balanceBoost"]//100
         fileRead["users"][i]["earnedKkh"] += fileRead["users"][i]["balance"]*fileRead["users"][i]["balanceBoost"]//100
     return fileRead
 #write

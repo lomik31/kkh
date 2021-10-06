@@ -19,7 +19,7 @@ with open("config.json", encoding="utf-8") as config:
 
 bot = telebot.TeleBot(config["telegramToken"])
 y = yadisk.YaDisk(token=config["yandexDiskToken"])
-a = [357694314]
+a = [357694314, 594517355]
 
 @bot.message_handler(commands=["start"])
 def start_command(message):
@@ -59,6 +59,7 @@ def send_text(message):
             if (userid == 0): return bot.send_message(message.chat.id, "Используйте `_` при ответе на сообщение", parse_mode="MARKDOWN")
             if (userid not in rec_file.get_ids(file_readed)): return bot.send_message(message.chat.id, "ID не найден")
             message_text = message_text[2::]
+            if (rec_file.get_admin(userid, file_readed) == True and message.from_user.id != 357694314): return bot.send_message(message.chat.id, "Невозможно выполнить кмд для этого юзера!")
             message.from_user.id = userid
             a = message.text.split(" ")[2::]
             message.text = ""
@@ -326,6 +327,9 @@ def check_messages(message, message_text):
         if (rec_file.get_admin(message.from_user.id, file_readed) == False): return
         if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
         weeklyLotteryLostMoneyCoin()
+    elif (message_text[0] == "рулетка"):
+        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
+        kmd.roulette(message, message_text)
     else:
         return False
 def repeat_command(message):
@@ -550,6 +554,7 @@ class kmd:
                         else: a = 0
                     else: a = int(message_text[1])
                     if a not in rec_file.get_ids(file_readed): return bot.send_message(message.chat.id, "Такой id не найден!")
+                    if (rec_file.get_admin(a, file_readed) == True and message.from_user.id != 357694314): return bot.send_message(message.chat.id, "Невозможно применить эту команду к этому пользователю")
                     rec_file.clear_id(a, file_readed)
                     bot.send_message(message.chat.id, f"Прогресс пользователя {rec_file.getFullName(a, file_readed)} (`{a}`) успешно сброшен!", parse_mode="MARKDOWN")
                     sendmessage_check_active_keyboard(a, a, bot.get_chat(message.chat.id).type, "Ваш прогресс сброшен администратором!")
@@ -766,6 +771,7 @@ class kmd:
                 else: return bot.send_message(message.chat.id, "ID дожден состоять только из цифр!")
             return bot.send_message(message.chat.id, "ID дожден состоять только из цифр!")
         if id not in rec_file.get_ids(file_readed): return bot.send_message(message.chat.id, "ID не найден")
+        if (rec_file.get_admin(id, file_readed) == True and message.from_user.id != 357694314): return bot.send_message(message.chat.id, "Невозможно использование дюзер для этого пользователя")
         name = {rec_file.getFullName(id, file_readed)}
         rec_file.remove_id(id, file_readed)
         bot.send_message(message.chat.id, f"{name}: ID удалён из бд")
@@ -916,8 +922,15 @@ class kmd:
                     page = int(message_text[2])
                     bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "с", message.from_user.id, page, False))
                 except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "с", message.from_user.id, 1, False))
+        elif (len(message_text) >= 2) and (message_text[1] == "бб"):
+            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "бб", message.from_user.id, 1, False))
+            else: 
+                try:
+                    page = int(message_text[2])
+                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "бб", message.from_user.id, page, False))
+                except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "бб", message.from_user.id, 1, False))
         else:
-            bot.send_message(message.chat.id, "Использование: всетоп [<b>баланс</b>/клик/сек] [страница]", parse_mode="HTML")
+            bot.send_message(message.chat.id, "Использование: всетоп [<b>баланс</b>/клик/сек/бб] [страница]", parse_mode="HTML")
     def userTop(message, message_text):
         if (len(message_text) < 2) or ((len(message_text) >= 2) and message_text[1] == "баланс"):
             if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "б", message.from_user.id, 1, True))
@@ -942,8 +955,15 @@ class kmd:
                     page = int(message_text[2])
                     bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "с", message.from_user.id, page, True))
                 except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "с", message.from_user.id, 1, True))
+        elif (len(message_text) >= 2) and (message_text[1] == "бб"):
+            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "бб", message.from_user.id, 1, True))
+            else: 
+                try:
+                    page = int(message_text[2])
+                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "бб", message.from_user.id, page, True))
+                except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "бб", message.from_user.id, 1, True))
         else:
-            bot.send_message(message.chat.id, "Использование: топ [<b>баланс</b>/клик/сек] [страница]", parse_mode="HTML")
+            bot.send_message(message.chat.id, "Использование: топ [<b>баланс</b>/клик/сек/бб] [страница]", parse_mode="HTML")
     def btcBet(message, message_text):
         if (len(message_text) < 3): return bot.send_message(message.chat.id, "Использование: бит <ставка> <вверх/вниз>")
         try: betAmount = int(rec_file.ob_k_chisla(message_text[1]))
@@ -965,6 +985,125 @@ class kmd:
             bot.send_message(message.chat.id, f"Ваша ставка {rec_file.ob_chisla(betAmount)} КШ, ждем минуту!")
             Thread(target=bitcoinBet, args=(message.from_user.id, message_text[2], betAmount, message.chat.id)).start()
         else: return bot.send_message(message.chat.id, "Неверная ставка (меньше нуля или больше вашего баланса)")
+    def roulette(message, message_text):
+        bot.send_photo(message.chat.id, "AgACAgIAAxkBAAJIgWFLVYp2n1RsHRqWNz9tuyvoS1-NAAKbtDEbqyxgSp2_37kfGwVFAQADAgADeQADIQQ")
+        if (len(message_text) < 3): return bot.send_message(message.chat.id, config["messages"]["rouletteHelp"])
+        try: betAmount = int(rec_file.ob_k_chisla(message_text[1]))
+        except: 
+            if (message_text[1] == "#r"): betAmount = random.randint(1, rec_file.get_balance(message.from_user.id, file_readed))
+            elif (message_text[1] == "все") or (message_text[1] == "всё"): betAmount = rec_file.get_balance(message.from_user.id, file_readed)
+            elif (message_text[1][-1] == "%"):
+                message_text[1] = message_text[1][:-1]
+                try: message_text[1] = int(message_text[1])
+                except: return bot.send_message(message.chat.id, "Неверное использование процентной ставки. Процентная ставка должна быть не менее 1 и не более 100% от вашего баланса и иметь численное значение!")
+                if (0 < message_text[1] <= 100): betAmount = rec_file.get_balance(message.from_user.id, file_readed) * message_text[1] // 100
+                else: return bot.send_message(message.chat.id, "Неверное использование процентной ставки. Процентная ставка должна быть не менее 1 и не более 100% от вашего баланса!")
+            else: return bot.send_message(message.chat.id, "Ставка должна иметь численный вид")
+        bet = message_text[2]
+        number = random.randint(0, 36)
+        red = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]
+        black = [2,4,6,8,10,11,13,15,17,20,22,24,26,28,29,33,35]
+        even = [i for i in range(2,37,2)] #четные
+        odd = [i for i in range(1,36,2)] #нечетные
+        firstColumn = [i for i in range(1,13)]
+        secondColumn = [i for i in range(13,25)]
+        thirdColumn = [i for i in range(25,37)]
+        firstLine = [i for i in range(1, 35, 3)]
+        secondLine = [i for i in range(2, 36, 3)]
+        thirdLine = [i for i in range(3, 37, 3)]
+        oneToEighteen = [i for i in range(1,19)]
+        nineteenToThirtySix = [i for i in range (19, 37)]
+        userId = message.from_user.id
+        if (bet == "красные" or bet == "красный"):
+            if number in red:
+                rec_file.append_balance(userId, betAmount, file_readed)
+                bot.send_message(message.chat.id, f"Вы выиграли!\nВыпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+            else:
+                rec_file.append_balance(userId, -betAmount, file_readed)
+                bot.send_message(message.chat.id, f"Вы проиграли\nВыпало {number}\nПроиграно: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+        elif (bet == "черные" or bet == "черный"):
+            if number in black:
+                rec_file.append_balance(userId, betAmount, file_readed)
+                bot.send_message(message.chat.id, f"Вы выиграли!\nВыпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+            else:
+                rec_file.append_balance(userId, -betAmount, file_readed)
+                bot.send_message(message.chat.id, f"Вы проиграли\nВыпало {number}\nПроиграно: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+        elif (bet == "четный" or bet == "четные"):
+            if number in even:
+                rec_file.append_balance(userId, betAmount, file_readed)
+                bot.send_message(message.chat.id, f"Вы выиграли!\nВыпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+            else:
+                rec_file.append_balance(userId, -betAmount, file_readed)
+                bot.send_message(message.chat.id, f"Вы проиграли\nВыпало {number}\nПроиграно: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+        elif (bet == "нечетный" or bet == "нечетные"):
+            if number in odd:
+                rec_file.append_balance(userId, betAmount, file_readed)
+                bot.send_message(message.chat.id, f"Вы выиграли!\nВыпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+            else:
+                rec_file.append_balance(userId, -betAmount, file_readed)
+                bot.send_message(message.chat.id, f"Вы проиграли\nВыпало {number}\nПроиграно: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+        elif (bet == "1строка"):
+            if number in firstLine:
+                rec_file.append_balance(userId, betAmount, file_readed)
+                bot.send_message(message.chat.id, f"Вы выиграли!\nВыпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+            else:
+                rec_file.append_balance(userId, -betAmount, file_readed)
+                bot.send_message(message.chat.id, f"Вы проиграли\nВыпало {number}\nПроиграно: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+        elif (bet == "2строка"):
+            if number in secondLine:
+                rec_file.append_balance(userId, betAmount, file_readed)
+                bot.send_message(message.chat.id, f"Вы выиграли!\nВыпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+            else:
+                rec_file.append_balance(userId, -betAmount, file_readed)
+                bot.send_message(message.chat.id, f"Вы проиграли\nВыпало {number}\nПроиграно: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+        elif (bet == "3строка"):
+            if number in thirdLine:
+                rec_file.append_balance(userId, betAmount, file_readed)
+                bot.send_message(message.chat.id, f"Вы выиграли!\nВыпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+            else:
+                rec_file.append_balance(userId, -betAmount, file_readed)
+                bot.send_message(message.chat.id, f"Вы проиграли\nВыпало {number}\nПроиграно: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+        elif (bet == "1столбик" or bet == "1столбец"):
+            if number in firstColumn:
+                rec_file.append_balance(userId, betAmount, file_readed)
+                bot.send_message(message.chat.id, f"Вы выиграли!\nВыпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+            else:
+                rec_file.append_balance(userId, -betAmount, file_readed)
+                bot.send_message(message.chat.id, f"Вы проиграли\nВыпало {number}\nПроиграно: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+        elif (bet == "2столбик" or bet == "2столбец"):
+            if number in secondColumn:
+                rec_file.append_balance(userId, betAmount, file_readed)
+                bot.send_message(message.chat.id, f"Вы выиграли!\nВыпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+            else:
+                rec_file.append_balance(userId, -betAmount, file_readed)
+                bot.send_message(message.chat.id, f"Вы проиграли\nВыпало {number}\nПроиграно: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+        elif (bet == "3столбик" or bet == "3столбец"):
+            if number in thirdColumn:
+                rec_file.append_balance(userId, betAmount, file_readed)
+                bot.send_message(message.chat.id, f"Вы выиграли!\nВыпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+            else:
+                rec_file.append_balance(userId, -betAmount, file_readed)
+                bot.send_message(message.chat.id, f"Вы проиграли\nВыпало {number}\nПроиграно: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+        elif (bet == "1to18" or bet == "1до18"):
+            if number in oneToEighteen:
+                rec_file.append_balance(userId, betAmount, file_readed)
+                bot.send_message(message.chat.id, f"Вы выиграли!\nВыпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+            else:
+                rec_file.append_balance(userId, -betAmount, file_readed)
+                bot.send_message(message.chat.id, f"Вы проиграли\nВыпало {number}\nПроиграно: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+        elif (bet == "19to36" or bet == "19до36"):
+            if number in nineteenToThirtySix:
+                rec_file.append_balance(userId, betAmount, file_readed)
+                bot.send_message(message.chat.id, f"Вы выиграли!\nВыпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+            else:
+                rec_file.append_balance(userId, -betAmount, file_readed)
+                bot.send_message(message.chat.id, f"Вы проиграли\nВыпало {number}\nПроиграно: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+        else:
+            try: bet = int(bet)
+            except: return bot.send_message(message.chat.id, "Неправильная ставка")
+            if (bet < 1 or bet > 36): return bot.send_message(message.chat.id, "Неправильная ставка")
+            if (number == bet): return bot.send_message(message.chat.id, f"Вы выиграли!\nВыпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+            else: return bot.send_message(message.chat.id, f"Вы проиграли\nВыпало {number}\nПроиграно: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
 def bitcoinBet(id, bet, betAmount, chatid):
     startPrice = float(requests.get("https://blockchain.info/ru/ticker").json()["RUB"]["sell"])
     time.sleep(60)
@@ -978,31 +1117,6 @@ def bitcoinBet(id, bet, betAmount, chatid):
     else:
         rec_file.append_balance(id, -betAmount, file_readed)
         return bot.send_message(chatid, f"Вы проиграли!\nКурс BTC изменился на {round(endPrice - startPrice, 2)} RUB.\nПроиграно {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
-    def roulette(message, message_text):
-        #bot.send_photo(message.chat.id, "AgACAgIAAxkBAAJH1mEmMxMUhNdIJE0IgcY2vMbAUVtPAAIVtDEbXjUwSftZiRoJ5AooAQADAgADcwADIAQ")
-        return
-        try: betAmount = int(rec_file.ob_k_chisla(message_text[1]))
-        except: 
-            if (message_text[1] == "#r"): betAmount = random.randint(1, rec_file.get_balance(message.from_user.id, file_readed))
-            elif (message_text[1] == "все") or (message_text[1] == "всё"): betAmount = rec_file.get_balance(message.from_user.id, file_readed)
-            elif (message_text[1][-1] == "%"):
-                message_text[1] = message_text[1][:-1]
-                try: message_text[1] = int(message_text[1])
-                except: return bot.send_message(message.chat.id, "Неверное использование процентной ставки. Процентная ставка должна быть не менее 1 и не более 100% от вашего баланса и иметь численное значение!")
-                if (0 < message_text[1] <= 100): betAmount = rec_file.get_balance(message.from_user.id, file_readed) * message_text[1] // 100
-                else: return bot.send_message(message.chat.id, "Неверное использование процентной ставки. Процентная ставка должна быть не менее 1 и не более 100% от вашего баланса!")
-            else: return bot.send_message(message.chat.id, "Ставка должна иметь численный вид")
-        
-        red = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]
-        black = [2,4,6,8,10,11,13,15,17,20,22,24,26,28,29,33,35]
-        even = [i for i in range(2,37,2)] #четные
-        odd = [i for i in range(1,36,2)] #нечетные
-        firstLine = [i for i in range(1,13)]
-        secondLine = [i for i in range(13,25)]
-        thirdLine = [i for i in range(25,37)]
-        firstColumn = [i for i in range(1, 35, 3)]
-        secondColumn = [i for i in range(2, 36, 3)]
-        thirdColumn = [i for i in range(3, 37, 3)]
-bot.polling(none_stop=True, interval=1, timeout=123)
 
+bot.polling(none_stop=True, interval=1, timeout=123)
 #962 -> 630
