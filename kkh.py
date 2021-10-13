@@ -982,6 +982,7 @@ class kmd:
             if (message_text[2] not in variants):
                 if message_text[2] != "#r": return bot.send_message(message.chat.id, "Использование: бит <ставка> <вверх/вниз>")
                 else: message_text[2] = random.choice(variants)
+                rec_file.append_balance(message.from_user.id, -betAmount, file_readed)
             bot.send_message(message.chat.id, f"Ваша ставка {rec_file.ob_chisla(betAmount)} КШ, ждем минуту!")
             Thread(target=bitcoinBet, args=(message.from_user.id, message_text[2], betAmount, message.chat.id)).start()
         else: return bot.send_message(message.chat.id, "Неверная ставка (меньше нуля или больше вашего баланса)")
@@ -1110,13 +1111,12 @@ def bitcoinBet(id, bet, betAmount, chatid):
     time.sleep(60)
     endPrice = float(requests.get("https://blockchain.info/ticker").json()["RUB"]["sell"])
     if (bet == "вверх") and (startPrice < endPrice):
-        rec_file.append_balance(id, betAmount, file_readed)
+        rec_file.append_balance(id, betAmount * 2, file_readed)
         return bot.send_message(chatid, f"Вы выиграли!\nКурс BTC изменился на {round(endPrice - startPrice, 2)} RUB.\nВаш выигрыш: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
     elif (bet == "вниз") and (startPrice > endPrice):
-        rec_file.append_balance(id, betAmount, file_readed)
+        rec_file.append_balance(id, betAmount * 2, file_readed)
         return bot.send_message(chatid, f"Вы выиграли!\nКурс BTC изменился на {round(endPrice - startPrice, 2)} RUB.\nВаш выигрыш: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
     else:
-        rec_file.append_balance(id, -betAmount, file_readed)
         return bot.send_message(chatid, f"Вы проиграли!\nКурс BTC изменился на {round(endPrice - startPrice, 2)} RUB.\nПроиграно {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
 
 bot.polling(none_stop=True, interval=1, timeout=123)
