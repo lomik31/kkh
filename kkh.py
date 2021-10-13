@@ -987,7 +987,7 @@ class kmd:
             Thread(target=bitcoinBet, args=(message.from_user.id, message_text[2], betAmount, message.chat.id)).start()
         else: return bot.send_message(message.chat.id, "Неверная ставка (меньше нуля или больше вашего баланса)")
     def roulette(message, message_text):
-        bot.send_photo(message.chat.id, "AgACAgIAAxkBAAJIgWFLVYp2n1RsHRqWNz9tuyvoS1-NAAKbtDEbqyxgSp2_37kfGwVFAQADAgADeQADIQQ")
+        bot.send_photo(message.chat.id, "AgACAgIAAxkBAAJJVWFm4LjaAvBi1HIUcCbcsQHKwQ_yAAI8tTEb4KQ5S_X7F-E3605YAQADAgADcwADIQQ")
         if (len(message_text) < 3): return bot.send_message(message.chat.id, config["messages"]["rouletteHelp"])
         try: betAmount = int(rec_file.ob_k_chisla(message_text[1]))
         except: 
