@@ -982,7 +982,7 @@ class kmd:
             if (message_text[2] not in variants):
                 if message_text[2] != "#r": return bot.send_message(message.chat.id, "Использование: бит <ставка> <вверх/вниз>")
                 else: message_text[2] = random.choice(variants)
-                rec_file.append_balance(message.from_user.id, -betAmount, file_readed)
+            rec_file.append_balance(message.from_user.id, -betAmount, file_readed)
             bot.send_message(message.chat.id, f"Ваша ставка {rec_file.ob_chisla(betAmount)} КШ, ждем минуту!")
             Thread(target=bitcoinBet, args=(message.from_user.id, message_text[2], betAmount, message.chat.id)).start()
         else: return bot.send_message(message.chat.id, "Неверная ставка (меньше нуля или больше вашего баланса)")
