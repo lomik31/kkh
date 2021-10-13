@@ -613,26 +613,27 @@ def leaderboard2nd_step(fileRead, massive, topmode, caller_id, page, active_top)
     t4ru="% баланса/день"
     msg+="Топ"
     if (active_top):
-        msg+=" активных"
-    msg+=" по категории "
+        msg+=" активных пользователей (для общего топа есть команда \"всетоп\")\n"
+    else:
+        msg+=" всех пользователей (для топа активных есть команда \"топ\")\n"
     if (topmode=="б" or topmode=="баланс"):
-        msg+="\"Баланс\""
+        msg+="(Баланс) | Клик | Сек | Буст баланса | Регистрация"
     elif (topmode=="с" or topmode=="сек"):
-        msg+="\"КШ в секунду\""
+        msg+="Баланс | Клик | (Сек) | Буст баланса | Регистрация"
         t1,t2="sec","balance"
         t1ru,t2ru="/сек"," КШ"
     elif (topmode=="к" or topmode=="клик"):
-        msg+="\"КШ за клик\""
+        msg+="Баланс | (Клик) | Сек | Буст баланса | Регистрация"
         t1,t2,t3="click","balance","sec"
         t1ru,t2ru,t3ru="/клик"," КШ","/сек"
-    elif (topmode=="бб" or topmode=="балансбуст"):
-        msg+="\"% баланса за день\""
+    elif (topmode=="бб" or topmode=="балансбуст" or topmode=="буст баланса"):
+        msg+="Баланс | Клик | Сек | (Буст баланса) | Регистрация"
         t1,t2,t3,t4="balanceBoost","balance","sec","click"
         t1ru,t2ru,t3ru,t4ru="% баланса/день"," КШ","/сек","/клик"
-    if (active_top):
-        msg+="\nДля общего топа есть команда \"всетоп\""
-    else:
-        msg+="\nДля топа активных пользователей есть команда \"всетоп\""
+    #if (active_top):
+    #    msg+="\nДля общего топа есть команда \"всетоп\""
+    #else:
+    #    msg+="\nДля топа активных пользователей есть команда \"всетоп\""
     msg+="\n\n"
     for i in range(start_page, 10*page):
         if (i<len(massive)):
