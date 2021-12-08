@@ -1102,7 +1102,7 @@ class kmd:
         else:
             try: bet = int(bet)
             except: return bot.send_message(message.chat.id, "Неправильная ставка")
-            if (bet < 1 or bet > 36): return bot.send_message(message.chat.id, "Неправильная ставка")
+            if (bet < 0 or bet > 36): return bot.send_message(message.chat.id, "Неправильная ставка")
             if (number == bet): return bot.send_message(message.chat.id, f"Вы выиграли!\nВыпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
             else: return bot.send_message(message.chat.id, f"Вы проиграли\nВыпало {number}\nПроиграно: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
 def bitcoinBet(id, bet, betAmount, chatid):
