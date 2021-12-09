@@ -635,9 +635,9 @@ def leaderboard2nd_step(fileRead, massive, topmode, caller_id, page, active_top)
         t1,t2,t3,t4="balanceBoost","balance","sec","click"
         t1ru,t2ru,t3ru,t4ru="% баланса/день"," КШ","/сек","/клик"
     elif (topmode=="рег" or topmode=="регистрация"):
-        msg+="Баланс | Клик | Сек | (Буст баланса) | Регистрация"
+        msg+="Баланс | Клик | Сек | Буст баланса | (Регистрация)"
         t1,t2,t3,t4,t5="registerTime","balance","sec","click","balanceBoost"
-        t1ru,t2ru,t3ru,t4ru,t5ru="регистрация"," КШ","/сек","/клик","% баланса/день"
+        t1ru,t2ru,t3ru,t4ru,t5ru=" регистрация"," КШ","/сек","/клик","% баланса/день"
 
     #""
     #if (active_top):
