@@ -561,6 +561,8 @@ def leaderboard(fileRead, topmode, caller_id, page, active_top):
         tofind="click"
     elif (topmode=="бб" or topmode=="балансбуст"):
         tofind="balanceBoost"
+    elif (topmode=="рег" or topmode=="регистрация"):
+        tofind="registerTime"
         
     if (tofind=="0"):
         return "По этому значению не может быть составлена доска лидеров!"
@@ -607,10 +609,12 @@ def leaderboard2nd_step(fileRead, massive, topmode, caller_id, page, active_top)
     t2="sec"
     t3="click"
     t4="balanceBoost"
+    t5="registerTime"
     t1ru=" КШ"
     t2ru="/сек"
     t3ru="/клик"
     t4ru="% баланса/день"
+    t5ru=" регистрация"
     msg+="Топ"
     if (active_top):
         msg+=" активных пользователей (для общего топа есть команда \"всетоп\")\n"
@@ -626,10 +630,16 @@ def leaderboard2nd_step(fileRead, massive, topmode, caller_id, page, active_top)
         msg+="Баланс | (Клик) | Сек | Буст баланса | Регистрация"
         t1,t2,t3="click","balance","sec"
         t1ru,t2ru,t3ru="/клик"," КШ","/сек"
-    elif (topmode=="бб" or topmode=="балансбуст" or topmode=="буст баланса"):
+    elif (topmode=="бб" or topmode=="балансбуст"):
         msg+="Баланс | Клик | Сек | (Буст баланса) | Регистрация"
         t1,t2,t3,t4="balanceBoost","balance","sec","click"
         t1ru,t2ru,t3ru,t4ru="% баланса/день"," КШ","/сек","/клик"
+    elif (topmode=="рег" or topmode=="регистрация"):
+        msg+="Баланс | Клик | Сек | (Буст баланса) | Регистрация"
+        t1,t2,t3,t4,t5="registerTime","balance","sec","click","balanceBoost"
+        t1ru,t2ru,t3ru,t4ru,t5ru="регистрация"," КШ","/сек","/клик","% баланса/день"
+
+    #""
     #if (active_top):
     #    msg+="\nДля общего топа есть команда \"всетоп\""
     #else:
@@ -637,11 +647,11 @@ def leaderboard2nd_step(fileRead, massive, topmode, caller_id, page, active_top)
     msg+="\n\n"
     for i in range(start_page, 10*page):
         if (i<len(massive)):
-            msg=msg+f"#{massive[i][0]}: {massive[i][2]} ({massive[i][1]}): {ob_chisla(fileRead['users'][str(massive[i][1])][t1])}{t1ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t4])}{t4ru}"+"\n"#str(massive[i][0])+"-е место: "+str(massive[i][2])+" ("+str(massive[i][1])+")\n"+str(fileRead["users"][str(massive[i][1])][t1])+str(fileRead["users"][str(massive[i][1])][t2])+str(fileRead["users"][str(massive[i][1])][t3])+"\n"
+            msg=msg+f"#{massive[i][0]}: {massive[i][2]} ({massive[i][1]}): {ob_chisla(fileRead['users'][str(massive[i][1])][t1])}{t1ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t4])}{t4ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t5])}{t5ru}"+"\n"#str(massive[i][0])+"-е место: "+str(massive[i][2])+" ("+str(massive[i][1])+")\n"+str(fileRead["users"][str(massive[i][1])][t1])+str(fileRead["users"][str(massive[i][1])][t2])+str(fileRead["users"][str(massive[i][1])][t3])+"\n"
     msg+="__________\n"
     for i in massive:
         if (i[1]==caller_id):
-            msg+=f"Вы: #{i[0]}: {ob_chisla(fileRead['users'][str(caller_id)][t1])}{t1ru}, {ob_chisla(fileRead['users'][str(caller_id)][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(caller_id)][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(caller_id)][t4])}{t4ru}"
+            msg+=f"Вы: #{i[0]}: {ob_chisla(fileRead['users'][str(caller_id)][t1])}{t1ru}, {ob_chisla(fileRead['users'][str(caller_id)][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(caller_id)][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(caller_id)][t4])}{t4ru}, {ob_chisla(fileRead['users'][str(caller_id)][t5])}{t5ru}"
     msg+="\n\nСтраница "+str(page)+"/"+str(okrugleno)
     return msg
 
