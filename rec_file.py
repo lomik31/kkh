@@ -529,12 +529,15 @@ def sort(sort_massive):
             if (sort_massive[j]<sort_massive[j+1]):
                 sort_massive[j],sort_massive[j+1]=sort_massive[j+1],sort_massive[j]
     return sort_massive
-def l_sort(sort_massive,idlist):
+def l_sort(sort_massive,idlist,inverse):
     otnjat=0
     result_massive=[]
     for i in range(0,len(sort_massive)):
         for j in range(0,len(sort_massive)-1):
-            if (sort_massive[j]<sort_massive[j+1]):
+            if (not inverse and sort_massive[j]<sort_massive[j+1]):
+                sort_massive[j],sort_massive[j+1]=sort_massive[j+1],sort_massive[j]
+                idlist[j],idlist[j+1]=idlist[j+1],idlist[j]
+            elif (inverse and sort_massive[j]>sort_massive[j+1]):
                 sort_massive[j],sort_massive[j+1]=sort_massive[j+1],sort_massive[j]
                 idlist[j],idlist[j+1]=idlist[j+1],idlist[j]
     result_massive.append([1,idlist[0]])
@@ -553,6 +556,7 @@ def leaderboard(fileRead, topmode, caller_id, page, active_top):
     idlist=[]
     place=1
     tofind="0"
+    inverse=False
     if (topmode=="б" or topmode=="баланс"):
         tofind="balance"
     elif (topmode=="с" or topmode=="сек"):
@@ -563,6 +567,7 @@ def leaderboard(fileRead, topmode, caller_id, page, active_top):
         tofind="balanceBoost"
     elif (topmode=="рег" or topmode=="регистрация"):
         tofind="registerTime"
+        inverse=True
         
     if (tofind=="0"):
         return "По этому значению не может быть составлена доска лидеров!"
@@ -587,7 +592,7 @@ def leaderboard(fileRead, topmode, caller_id, page, active_top):
                     idlist.append(int(i))
     if (len(idlist)==0):
         return "Активных пользователей нет :("
-    result_massive=l_sort(znmas, idlist)
+    result_massive=l_sort(znmas, idlist, inverse)
     for i in range(len(result_massive)):
         result_massive[i].append(getFullName(result_massive[i][1], fileRead))
     return leaderboard2nd_step(fileRead,result_massive,topmode,caller_id,page,active_top)
@@ -645,13 +650,22 @@ def leaderboard2nd_step(fileRead, massive, topmode, caller_id, page, active_top)
     #else:
     #    msg+="\nДля топа активных пользователей есть команда \"всетоп\""
     msg+="\n\n"
-    for i in range(start_page, 10*page):
-        if (i<len(massive)):
-            msg=msg+f"#{massive[i][0]}: {massive[i][2]} ({massive[i][1]}): {ob_chisla(fileRead['users'][str(massive[i][1])][t1])}{t1ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t4])}{t4ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t5])}{t5ru}"+"\n"#str(massive[i][0])+"-е место: "+str(massive[i][2])+" ("+str(massive[i][1])+")\n"+str(fileRead["users"][str(massive[i][1])][t1])+str(fileRead["users"][str(massive[i][1])][t2])+str(fileRead["users"][str(massive[i][1])][t3])+"\n"
-    msg+="__________\n"
-    for i in massive:
-        if (i[1]==caller_id):
-            msg+=f"Вы: #{i[0]}: {ob_chisla(fileRead['users'][str(caller_id)][t1])}{t1ru}, {ob_chisla(fileRead['users'][str(caller_id)][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(caller_id)][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(caller_id)][t4])}{t4ru}, {ob_chisla(fileRead['users'][str(caller_id)][t5])}{t5ru}"
+    if (topmode=="рег" or topmode=="регистрация"):
+        for i in range(start_page, 10*page):
+            if (i<len(massive)):
+                msg=msg+f"#{massive[i][0]}: {massive[i][2]} ({massive[i][1]}): {ob_vremeni(fileRead['users'][str(massive[i][1])][t1])}, {ob_chisla(fileRead['users'][str(massive[i][1])][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t4])}{t4ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t5])}{t5ru}"+"\n"#str(massive[i][0])+"-е место: "+str(massive[i][2])+" ("+str(massive[i][1])+")\n"+str(fileRead["users"][str(massive[i][1])][t1])+str(fileRead["users"][str(massive[i][1])][t2])+str(fileRead["users"][str(massive[i][1])][t3])+"\n"
+        msg+="__________\n"
+        for i in massive:
+            if (i[1]==caller_id):
+                msg+=f"Вы: #{i[0]}: {ob_vremeni(fileRead['users'][str(caller_id)][t1])}, {ob_chisla(fileRead['users'][str(caller_id)][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(caller_id)][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(caller_id)][t4])}{t4ru}, {ob_chisla(fileRead['users'][str(caller_id)][t5])}{t5ru}"
+    else:
+        for i in range(start_page, 10*page):
+            if (i<len(massive)):
+                msg=msg+f"#{massive[i][0]}: {massive[i][2]} ({massive[i][1]}): {ob_chisla(fileRead['users'][str(massive[i][1])][t1])}{t1ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t4])}{t4ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t5])}{t5ru}"+"\n"#str(massive[i][0])+"-е место: "+str(massive[i][2])+" ("+str(massive[i][1])+")\n"+str(fileRead["users"][str(massive[i][1])][t1])+str(fileRead["users"][str(massive[i][1])][t2])+str(fileRead["users"][str(massive[i][1])][t3])+"\n"
+        msg+="__________\n"
+        for i in massive:
+            if (i[1]==caller_id):
+                msg+=f"Вы: #{i[0]}: {ob_chisla(fileRead['users'][str(caller_id)][t1])}{t1ru}, {ob_chisla(fileRead['users'][str(caller_id)][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(caller_id)][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(caller_id)][t4])}{t4ru}, {ob_chisla(fileRead['users'][str(caller_id)][t5])}{t5ru}"
     msg+="\n\nСтраница "+str(page)+"/"+str(okrugleno)
     return msg
 
