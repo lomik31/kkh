@@ -309,7 +309,7 @@ def moneta_stavka(id,stavka,or_or_re,fileRead):
                     return ("Неверное использование процентной ставки. Использование: <1%-100%> <орел/решка>")  
                 if (len(stavka)>4 or float(stavka)>100 or float(stavka)<1):
                     return ("Неверное использование процентной ставки. Процент должен быть от 1 до 100")
-                stavka=get_balance(id, fileRead)*float(stavka)//100
+                stavka=int(get_balance(id, fileRead)*float(stavka)//100)
         if (perc==0):
             try:
                 int(stavka)
