@@ -19,7 +19,6 @@ with open("config.json", encoding="utf-8") as config:
 
 bot = telebot.TeleBot(config["telegramToken"])
 y = yadisk.YaDisk(token=config["yandexDiskToken"])
-a = [357694314, 594517355, 1160222752]
 
 @bot.message_handler(commands=["start"])
 def start_command(message):
@@ -56,31 +55,31 @@ def send_text(message):
         repeat_command(message)
     else:
         rec_file.append_last_command(message.from_user.id, message.text, file_readed)
-        if rec_file.get_admin(message.from_user.id, file_readed) == 1:
-            if len(message_text) < 3: return bot.send_message(message.chat.id, "Использование: кмд <id> <команда>")
-            try:
-                if message_text[1] == "_":
-                    userid = message.reply_to_message
-                    if userid != None: userid = userid.from_user.id
-                    else: userid = 0
-                else: userid = int(message_text[1])
-            except ValueError: return bot.send_message(message.chat.id, "Неверный id. ID должен состоять только из цифр!")
-            if (userid == 0): return bot.send_message(message.chat.id, "Используйте `_` при ответе на сообщение", parse_mode="MARKDOWN")
-            if (userid not in rec_file.get_ids(file_readed)): return bot.send_message(message.chat.id, "ID не найден")
-            message_text = message_text[2::]
-            if (rec_file.get_admin(userid, file_readed) == True and message.from_user.id != 357694314): return bot.send_message(message.chat.id, "Невозможно выполнить кмд для этого юзера!")
-            message.from_user.id = userid
-            a = message.text.split(" ")[2::]
-            message.text = ""
-            b = 0
-            for i in a:
-                b = len(a) - 1
-                if b == 0:
-                    message.text += i
-                else:
-                    message.text += f"{i} "
-            if message_text[0] == "кмд": return bot.send_message(message.chat.id, "э, так нельзя, бан")
-            check_messages(message, message_text)
+        if rec_file.get_admin(message.from_user.id, file_readed) == 0: return
+        if len(message_text) < 3: return bot.send_message(message.chat.id, "Использование: кмд <id> <команда>")
+        try:
+            if message_text[1] == "_":
+                userid = message.reply_to_message
+                if userid != None: userid = userid.from_user.id
+                else: userid = 0
+            else: userid = int(message_text[1])
+        except ValueError: return bot.send_message(message.chat.id, "Неверный id. ID должен состоять только из цифр!")
+        if (userid == 0): return bot.send_message(message.chat.id, "Используйте `_` при ответе на сообщение", parse_mode="MARKDOWN")
+        if (userid not in rec_file.get_ids(file_readed)): return bot.send_message(message.chat.id, "ID не найден")
+        message_text = message_text[2::]
+        if (rec_file.get_admin(userid, file_readed) == True and message.from_user.id != 357694314): return bot.send_message(message.chat.id, "Невозможно выполнить кмд для этого юзера!")
+        message.from_user.id = userid
+        a = message.text.split(" ")[2::]
+        message.text = ""
+        b = 0
+        for i in a:
+            b = len(a) - 1
+            if b == 0:
+                message.text += i
+            else:
+                message.text += f"{i} "
+        if message_text[0] == "кмд": return bot.send_message(message.chat.id, "э, так нельзя, бан")
+        check_messages(message, message_text)
 
 def whiletrue():
     global file_readed
@@ -229,7 +228,6 @@ def manual_backup():
     return "Бэкап успешно выполнен и загружен на сервер!"
 
 def check_messages(message, message_text):
-    if message.from_user.id not in a: return False
     if message.text.lower() == "клик" or message.text == "🔮":
         if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
         kmd.click(message, message_text)
@@ -570,7 +568,7 @@ class kmd:
             sum = rec_file.ob_k_chisla(message_text[1])
             bot.send_message(message.chat.id, rec_file.moneta_stavka(message.from_user.id, sum, message_text[2], file_readed))
     def reset(message, message_text):
-        if len(message_text) < 2: return bot.send_message(message.chat.id, "Использование: сброс <подтвердить/справка>")
+        if len(message_text) < 2: return bot.send_message(message.chat.id, config["messages"]["resetHelp"], parse_mode="MARKDOWN")
         if message_text[1] == "подтвердить":
             rec_file.clear_id(message.from_user.id, file_readed)
             sendmessage_check_active_keyboard(message.chat.id, message.from_user.id, bot.get_chat(message.chat.id).type, "Ваш прогресс сброшен!")
