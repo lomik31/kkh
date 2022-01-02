@@ -30,7 +30,8 @@ def start_command(message):
         bot.send_message(message.chat.id, "Эту команду можно использовать только в личных сообщениях с ботом!");
     else:
         if str(message.from_user.id) not in file_readed["users"].keys():
-            rec_file.append_id(message.from_user.id, bot.get_chat(message.chat.id).type, None, None, file_readed);
+            fullinfo = bot.get_chat(message.from_user.id)
+            rec_file.append_id(message.from_user.id, bot.get_chat(message.chat.id).type, fullinfo.first_name, fullinfo.last_name, file_readed);
             bot.send_message(message.chat.id, config["messages"]["startCommand"], disable_web_page_preview=True, reply_markup=main_menu_buttons(), parse_mode="MARKDOWN");
         else:
             sendmessage_check_active_keyboard(message.chat.id, message.from_user.id, bot.get_chat(message.chat.id).type, config["messages"]["startCommand"]);
