@@ -45,9 +45,6 @@ def callback_inline(call):
             bot.edit_message_media(types.InputMediaPhoto("AgACAgIAAxkBAAEERyxh0ZLbF82ZvyLwUJfjbOvxh2Z3PwAC2rcxGyzskEoC-uMjPRKv6gEAAwIAA3kAAyME"), call.message.chat.id, call.message.id)
             bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Введите вашу ставку"), rouletteButtonsBet, call.data, call.from_user.id, call.message.chat.id, True)
 
-@bot.message_handler(content_types=["photo"])
-def njks(mg):
-    print(mg);
 @bot.message_handler(content_types=["text"])
 def send_text(message):
     if (message.text != None): message_text = message.text.lower().split(" ")
