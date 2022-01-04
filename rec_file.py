@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#lomik ne lox
 import random
 import time
 import json
@@ -171,8 +170,8 @@ def cal_boost_skidka(id,fileRead):
     nac_cena=nac_cena*skidka//100
     return nac_cena
 def cal_boost_balance(id,fileRead):
-    nac_cena=15000000 #изначальная цена
-    procent=75 #процент стоимости следующего буста
+    nac_cena=7000000 #изначальная цена
+    procent=50 #процент стоимости следующего буста
     boost_level=int(fileRead["users"][str(id)]["balanceBoost"])
     skidka=int(fileRead["users"][str(id)]["sale"])
     if (skidka==0):
