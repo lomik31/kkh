@@ -652,11 +652,11 @@ def leaderboard2nd_step(fileRead, massive, topmode, caller_id, page, active_top)
     if (topmode=="рег" or topmode=="регистрация"):
         for i in range(start_page, 10*page):
             if (i<len(massive)):
-                msg=msg+f"#{massive[i][0]}: {massive[i][2]} ({massive[i][1]}): {ob_vremeni(fileRead['users'][str(massive[i][1])][t1])}, {ob_chisla(fileRead['users'][str(massive[i][1])][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t4])}{t4ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t5])}{t5ru}"+"\n"#str(massive[i][0])+"-е место: "+str(massive[i][2])+" ("+str(massive[i][1])+")\n"+str(fileRead["users"][str(massive[i][1])][t1])+str(fileRead["users"][str(massive[i][1])][t2])+str(fileRead["users"][str(massive[i][1])][t3])+"\n"
+                msg=msg+f"#{massive[i][0]}: {massive[i][2]} ({massive[i][1]}): {ob_vremeni(fileRead['users'][str(massive[i][1])][t1])}, {ob_chisla(fileRead['users'][str(massive[i][1])][t2])}{t2ru}"+"\n"#, {ob_chisla(fileRead['users'][str(massive[i][1])][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t4])}{t4ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t5])}{t5ru}"+"\n"#str(massive[i][0])+"-е место: "+str(massive[i][2])+" ("+str(massive[i][1])+")\n"+str(fileRead["users"][str(massive[i][1])][t1])+str(fileRead["users"][str(massive[i][1])][t2])+str(fileRead["users"][str(massive[i][1])][t3])+"\n"
         msg+="__________\n"
         for i in massive:
             if (i[1]==caller_id):
-                msg+=f"Вы: #{i[0]}: {ob_vremeni(fileRead['users'][str(caller_id)][t1])}, {ob_chisla(fileRead['users'][str(caller_id)][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(caller_id)][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(caller_id)][t4])}{t4ru}, {ob_chisla(fileRead['users'][str(caller_id)][t5])}{t5ru}"
+                msg+=f"Вы: #{i[0]}: {ob_vremeni(fileRead['users'][str(caller_id)][t1])}, {ob_chisla(fileRead['users'][str(caller_id)][t2])}{t2ru}"#, {ob_chisla(fileRead['users'][str(caller_id)][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(caller_id)][t4])}{t4ru}, {ob_chisla(fileRead['users'][str(caller_id)][t5])}{t5ru}"
     else:
         for i in range(start_page, 10*page):
             if (i<len(massive)):
