@@ -14,6 +14,13 @@ def time_nachislenie(fileRead):
     with open('usrs.json', 'w', encoding="utf-8") as outfile:
         json.dump(fileRead, outfile, ensure_ascii=False, indent=4)
     return fileRead
+def bank_nachislenie(fileRead):
+    for i in fileRead["users"]:
+        add = int(fileRead["users"][i]["bank"] * 0.02931)
+        fileRead["users"][i]["bank"] += add
+        fileRead["users"][i]["earnedKkh"] += add
+    with open('usrs.json', 'w', encoding="utf-8") as outfile:
+        json.dump(fileRead, outfile, ensure_ascii=False, indent=4)
 def click_nachislenie(id,fileRead):
     fileRead["users"][str(id)]["balance"] += fileRead["users"][str(id)]["click"]
     fileRead["users"][str(id)]["earnedKkh"] += int(fileRead["users"][str(id)]["click"])
@@ -114,6 +121,7 @@ def getFullName(id, fileRead):
     if (fileRead["users"][str(id)]["lastName"] != None):
         name += " "+fileRead["users"][str(id)]["lastName"]
     return name
+def getBank(id, fileRead): return fileRead["users"][str(id)]["bank"]
 #boost
 def cal_boost_click(id,fileRead):
     nac_cena=100 #изначальная цена

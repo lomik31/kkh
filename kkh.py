@@ -86,6 +86,7 @@ def whiletrue():
     global file_readed
     while True:
         rec_file.time_nachislenie(file_readed)
+        schedule.run_pending()
         time.sleep(1)
 def backup_whiletrue():
     today = datetime.datetime.today()
@@ -135,16 +136,12 @@ def weeklyLotteryLostMoneyCoin():
         rec_file.append_balance(id, sum, file_readed)
         try: bot.send_message(id, f"Поздравляем!\nВы выиграли в еженедельном конкурсе {rec_file.ob_chisla(sum)} КШ!\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
         except: pass
-def schedule_checker():
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
 Thread(target=whiletrue).start()
 Thread(target=backup_whiletrue).start()
 schedule.every().day.at("00:00").do(rec_file.balance_boost_nachislenie, file_readed)
 schedule.every().day.at("04:20").do(updateUsersNameInFile)
 schedule.every().monday.at("00:00").do(weeklyLotteryLostMoneyCoin)
-Thread(target=schedule_checker).start()
+schedule.every().hour.at(":00").do(rec_file.bank_nachislenie, file_readed)
 
 #кнопки
 def main_menu_buttons():
@@ -356,9 +353,12 @@ def check_messages(message, message_text):
     elif (message_text[0] == "рулетка"):
         if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
         kmd.roulette(message, message_text)
-    elif (message_text[0] == "test"):
+    elif (message_text[0] == "+банк"):
         if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        bot.send_message(message.chat.id, "Test", reply_markup=rouletteKeyboard())
+        kmd.bankPut(message, message_text);
+    elif (message_text[0] == "-банк"):
+        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
+        kmd.bankTake(message, message_text);
     else:
         return False
 def repeat_command(message):
@@ -531,7 +531,7 @@ class kmd:
         else:
             pass
     def balance(message, message_text):
-        if len(message_text) == 1: bot.send_message(message.chat.id, f"Имя: {rec_file.getFullName(message.from_user.id, file_readed)}\nid: `{message.from_user.id}`\nАпгрейды: {file_readed['users'][str(message.from_user.id)]['sec']}/сек; {file_readed['users'][str(message.from_user.id)]['click']}/клик; {rec_file.get_skidka(message.from_user.id, file_readed)}% скидки; {rec_file.get_boost_balance(message.from_user.id, file_readed)}% баланса/день\nБаланс: {rec_file.ob_chisla(file_readed['users'][str(message.from_user.id)]['balance'])} КШ", parse_mode="MARKDOWN")
+        if len(message_text) == 1: bot.send_message(message.chat.id, f"Имя: {rec_file.getFullName(message.from_user.id, file_readed)}\nid: `{message.from_user.id}`\nАпгрейды: {file_readed['users'][str(message.from_user.id)]['sec']}/сек; {file_readed['users'][str(message.from_user.id)]['click']}/клик; {rec_file.get_skidka(message.from_user.id, file_readed)}% скидки; {rec_file.get_boost_balance(message.from_user.id, file_readed)}% баланса/день\nБаланс: {rec_file.ob_chisla(file_readed['users'][str(message.from_user.id)]['balance'])} КШ\nВ банке: {rec_file.ob_chisla(file_readed['users'][str(message.from_user.id)]['bank'])} КШ", parse_mode="MARKDOWN")
         elif len(message_text) >= 2:
             try:
                 if message_text[1] == "_":
@@ -540,7 +540,7 @@ class kmd:
                     else: userid = 0
                 else: userid = int(message_text[1])
                 if userid not in rec_file.get_ids(file_readed): return bot.send_message(message.chat.id, "id не найден")
-                bot.send_message(message.chat.id, f"Имя: {rec_file.getFullName(userid, file_readed)}\nid: `{userid}`\nАпгрейды: {file_readed['users'][str(userid)]['sec']}/сек; {file_readed['users'][str(userid)]['click']}/клик; {rec_file.get_skidka(userid, file_readed)}% скидки; {rec_file.get_boost_balance(userid, file_readed)}% баланса/день\nБаланс: {rec_file.ob_chisla(file_readed['users'][str(userid)]['balance'])} КШ", parse_mode="MARKDOWN")
+                bot.send_message(message.chat.id, f"Имя: {rec_file.getFullName(userid, file_readed)}\nid: `{userid}`\nАпгрейды: {file_readed['users'][str(userid)]['sec']}/сек; {file_readed['users'][str(userid)]['click']}/клик; {rec_file.get_skidka(userid, file_readed)}% скидки; {rec_file.get_boost_balance(userid, file_readed)}% баланса/день\nБаланс: {rec_file.ob_chisla(file_readed['users'][str(userid)]['balance'])} КШ\nВ банке: {rec_file.ob_chisla(file_readed['users'][str(userid)]['bank'])} КШ", parse_mode="MARKDOWN")
             except ValueError: bot.send_message(message.chat.id, "Использование: Баланс/б [id]")
     def upgrades(message, message_text):
         rec_file.set_active_passive_keyboard(message.chat.id, True, bot.get_chat(message.chat.id).type, file_readed)
@@ -894,6 +894,12 @@ class kmd:
             bot.send_message(message.chat.id, "Ставка на курс биткоина\nбит <ставка/все> <вверх/вниз>");
         elif (message_text[1] == "монетарозыгрыш"):
             bot.send_message(message.chat.id, "Принудительно проводит еженедельный розыгрыш проигранных денег в монете");
+        elif (message_text[1] == "банк"):
+            bot.send_message(message.chat.id, "Перевод КШ в банк/из банка\n+банк [сумма]\n-банк [сумма]");
+        elif (message_text[1] == "+банк"):
+            bot.send_message(message.chat.id, "Перевод КШ в банк\n+банк [сумма]");
+        elif (message_text[1] == "-банк"):
+            bot.send_message(message.chat.id, "Вывод КШ из банка\n-банк [сумма]");
     def delPromo(message, message_text):
         if (rec_file.get_admin(message.from_user.id, file_readed) == False): return;
         if (len(message_text) < 3): return bot.send_message(message.chat.id, "Использование: промо удалить <название>");
@@ -1042,6 +1048,40 @@ class kmd:
             except: return bot.send_message(message.chat.id, "Неправильная ставка")
             if (bet < 0 or bet > 36): return bot.send_message(message.chat.id, "Неправильная ставка")
             return rouletteButtonsBet(betAmount, bet, message.from_user.id, message.chat.id)
+    def bankPut(message, message_text):
+        if (len(message_text) < 2): sum = rec_file.get_balance(message.from_user.id, file_readed)
+        else:
+            if (message_text[1] == "все" or message_text[1] == "всё"): sum = rec_file.get_balance(message.from_user.id, file_readed)
+            elif (message_text[1][-1] == "%"):
+                sum = message_text[1][:-1]
+                try: sum = int(sum)
+                except: return bot.send_message(message.chat.id, "Неверное использование процентного числа. Процентное число должно быть не менее 1 и не более 100% от вашего баланса и иметь численное значение!")
+                if (0 < sum <= 100): sum = rec_file.get_balance(message.from_user.id, file_readed) * sum // 100
+                else: return bot.send_message(message.chat.id, "Неверное использование процентного числа. Процентное число должно быть не менее 1 и не более 100% от вашего баланса!")
+            else:
+                try: sum = int(rec_file.ob_k_chisla(message_text[1]))
+                except: return bot.send_message(message.chat.id, "Использование: +банк [сумма]")
+        if (rec_file.get_balance(message.from_user.id, file_readed) < sum): return bot.send_message(message.chat.id, "Недостаточно средств на балансе!")
+        file_readed["users"][str(message.from_user.id)]["balance"] -= sum
+        file_readed["users"][str(message.from_user.id)]["bank"] += sum
+        bot.send_message(message.chat.id, f"Переведено {rec_file.ob_chisla(sum)} КШ в банк\nВ банке: {rec_file.ob_chisla(rec_file.getBank(message.from_user.id, file_readed))} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(message.from_user.id, file_readed))} КШ")
+    def bankTake(message, message_text):
+        if (len(message_text) < 2): sum = rec_file.getBank(message.from_user.id, file_readed)
+        else:
+            if (message_text[1] == "все" or message_text[1] == "всё"): sum = rec_file.getBank(message.from_user.id, file_readed)
+            elif (message_text[1][-1] == "%"):
+                sum = message_text[1][:-1]
+                try: sum = int(sum)
+                except: return bot.send_message(message.chat.id, "Неверное использование процентного числа. Процентное число должно быть не менее 1 и не более 100% от баланса в банке и иметь численное значение!")
+                if (0 < sum <= 100): sum = rec_file.getBank(message.from_user.id, file_readed) * sum // 100
+                else: return bot.send_message(message.chat.id, "Неверное использование процентного числа. Процентное число должно быть не менее 1 и не более 100% от баланса в банке!")
+            else:
+                try: sum = int(rec_file.ob_k_chisla(message_text[1]))
+                except: return bot.send_message(message.chat.id, "Использование: -банк [сумма]")
+        if (rec_file.getBank(message.from_user.id, file_readed) < sum): return bot.send_message(message.chat.id, "Недостаточно средств а банке!")
+        file_readed["users"][str(message.from_user.id)]["balance"] += sum
+        file_readed["users"][str(message.from_user.id)]["bank"] -= sum
+        bot.send_message(message.chat.id, f"Выведено {rec_file.ob_chisla(sum)} КШ из банка\nВ банке: {rec_file.ob_chisla(rec_file.getBank(message.from_user.id, file_readed))} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(message.from_user.id, file_readed))} КШ")
 def bitcoinBet(id, bet, betAmount, chatid):
     try: startPrice = float(requests.get("https://blockchain.info/ticker").json()["RUB"]["sell"])
     except: return bot.send_message(chatid, "Возникла ошибка! Сообщите об этом разработчику!")
