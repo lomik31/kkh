@@ -1051,6 +1051,7 @@ class kmd:
             if (bet < 0 or bet > 36): return bot.send_message(message.chat.id, "Неправильная ставка")
             return rouletteButtonsBet(betAmount, bet, message.from_user.id, message.chat.id)
     def bankPut(message, message_text):
+        fee = 0.2#% (комиссия)
         if (len(message_text) < 2): sum = rec_file.get_balance(message.from_user.id, file_readed)
         else:
             if (message_text[1] == "все" or message_text[1] == "всё"): sum = rec_file.get_balance(message.from_user.id, file_readed)
@@ -1064,10 +1065,13 @@ class kmd:
                 try: sum = int(rec_file.ob_k_chisla(message_text[1]))
                 except: return bot.send_message(message.chat.id, "Использование: +банк [сумма]")
         if (rec_file.get_balance(message.from_user.id, file_readed) < sum): return bot.send_message(message.chat.id, "Недостаточно средств на балансе!")
+        feeSum = int(sum*fee/100)
         file_readed["users"][str(message.from_user.id)]["balance"] -= sum
-        file_readed["users"][str(message.from_user.id)]["bank"] += sum
-        bot.send_message(message.chat.id, f"Переведено {rec_file.ob_chisla(sum)} КШ в банк\nВ банке: {rec_file.ob_chisla(rec_file.getBank(message.from_user.id, file_readed))} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(message.from_user.id, file_readed))} КШ")
+        file_readed["users"][str(message.from_user.id)]["bank"] += (sum - feeSum)
+        file_readed["users"][str(message.from_user.id)]["paidKkh"] += feeSum
+        bot.send_message(message.chat.id, f"Переведено {rec_file.ob_chisla(sum)} КШ в банк\nКомиссия {rec_file.ob_chisla(feeSum)} КШ ({fee}%)\nВ банке: {rec_file.ob_chisla(rec_file.getBank(message.from_user.id, file_readed))} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(message.from_user.id, file_readed))} КШ")
     def bankTake(message, message_text):
+        fee = 0.2#% (комиссия)
         if (len(message_text) < 2): sum = rec_file.getBank(message.from_user.id, file_readed)
         else:
             if (message_text[1] == "все" or message_text[1] == "всё"): sum = rec_file.getBank(message.from_user.id, file_readed)
@@ -1081,9 +1085,11 @@ class kmd:
                 try: sum = int(rec_file.ob_k_chisla(message_text[1]))
                 except: return bot.send_message(message.chat.id, "Использование: -банк [сумма]")
         if (rec_file.getBank(message.from_user.id, file_readed) < sum): return bot.send_message(message.chat.id, "Недостаточно средств а банке!")
-        file_readed["users"][str(message.from_user.id)]["balance"] += sum
+        feeSum = int(sum*fee/100)
+        file_readed["users"][str(message.from_user.id)]["balance"] += sum - feeSum
         file_readed["users"][str(message.from_user.id)]["bank"] -= sum
-        bot.send_message(message.chat.id, f"Выведено {rec_file.ob_chisla(sum)} КШ из банка\nВ банке: {rec_file.ob_chisla(rec_file.getBank(message.from_user.id, file_readed))} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(message.from_user.id, file_readed))} КШ")
+        file_readed["users"][str(message.from_user.id)]["paidKkh"] += feeSum
+        bot.send_message(message.chat.id, f"Выведено {rec_file.ob_chisla(sum)} КШ из банка\nКомиссия {rec_file.ob_chisla(feeSum)} КШ ({fee}%)\nВ банке: {rec_file.ob_chisla(rec_file.getBank(message.from_user.id, file_readed))} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(message.from_user.id, file_readed))} КШ")
 def bitcoinBet(id, bet, betAmount, chatid):
     try: startPrice = float(requests.get("https://blockchain.info/ticker").json()["RUB"]["sell"])
     except: return bot.send_message(chatid, "Возникла ошибка! Сообщите об этом разработчику!")
