@@ -715,7 +715,8 @@ class kmd:
             if message_text[1] == "создать": bot.send_message(message.chat.id, manual_backup())
             else: bot.send_message(message.chat.id, "Использование: бэкап <создать>")
     def buy_procent_balance(message, message_text):
-        if rec_file.get_boost_balance(message.from_user.id, file_readed) >= 15: return bot.send_message(message.chat.id, message_max_boost_balance())
+        maxBoostLevel = 30
+        if rec_file.get_boost_balance(message.from_user.id, file_readed) >= maxBoostLevel: return bot.send_message(message.chat.id, message_max_boost_balance())
         if len(message_text) == 1:
             if rec_file.get_balance(message.from_user.id, file_readed) < rec_file.cal_boost_balance(message.from_user.id, file_readed): return bot.send_message(message.chat.id, message_not_enough_money_boost_balance(message))
             rec_file.append_balance(message.from_user.id, -rec_file.cal_boost_balance(message.from_user.id, file_readed), file_readed)
@@ -743,8 +744,8 @@ class kmd:
                         sendmessage_check_active_keyboard(message.chat.id, message.from_user.id, bot.get_chat(message.chat.id).type, message_bought_upgrade(message, 1))
                     elif message_text[1] == "все" or message_text[1] == "всё":
                         if rec_file.get_balance(message.from_user.id, file_readed) < rec_file.cal_boost_balance(message.from_user.id, file_readed): return bot.send_message(message.chat.id, message_not_enough_money_boost_balance(message))
-                        while rec_file.get_balance(message.from_user.id, file_readed) >= rec_file.cal_boost_balance(message.from_user.id, file_readed) and rec_file.get_boost_balance(message.from_user.id, file_readed) < 15:
-                            if rec_file.get_boost_balance(message.from_user.id, file_readed) >= 15: return bot.send_message(message.chat.id, message_max_boost_balance())
+                        while rec_file.get_balance(message.from_user.id, file_readed) >= rec_file.cal_boost_balance(message.from_user.id, file_readed) and rec_file.get_boost_balance(message.from_user.id, file_readed) < maxBoostLevel:
+                            if rec_file.get_boost_balance(message.from_user.id, file_readed) >= maxBoostLevel: return bot.send_message(message.chat.id, message_max_boost_balance())
                             rec_file.append_balance(message.from_user.id, -rec_file.cal_boost_balance(message.from_user.id, file_readed), file_readed)
                             file_readed["users"][str(message.from_user.id)]["spendKkhUpgrades"] += rec_file.cal_boost_balance(message.from_user.id, file_readed)
                             rec_file.append_boost_balance(message.from_user.id, 1, file_readed)
@@ -755,7 +756,8 @@ class kmd:
                 except:
                     pass
     def buy_procent_balance_2(message, message_text):
-        if rec_file.get_boost_balance(message.from_user.id, file_readed) >= 15: return bot.send_message(message.chat.id, message_max_boost_balance())
+        maxBoostLevel = 30
+        if rec_file.get_boost_balance(message.from_user.id, file_readed) >= maxBoostLevel: return bot.send_message(message.chat.id, message_max_boost_balance())
         if len(message_text) >= 2:
             if message_text[1] == "баланса/день":
                 try:

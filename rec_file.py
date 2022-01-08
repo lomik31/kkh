@@ -178,8 +178,8 @@ def cal_boost_skidka(id,fileRead):
     nac_cena=nac_cena*skidka//100
     return nac_cena
 def cal_boost_balance(id,fileRead):
-    nac_cena=7000000 #изначальная цена
-    procent=50 #процент стоимости следующего буста
+    nac_cena=5000000 #изначальная цена
+    procent=40 #процент стоимости следующего буста
     boost_level=int(fileRead["users"][str(id)]["balanceBoost"])
     skidka=int(fileRead["users"][str(id)]["sale"])
     if (skidka==0):
