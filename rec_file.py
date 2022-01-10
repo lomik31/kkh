@@ -682,7 +682,7 @@ def leaderboard2nd_step(fileRead, massive, topmode, caller_id, page, active_top)
         msg+="__________\n"
         for i in massive:
             if (i[1]==caller_id):
-                msg+=f"Вы: #{i[0]}: {ob_chisla(fileRead['users'][str(caller_id)][t1])}{t1ru}, {ob_chisla(fileRead['users'][str(caller_id)][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(caller_id)][t3])}{t3ru}"
+                msg+=f"Вы: #{i[0]}: {ob_chisla(fileRead['users'][str(massive[i][1])]['balance']+fileRead['users'][str(massive[i][1])]['bank'])}{t1ru}, {ob_chisla(fileRead['users'][str(caller_id)][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(caller_id)][t3])}{t3ru}"
     elif (topmode=="банк"):
         for i in range(start_page, 10*page):
             if (i<len(massive)):
