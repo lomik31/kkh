@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#test
 import random
 import time
 import json
@@ -13,6 +14,12 @@ def time_nachislenie(fileRead):
         fileRead["users"][i]["earnedKkh"] += fileRead["users"][i]["sec"]
     with open('usrs.json', 'w', encoding="utf-8") as outfile:
         json.dump(fileRead, outfile, ensure_ascii=False, indent=4)
+    return fileRead
+def bank_nachislenie(fileRead):
+    for i in fileRead["users"]:
+        add = int(fileRead["users"][i]["bank"] * random.uniform(0.002, 0.025))
+        fileRead["users"][i]["bank"] += add
+        fileRead["users"][i]["earnedKkh"] += add
     return fileRead
 def click_nachislenie(id,fileRead):
     fileRead["users"][str(id)]["balance"] += fileRead["users"][str(id)]["click"]
@@ -114,6 +121,7 @@ def getFullName(id, fileRead):
     if (fileRead["users"][str(id)]["lastName"] != None):
         name += " "+fileRead["users"][str(id)]["lastName"]
     return name
+def getBank(id, fileRead): return fileRead["users"][str(id)]["bank"]
 #boost
 def cal_boost_click(id,fileRead):
     nac_cena=100 #изначальная цена
@@ -170,8 +178,8 @@ def cal_boost_skidka(id,fileRead):
     nac_cena=nac_cena*skidka//100
     return nac_cena
 def cal_boost_balance(id,fileRead):
-    nac_cena=7000000 #изначальная цена
-    procent=50 #процент стоимости следующего буста
+    nac_cena=5000000 #изначальная цена
+    procent=40 #процент стоимости следующего буста
     boost_level=int(fileRead["users"][str(id)]["balanceBoost"])
     skidka=int(fileRead["users"][str(id)]["sale"])
     if (skidka==0):
