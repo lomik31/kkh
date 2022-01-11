@@ -973,6 +973,20 @@ class kmd:
                     page = int(message_text[2])
                     bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "рег", message.from_user.id, page, False))
                 except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "рег", message.from_user.id, 1, False))
+        elif (len(message_text) >= 2) and (message_text[1] == "банк"):
+            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "банк", message.from_user.id, 1, False))
+            else: 
+                try:
+                    page = int(message_text[2])
+                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "банк", message.from_user.id, page, False))
+                except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "банк", message.from_user.id, 1, False))
+        elif (len(message_text) >= 2) and (message_text[1] == "деньги"):
+            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "деньги", message.from_user.id, 1, False))
+            else: 
+                try:
+                    page = int(message_text[2])
+                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "деньги", message.from_user.id, page, False))
+                except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "деньги", message.from_user.id, 1, False))
         else:
             bot.send_message(message.chat.id, "Использование: всетоп [<b>баланс</b>/клик/сек/бб/регистрация] [страница]", parse_mode="HTML")
     def userTop(message, message_text):
@@ -1013,6 +1027,20 @@ class kmd:
                     page = int(message_text[2])
                     bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "рег", message.from_user.id, page, True))
                 except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "рег", message.from_user.id, 1, True))
+        elif (len(message_text) >= 2) and (message_text[1] == "банк"):
+            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "банк", message.from_user.id, 1, True))
+            else:
+                try:
+                    page = int(message_text[2])
+                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "банк", message.from_user.id, page, True))
+                except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "банк", message.from_user.id, 1, True))
+        elif (len(message_text) >= 2) and (message_text[1] == "деньги"):
+            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "деньги", message.from_user.id, 1, True))
+            else:
+                try:
+                    page = int(message_text[2])
+                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "деньги", message.from_user.id, page, True))
+                except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "деньги", message.from_user.id, 1, True))
         else:
             bot.send_message(message.chat.id, "Использование: топ [<b>баланс</b>/клик/сек/бб/регистрация] [страница]", parse_mode="HTML")
     def btcBet(message, message_text):
