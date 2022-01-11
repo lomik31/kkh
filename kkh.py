@@ -1227,8 +1227,8 @@ def rouletteButtonsBet(betAmount, bet, userId, chatId, printBet = False):
             try: bet = int(bet)
             except: return bot.send_message(chatId, "Произошла ошибка!")
             if (number == bet):
-                rec_file.append_balance(userId, betAmount*37, file_readed)
-                bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*38)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
+                rec_file.append_balance(userId, betAmount*36, file_readed)
+                bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*37)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
             else:
                 rec_file.append_balance(userId, -betAmount, file_readed)
                 bot.send_message(chatId, loseMsg)
