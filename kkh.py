@@ -1173,74 +1173,74 @@ def rouletteButtonsBet(betAmount, bet, userId, chatId, printBet = False):
         case "red":
             if number in red:
                 rec_file.append_balance(userId, betAmount, file_readed)
-                file_readed["users"][str(id)]["wonRoulette"] += betAmount;
+                file_readed["users"][str(userId)]["wonRoulette"] += betAmount;
                 bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*2)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
             else:
                 rec_file.append_balance(userId, -betAmount, file_readed)
-                file_readed["users"][str(id)]["lostRoulette"] += betAmount;
+                file_readed["users"][str(userId)]["lostRoulette"] += betAmount;
                 bot.send_message(chatId, loseMsg)
         case "black":
             if number in black:
                 rec_file.append_balance(userId, betAmount, file_readed)
-                file_readed["users"][str(id)]["wonRoulette"] += betAmount;
+                file_readed["users"][str(userId)]["wonRoulette"] += betAmount;
                 bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*2)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
             else:
                 rec_file.append_balance(userId, -betAmount, file_readed)
-                file_readed["users"][str(id)]["lostRoulette"] += betAmount;
+                file_readed["users"][str(userId)]["lostRoulette"] += betAmount;
                 bot.send_message(chatId, loseMsg)
         case "even":
             if number in even:
                 rec_file.append_balance(userId, betAmount, file_readed)
-                file_readed["users"][str(id)]["wonRoulette"] += betAmount;
+                file_readed["users"][str(userId)]["wonRoulette"] += betAmount;
                 bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*2)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
             else:
                 rec_file.append_balance(userId, -betAmount, file_readed)
-                file_readed["users"][str(id)]["lostRoulette"] += betAmount;
+                file_readed["users"][str(userId)]["lostRoulette"] += betAmount;
                 bot.send_message(chatId, loseMsg)
         case "odd":
             if number in odd:
                 rec_file.append_balance(userId, betAmount, file_readed)
-                file_readed["users"][str(id)]["wonRoulette"] += betAmount;
+                file_readed["users"][str(userId)]["wonRoulette"] += betAmount;
                 bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*2)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
             else:
                 rec_file.append_balance(userId, -betAmount, file_readed)
-                file_readed["users"][str(id)]["lostRoulette"] += betAmount;
+                file_readed["users"][str(userId)]["lostRoulette"] += betAmount;
                 bot.send_message(chatId, loseMsg)
         case "1:3":
             if number in firstLine:
                 rec_file.append_balance(userId, betAmount*2, file_readed)
-                file_readed["users"][str(id)]["wonRoulette"] += betAmount;
+                file_readed["users"][str(userId)]["wonRoulette"] += betAmount;
                 bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*3)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
             else:
                 rec_file.append_balance(userId, -betAmount, file_readed)
-                file_readed["users"][str(id)]["lostRoulette"] += betAmount;
+                file_readed["users"][str(userId)]["lostRoulette"] += betAmount;
                 bot.send_message(chatId, loseMsg)
         case "1:3(2)":
             if number in secondLine:
                 rec_file.append_balance(userId, betAmount*2, file_readed)
-                file_readed["users"][str(id)]["wonRoulette"] += betAmount;
+                file_readed["users"][str(userId)]["wonRoulette"] += betAmount;
                 bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*3)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
             else:
                 rec_file.append_balance(userId, -betAmount, file_readed)
-                file_readed["users"][str(id)]["lostRoulette"] += betAmount;
+                file_readed["users"][str(userId)]["lostRoulette"] += betAmount;
                 bot.send_message(chatId, loseMsg)
         case "1:3(3)":
             if number in thirdLine:
                 rec_file.append_balance(userId, betAmount*2, file_readed)
-                file_readed["users"][str(id)]["wonRoulette"] += betAmount;
+                file_readed["users"][str(userId)]["wonRoulette"] += betAmount;
                 bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*3)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
             else:
                 rec_file.append_balance(userId, -betAmount, file_readed)
-                file_readed["users"][str(id)]["lostRoulette"] += betAmount;
+                file_readed["users"][str(userId)]["lostRoulette"] += betAmount;
                 bot.send_message(chatId, loseMsg)
         case "1st12":
             if number in firstColumn:
                 rec_file.append_balance(userId, betAmount*2, file_readed)
-                file_readed["users"][str(id)]["wonRoulette"] += betAmount;
+                file_readed["users"][str(userId)]["wonRoulette"] += betAmount;
                 bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*3)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
             else:
                 rec_file.append_balance(userId, -betAmount, file_readed)
-                file_readed["users"][str(id)]["lostRoulette"] += betAmount;
+                file_readed["users"][str(userId)]["lostRoulette"] += betAmount;
                 bot.send_message(chatId, loseMsg)
         case "2nd12":
             if number in secondColumn:
@@ -1249,45 +1249,45 @@ def rouletteButtonsBet(betAmount, bet, userId, chatId, printBet = False):
                 bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*3)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
             else:
                 rec_file.append_balance(userId, -betAmount, file_readed)
-                file_readed["users"][str(id)]["lostRoulette"] += betAmount;
+                file_readed["users"][str(userId)]["lostRoulette"] += betAmount;
                 bot.send_message(chatId, loseMsg)
         case "3rd12":
             if number in thirdColumn:
                 rec_file.append_balance(userId, betAmount*2, file_readed)
-                file_readed["users"][str(id)]["wonRoulette"] += betAmount;
+                file_readed["users"][str(userId)]["wonRoulette"] += betAmount;
                 bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*3)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
             else:
                 rec_file.append_balance(userId, -betAmount, file_readed)
-                file_readed["users"][str(id)]["lostRoulette"] += betAmount;
+                file_readed["users"][str(userId)]["lostRoulette"] += betAmount;
                 bot.send_message(chatId, loseMsg)
         case "1to18":
             if number in oneToEighteen:
                 rec_file.append_balance(userId, betAmount, file_readed)
-                file_readed["users"][str(id)]["wonRoulette"] += betAmount;
+                file_readed["users"][str(userId)]["wonRoulette"] += betAmount;
                 bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*2)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
             else:
                 rec_file.append_balance(userId, -betAmount, file_readed)
-                file_readed["users"][str(id)]["lostRoulette"] += betAmount;
+                file_readed["users"][str(userId)]["lostRoulette"] += betAmount;
                 bot.send_message(chatId, loseMsg)
         case "19to36":
             if number in nineteenToThirtySix:
                 rec_file.append_balance(userId, betAmount, file_readed)
-                file_readed["users"][str(id)]["wonRoulette"] += betAmount;
+                file_readed["users"][str(userId)]["wonRoulette"] += betAmount;
                 bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*2)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
             else:
                 rec_file.append_balance(userId, -betAmount, file_readed)
-                file_readed["users"][str(id)]["lostRoulette"] += betAmount;
+                file_readed["users"][str(userId)]["lostRoulette"] += betAmount;
                 bot.send_message(chatId, loseMsg)
         case _:
             try: bet = int(bet)
             except: return bot.send_message(chatId, "Произошла ошибка!")
             if (number == bet):
                 rec_file.append_balance(userId, betAmount*36, file_readed)
-                file_readed["users"][str(id)]["wonRoulette"] += betAmount;
+                file_readed["users"][str(userId)]["wonRoulette"] += betAmount;
                 bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*37)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, file_readed))} КШ")
             else:
                 rec_file.append_balance(userId, -betAmount, file_readed)
-                file_readed["users"][str(id)]["lostRoulette"] += betAmount;
+                file_readed["users"][str(userId)]["lostRoulette"] += betAmount;
                 bot.send_message(chatId, loseMsg)
 bot.polling(none_stop=True, interval=1, timeout=123)
 #962 -> 630
