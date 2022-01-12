@@ -1260,5 +1260,5 @@ def rouletteButtonsBet(betAmount, bet, userId, chatId, printBet = False):
             else:
                 rec_file.append_balance(userId, -betAmount, file_readed)
                 bot.send_message(chatId, loseMsg)
-bot.polling(none_stop=True, interval=0, timeout=123)
+bot.polling(none_stop=True, interval=1, timeout=123)
 #962 -> 630
