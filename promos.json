@@ -32,6 +32,17 @@
             "sale": 0,
             "multiplier": 0,
             "balanceBoost": 0
+        },
+        "розыгрыш1": {
+            "activationLimit": 5,
+            "activatedTimes": 5,
+            "validity": 1642072557.0674222,
+            "balance": 500000,
+            "click": 0,
+            "sec": 0,
+            "sale": 0,
+            "multiplier": 1,
+            "balanceBoost": 0
         }
     }
 }
