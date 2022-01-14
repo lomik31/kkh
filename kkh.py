@@ -29,6 +29,11 @@ def getId(toFind):
         for i in tags:
             if tags[i] == toFind: return int(i)
         return "Id не найден"
+def getTag(toFind):
+    if (toFind in tags.keys()):
+        if tags[str(toFind)] != None: return f"@{tags[str(toFind)]}"
+        else: return int(toFind)
+    else: return "ID не найден"
 @bot.message_handler(commands=["start"])
 def start_command(message):
     if (bot.get_chat(message.chat.id).type != "private"):
@@ -272,6 +277,9 @@ def check_messages(message, message_text):
     elif message_text[0] == "добавить":
         if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
         kmd.add_money(message, message_text)
+    elif message_text[0] == "добавитьбанк":
+        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
+        kmd.addMoneyBank(message, message_text)
     elif message_text[0] == "баланс" or message_text[0] == "б":
         if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
         kmd.balance(message, message_text)
@@ -519,31 +527,47 @@ class kmd:
             else: bot.send_message(message.chat.id, message_max_boost_balance())
         else: bot.send_message(message.chat.id, "Неизвестный тип")
     def add_money(message, message_text):
-        if rec_file.get_admin(message.from_user.id, file_readed) == True:
-            if len(message_text) <= 2: return bot.send_message(message.chat.id, "Использование: добавить <id/себе> <сумма>")
+        if rec_file.get_admin(message.from_user.id, file_readed) == False: return
+        if len(message_text) <= 2: return bot.send_message(message.chat.id, "Использование: добавить <id/себе> <сумма>")
+        sum = rec_file.ob_k_chisla(message_text[2])
+        if message_text[1] == "_":
+            userid = message.reply_to_message
+            if userid != None: userid = userid.from_user.id
+            else: userid = 0
+        elif message_text[1] == "себе":
             try:
-                sum = rec_file.ob_k_chisla(message_text[2])
-                if message_text[1] == "_":
-                    userid = message.reply_to_message
-                    if userid != None: userid = userid.from_user.id
-                    else: userid = 0
-                else: userid = getId(message_text[1])
-                if userid not in rec_file.get_ids(file_readed): return bot.send_message(message.chat.id, "Юзер не найден!")
-                rec_file.append_balance(userid, int(rec_file.ob_k_chisla(sum)), file_readed)
-                file_readed["users"][str(userid)]["othersProceeds"] += int(rec_file.ob_k_chisla(sum))
-                bot.send_message(message.chat.id, f"Пользователю {rec_file.getFullName(userid, file_readed)}(`{userid}`) начислено {rec_file.ob_chisla(sum)} КШ", parse_mode="MARKDOWN")
-                bot.send_message(userid, f"Вам начислено {rec_file.ob_chisla(sum)} КШ администратором")
+                rec_file.append_balance(message.from_user.id, int(rec_file.ob_k_chisla(sum)), file_readed)
+                file_readed["users"][str(message.from_user.id)]["othersProceeds"] += int(rec_file.ob_k_chisla(sum))
+                bot.send_message(message.chat.id, f"Вам начислено {rec_file.ob_chisla(sum)} КШ")
             except ValueError:
-                try:
-                    if message_text[1] == "себе":
-                        rec_file.append_balance(message.from_user.id, int(rec_file.ob_k_chisla(sum)), file_readed)
-                        file_readed["users"][str(message.from_user.id)]["othersProceeds"] += int(rec_file.ob_k_chisla(sum))
-                        bot.send_message(message.chat.id, f"Вам начислено {rec_file.ob_chisla(sum)} КШ")
-                    else: bot.send_message(message.chat.id, "Юзер не найден!")
-                except ValueError:
-                    bot.send_message(message.chat.id, "Использование: добавить <id/себе> <сумма>")
-        else:
-            pass
+                bot.send_message(message.chat.id, "Использование: добавить <id/себе> <сумма>")
+        else: userid = getId(message_text[1])
+        if userid not in rec_file.get_ids(file_readed): return bot.send_message(message.chat.id, "Юзер не найден!")
+        rec_file.append_balance(userid, int(rec_file.ob_k_chisla(sum)), file_readed)
+        file_readed["users"][str(userid)]["othersProceeds"] += int(rec_file.ob_k_chisla(sum))
+        bot.send_message(message.chat.id, f"Пользователю {getTag(userid)}({rec_file.getFullName(userid, file_readed)}) начислено {rec_file.ob_chisla(sum)} КШ")
+        bot.send_message(userid, f"Вам начислено {rec_file.ob_chisla(sum)} КШ администратором")
+    def addMoneyBank(message, message_text):
+        if rec_file.get_admin(message.from_user.id, file_readed) == False: return
+        if len(message_text) <= 2: return bot.send_message(message.chat.id, "Использование: добавить <id/себе> <сумма>")
+        sum = rec_file.ob_k_chisla(message_text[2])
+        if message_text[1] == "_":
+            userid = message.reply_to_message
+            if userid != None: userid = userid.from_user.id
+            else: userid = 0
+        elif message_text[1] == "себе":
+            try:
+                rec_file.append_bank(message.from_user.id, int(rec_file.ob_k_chisla(sum)), file_readed)
+                file_readed["users"][str(message.from_user.id)]["othersProceeds"] += int(rec_file.ob_k_chisla(sum))
+                bot.send_message(message.chat.id, f"Вам начислено {rec_file.ob_chisla(sum)} КШ в банк")
+            except ValueError:
+                bot.send_message(message.chat.id, "Использование: добавить <id/себе> <сумма>")
+        else: userid = getId(message_text[1])
+        if userid not in rec_file.get_ids(file_readed): return bot.send_message(message.chat.id, "Юзер не найден!")
+        rec_file.append_bank(userid, int(rec_file.ob_k_chisla(sum)), file_readed)
+        file_readed["users"][str(userid)]["othersProceeds"] += int(rec_file.ob_k_chisla(sum))
+        bot.send_message(message.chat.id, f"Пользователю {getTag(userid)}({rec_file.getFullName(userid, file_readed)}) начислено {rec_file.ob_chisla(sum)} КШ")
+        bot.send_message(userid, f"Вам начислено {rec_file.ob_chisla(sum)} КШ в банк администратором")
     def balance(message, message_text):
         if len(message_text) == 1: bot.send_message(message.chat.id, f"Имя: {rec_file.getFullName(message.from_user.id, file_readed)}\nid: `{message.from_user.id}`\nАпгрейды: {file_readed['users'][str(message.from_user.id)]['sec']}/сек; {file_readed['users'][str(message.from_user.id)]['click']}/клик; {rec_file.get_skidka(message.from_user.id, file_readed)}% скидки; {rec_file.get_boost_balance(message.from_user.id, file_readed)}% баланса/день\nБаланс: {rec_file.ob_chisla(file_readed['users'][str(message.from_user.id)]['balance'])} КШ\nВ банке: {rec_file.ob_chisla(file_readed['users'][str(message.from_user.id)]['bank'])} КШ", parse_mode="MARKDOWN")
         elif len(message_text) >= 2:
@@ -619,9 +643,7 @@ class kmd:
                     else: return bot.send_message(message.chat.id, "Использование: перевод <сумма> <id получателя> [комментарий]")
         try:
             if message_text[2] == "#r":
-                ids = rec_file.get_ids(file_readed)
-                random.shuffle(ids)
-                poly4atel = ids[0]
+                poly4atel = random.choice(rec_file.get_ids(file_readed))
             elif message_text[2] == "_":
                 poly4atel = message.reply_to_message
                 if poly4atel != None: poly4atel = poly4atel.from_user.id
@@ -634,12 +656,12 @@ class kmd:
             file_readed["users"][str(message.from_user.id)]["paidKkh"] += sum
             rec_file.append_balance(poly4atel, sum, file_readed)
             file_readed["users"][str(poly4atel)]["receivedKkh"] += sum
-            send_message = f"Перевод {rec_file.ob_chisla(sum)} КШ пользователю {rec_file.getFullName(poly4atel, file_readed)} выполнен успешно!"
+            send_message = f"Перевод {rec_file.ob_chisla(sum)} КШ пользователю {rec_file.getFullName(poly4atel, file_readed)} ({getTag(poly4atel)}) выполнен успешно!"
             if len(message_text) >= 4:
                 comment = message.text.split(" ", 3)[-1]
                 send_message = f"{send_message}\nКомментарий к переводу: {comment}"
             bot.send_message(message.chat.id, send_message)
-            send_message = f"Получен перевод {rec_file.ob_chisla(sum)} КШ от пользователя {message.from_user.id} ({rec_file.getFullName(message.from_user.id, file_readed)})"
+            send_message = f"Получен перевод {rec_file.ob_chisla(sum)} КШ от пользователя {getTag(message.from_user.id)} ({rec_file.getFullName(message.from_user.id, file_readed)})"
             if len(message_text) >= 4: send_message = f"{send_message}\nСообщение: {comment} "
             bot.send_message(poly4atel, send_message) 
         except ValueError: bot.send_message(message.chat.id, "Неверное id получателя! id должно содержать только цифры")
