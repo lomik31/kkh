@@ -115,7 +115,8 @@ def updateUsersNameInFile():
             fullinfo = bot.get_chat(int(i[0]))
             i[1] = fullinfo.first_name
             i[2] = fullinfo.last_name
-            tags[str(i[0])] = fullinfo.username.lower()
+            if (fullinfo.username != None): tags[str(i[0])] = fullinfo.username.lower()
+            else: tags[str(i[0])] = fullinfo.username
         except: pass
     with open('tags.json', 'w', encoding="utf-8") as outfile:
         json.dump(tags, outfile, ensure_ascii=False, indent=4)
@@ -814,14 +815,12 @@ class kmd:
     def full_inf_user(message, message_text):
         if rec_file.get_admin(message.from_user.id, file_readed) == False: return
         if len(message_text) >= 2:
-            try:
-                id = getId(message_text[1])
-            except:
-                if message_text[1] == "_":
-                    if message.reply_to_message == None: return bot.send_message(message.chat.id, "Использовать _ можно только при ответе на сообщение")
-                    id = message.reply_to_message.from_user.id
-                else: id = message.from_user.id
+            if message_text[1] == "_":
+                if message.reply_to_message == None: return bot.send_message(message.chat.id, "Использовать _ можно только при ответе на сообщение")
+                id = message.reply_to_message.from_user.id
+            else: id = getId(message_text[1])
         else: id = message.from_user.id
+        if str(id) not in file_readed["users"].keys(): return bot.send_message(message.chat.id, "ID не найден")
         msg = ""
         for i in file_readed["users"][str(id)].keys():
             if (type(file_readed['users'][str(id)][i]) == int):
