@@ -16,10 +16,19 @@ with open("usrs.json", encoding="utf-8") as file_readed:
     file_readed = json.load(file_readed)
 with open("config.json", encoding="utf-8") as config:
     config = json.load(config)
+with open("tags.json", encoding="utf-8") as tags:
+    tags = json.load(tags)
 
 bot = telebot.TeleBot(config["telegramToken"])
 y = yadisk.YaDisk(token=config["yandexDiskToken"])
 
+def getId(toFind):
+    if toFind[0] == "@": toFind = toFind[1:]
+    if toFind in file_readed["users"].keys(): return int(toFind)
+    elif toFind in list(tags.values()):
+        for i in tags:
+            if tags[i] == toFind: return int(i)
+        return "Id не найден"
 @bot.message_handler(commands=["start"])
 def start_command(message):
     if (bot.get_chat(message.chat.id).type != "private"):
@@ -63,7 +72,7 @@ def send_text(message):
                 userid = message.reply_to_message
                 if userid != None: userid = userid.from_user.id
                 else: userid = 0
-            else: userid = int(message_text[1])
+            else: userid = getId(message_text[1])
         except ValueError: return bot.send_message(message.chat.id, "Неверный id. ID должен состоять только из цифр!")
         if (userid == 0): return bot.send_message(message.chat.id, "Используйте `_` при ответе на сообщение", parse_mode="MARKDOWN")
         if (userid not in rec_file.get_ids(file_readed)): return bot.send_message(message.chat.id, "ID не найден")
@@ -101,8 +110,12 @@ def updateUsersNameInFile():
             fullinfo = bot.get_chat(int(i[0]))
             i[1] = fullinfo.first_name
             i[2] = fullinfo.last_name
+            tags[str(i[0])] = fullinfo.username.lower()
         except: pass
+    with open('tags.json', 'w', encoding="utf-8") as outfile:
+        json.dump(tags, outfile, ensure_ascii=False, indent=4)
     rec_file.updateUserNameWrite(dict, file_readed)
+    
 def weeklyLotteryLostMoneyCoin():
         lastWeekCoinSum = file_readed["sharedData"]["weeklyData"]["lostCoin"] - file_readed["sharedData"]["weeklyData"]["winCoin"]
         file_readed["sharedData"]["weeklyData"]["winCoin"], file_readed["sharedData"]["weeklyData"]["lostCoin"] = 0, 0
@@ -224,7 +237,7 @@ def manual_backup():
     shutil.copyfile("usrs.json", f"backups/{name}")
     y.upload(f"backups/{name}", (f"/kkh_backups/{name}"))
     return "Бэкап успешно выполнен и загружен на сервер!"
-
+   
 def check_messages(message, message_text):
     if message.text.lower() == "клик" or message.text == "🔮":
         if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
@@ -327,6 +340,7 @@ def check_messages(message, message_text):
         kmd.userlist(message, message_text);
     elif message_text[0] == "бдзапись" or message_text[0] == "записьбд" or message_text[0] == "запись":
         if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
+        updateUsersNameInFile()
         kmd.manual_write_file(message, message_text);
     elif message.text.lower() == "бонус2":
         if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
@@ -513,7 +527,7 @@ class kmd:
                     userid = message.reply_to_message
                     if userid != None: userid = userid.from_user.id
                     else: userid = 0
-                else: userid = int(message_text[1])
+                else: userid = getId(message_text[1])
                 if userid not in rec_file.get_ids(file_readed): return bot.send_message(message.chat.id, "Юзер не найден!")
                 rec_file.append_balance(userid, int(rec_file.ob_k_chisla(sum)), file_readed)
                 file_readed["users"][str(userid)]["othersProceeds"] += int(rec_file.ob_k_chisla(sum))
@@ -538,7 +552,7 @@ class kmd:
                     userid = message.reply_to_message
                     if userid != None: userid = userid.from_user.id
                     else: userid = 0
-                else: userid = int(message_text[1])
+                else: userid = getId(message_text[1])
                 if userid not in rec_file.get_ids(file_readed): return bot.send_message(message.chat.id, "id не найден")
                 bot.send_message(message.chat.id, f"Имя: {rec_file.getFullName(userid, file_readed)}\nid: `{userid}`\nАпгрейды: {file_readed['users'][str(userid)]['sec']}/сек; {file_readed['users'][str(userid)]['click']}/клик; {rec_file.get_skidka(userid, file_readed)}% скидки; {rec_file.get_boost_balance(userid, file_readed)}% баланса/день\nБаланс: {rec_file.ob_chisla(file_readed['users'][str(userid)]['balance'])} КШ\nВ банке: {rec_file.ob_chisla(file_readed['users'][str(userid)]['bank'])} КШ", parse_mode="MARKDOWN")
             except ValueError: bot.send_message(message.chat.id, "Использование: Баланс/б [id]")
@@ -581,7 +595,7 @@ class kmd:
                         a = message.reply_to_message
                         if a != None: a = a.from_user.id
                         else: a = 0
-                    else: a = int(message_text[1])
+                    else: a = getId(message_text[1])
                     if a not in rec_file.get_ids(file_readed): return bot.send_message(message.chat.id, "Такой id не найден!")
                     if (rec_file.get_admin(a, file_readed) == True and message.from_user.id != 357694314): return bot.send_message(message.chat.id, "Невозможно применить эту команду к этому пользователю")
                     rec_file.clear_id(a, file_readed)
@@ -612,7 +626,7 @@ class kmd:
                 poly4atel = message.reply_to_message
                 if poly4atel != None: poly4atel = poly4atel.from_user.id
                 else: poly4atel = 0
-            else: poly4atel = int(message_text[2])
+            else: poly4atel = getId(message_text[2])
             if poly4atel not in rec_file.get_ids(file_readed): return bot.send_message(message.chat.id, "Пользователь с таким id не найден!")
             if rec_file.get_balance(message.from_user.id, file_readed) < sum: return bot.send_message(message.chat.id, "Недостаточно средств")
             if sum < 100: return bot.send_message(message.chat.id, "Переводы меньше 100 КШ запрещены")
@@ -635,7 +649,7 @@ class kmd:
             elif len(message_text) >= 2:
                 if message_text[1] == "добавить" or message_text[1] == "назначить":
                     if len(message_text) < 3: return bot.send_message(message.chat.id, "Использование: админ добавить <id>")
-                    try: user = int(message_text[2])
+                    try: user = getId(message_text[2])
                     except:
                         if message_text[2] == "себя" or message_text[2] == "себе" or message_text[2] == "я": user = message.from_user.id
                         elif (message_text[2] == "_") and (message.reply_to_message != None): user = message.reply_to_message.from_user.id;
@@ -647,7 +661,7 @@ class kmd:
                     bot.send_message(user, "Вас назначили администратором, ведите себя хорошо!")
                 elif message_text[1] == "удалить" or message_text[1] == "снять":
                     if len(message_text) < 3: return bot.send_message(message.chat.id, "Использование: админ удалить <id>")
-                    try: user = int(message_text[2])
+                    try: user = getId(message_text[2])
                     except:
                         if message_text[2] == "себя" or message_text[2] == "себе" or message_text[2] == "я": user = message.from_user.id
                         elif (message_text[2] == "_") and (message.reply_to_message != None): user = message.reply_to_message.from_user.id;
@@ -779,7 +793,7 @@ class kmd:
         if rec_file.get_admin(message.from_user.id, file_readed) == False: return
         if len(message_text) >= 2:
             try:
-                id = int(message_text[1])
+                id = getId(message_text[1])
             except:
                 if message_text[1] == "_":
                     if message.reply_to_message == None: return bot.send_message(message.chat.id, "Использовать _ можно только при ответе на сообщение")
@@ -795,7 +809,7 @@ class kmd:
     def del_user(message, message_text):
         if rec_file.get_admin(message.from_user.id, file_readed) == False: return
         if len(message_text) < 2: return bot.send_message(message.chat.id, "Использование: дюзер <id>")
-        try: id = int(message_text[1])
+        try: id = getId(message_text[1])
         except ValueError:
             if message_text[1] == "_":
                 if (message.reply_to_message != None): id = message.reply_to_message.from_user.id;
@@ -909,7 +923,7 @@ class kmd:
     def sendUser(message, message_text):
         if (len(message_text) < 2) and (message_text[0] == "послать"): return bot.send_message(message.chat.id, "Послать пользователя (1.000.000 КШ): Послать <id юзера>");
         if (len(message_text) < 2) and (message_text[0] == "послатьанон"): return bot.send_message(message.chat.id, "Анонимно послать пользователя (3.000.000 КШ): Послатьанон <id юзера>");
-        try: id = int(message_text[1]);
+        try: id = getId(message_text[1]);
         except: 
             if (message_text[1] == "_"):
                 if (message.reply_to_message != None): id = message.reply_to_message.from_user.id;
