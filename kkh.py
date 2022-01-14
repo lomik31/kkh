@@ -30,7 +30,7 @@ def getId(toFind):
             if tags[i] == toFind: return int(i)
         return "Id не найден"
 def getTag(toFind):
-    if (toFind in tags.keys()):
+    if (toFind in tags.keys() or str(toFind) in tags.keys()):
         if tags[str(toFind)] != None: return f"@{tags[str(toFind)]}"
         else: return int(toFind)
     else: return "ID не найден"
