@@ -58,7 +58,7 @@ def append_id(id,userOrGroup,firstName,lastName,fileRead):
         fileRead["groups"][str(id)]=copy.copy(fileRead["groups"]["default"])
     return fileRead
 def append_balance(id,bappend,fileRead):
-    fileRead["users"][str(id)]["balance"]=fileRead["users"][str(id)]["balance"]+bappend
+    fileRead["users"][str(id)]["balance"] += bappend
     return fileRead
 def append_click(id,cappend,fileRead):
     fileRead["users"][str(id)]["click"]=fileRead["users"][str(id)]["click"]+cappend
@@ -75,6 +75,9 @@ def append_boost_balance(id,fappend,fileRead):
 def append_last_command(id, command, fileRead):
     fileRead["users"][str(id)]["lastCommand"]=command
     fileRead["users"][str(id)]["timeLastCommand"]=int(time.time())
+    return fileRead
+def appendBank(id,bappend,fileRead):
+    fileRead["users"][str(id)]["bank"] += bappend
     return fileRead
 def updateUserName(fileRead):
     dict = []
