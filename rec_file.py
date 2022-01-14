@@ -632,7 +632,7 @@ def leaderboard2nd_step(fileRead, massive, topmode, caller_id, page, active_top)
     t3ru="/клик"
     t4ru="% баланса/день"
     t5ru=" регистрация"
-    t6ru=" в банке"
+    t6ru=" КШ в банке"
     t7ru=" КШ (всего)"
     #t1,t2,t3,t4,t5,t6,t7="balance","sec","click","balanceBoost","registerTime"
     #t1ru,t2ru,t3ru,t4ru,t5ru,t6ru,t7ru=" КШ","/сек","/клик","% баланса/день"," регистрация"," КШ (всего)"
@@ -662,11 +662,11 @@ def leaderboard2nd_step(fileRead, massive, topmode, caller_id, page, active_top)
     elif (topmode=="банк"):
         msg+="Баланс | Клик | Сек | Буст баланса | Регистрация | (Банк) | Деньги"
         t1,t2,t3,t4,t5,t6,t7="bank","balance","sec","click","balanceBoost","",""
-        t1ru,t2ru,t3ru,t4ru,t5ru,t6ru,t7ru=" в банке"," КШ","/сек","/клик","% баланса/день","",""
+        t1ru,t2ru,t3ru,t4ru,t5ru,t6ru,t7ru=" КШ в банке"," КШ","/сек","/клик","% баланса/день","",""
     elif (topmode=="деньги"):
         msg+="Баланс | Клик | Сек | Буст баланса | Регистрация | Банк | (Деньги)"
         t1,t2,t3,t4,t5,t6,t7="","balance","bank","","","",""
-        t1ru,t2ru,t3ru,t4ru,t5ru,t6ru,t7ru=" КШ (всего)"," КШ"," в банке","","","",""
+        t1ru,t2ru,t3ru,t4ru,t5ru,t6ru,t7ru=" КШ (всего)"," КШ"," КШ в банке","","","",""
         
 
     #""
@@ -686,7 +686,7 @@ def leaderboard2nd_step(fileRead, massive, topmode, caller_id, page, active_top)
     elif (topmode=="банк"):
         for i in range(start_page, 10*page):
             if (i<len(massive)):
-                msg=msg+f"#{massive[i][0]}: <a href='tg://user?id={massive[i][1]}'>{massive[i][2]}</a>: {ob_chisla(fileRead['users'][str(massive[i][1])]['balance']+fileRead['users'][str(massive[i][1])]['bank'])}{t1ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t4])}{t4ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t5])}{t5ru}"+"\n"# msg=msg+f"#{massive[i][0]}: {massive[i][2]} ({massive[i][1]}): {ob_chisla(fileRead['users'][str(massive[i][1])][t1])}{t1ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t4])}{t4ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t5])}{t5ru}"+"\n" #str(massive[i][0])+"-е место: "+str(massive[i][2])+" ("+str(massive[i][1])+")\n"+str(fileRead["users"][str(massive[i][1])][t1])+str(fileRead["users"][str(massive[i][1])][t2])+str(fileRead["users"][str(massive[i][1])][t3])+"\n"
+                msg=msg+f"#{massive[i][0]}: <a href='tg://user?id={massive[i][1]}'>{massive[i][2]}</a>: {ob_chisla(fileRead['users'][str(massive[i][1])][t1])}{t1ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t4])}{t4ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t5])}{t5ru}"+"\n"# msg=msg+f"#{massive[i][0]}: {massive[i][2]} ({massive[i][1]}): {ob_chisla(fileRead['users'][str(massive[i][1])][t1])}{t1ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t4])}{t4ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t5])}{t5ru}"+"\n" #str(massive[i][0])+"-е место: "+str(massive[i][2])+" ("+str(massive[i][1])+")\n"+str(fileRead["users"][str(massive[i][1])][t1])+str(fileRead["users"][str(massive[i][1])][t2])+str(fileRead["users"][str(massive[i][1])][t3])+"\n"
         msg+="__________\n"
         for i in massive:
             if (i[1]==caller_id):
