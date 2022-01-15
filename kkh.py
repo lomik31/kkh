@@ -84,11 +84,12 @@ def send_text(message):
     if (message.text != None): message_text = message.text.lower().split(" ")
     if message_text[0] != "кмд" and message_text[0] != "_":
         if check_messages(message, message_text) != False:
+            messageLog.info(f"TEXT: {message.chat.id}: {getName(message.from_user.id)} ({message.from_user.id}): {message.text}")
             if str(message.from_user.id) in file_readed["users"].keys():
                 rec_file.append_last_command(message.from_user.id, message.text, file_readed);
     elif message_text[0] == "_":
         repeat_command(message)
-    else:
+    else: #кмд
         rec_file.append_last_command(message.from_user.id, message.text, file_readed)
         if rec_file.get_admin(message.from_user.id, file_readed) == 0: return
         if len(message_text) < 3: return bot.send_message(message.chat.id, "Использование: кмд <id> <команда>")
@@ -264,7 +265,6 @@ def manual_backup():
     return "Бэкап успешно выполнен и загружен на сервер!"
    
 def check_messages(message, message_text):
-    messageLog.info(f"TEXT: {message.chat.id}: {getName(message.from_user.id)} ({message.from_user.id}): {message.text}")
     if message.text.lower() == "клик" or message.text == "🔮":
         if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
         kmd.click(message, message_text)
