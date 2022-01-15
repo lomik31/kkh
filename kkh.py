@@ -172,7 +172,7 @@ schedule.every().day.at("00:00").do(rec_file.balance_boost_nachislenie, file_rea
 schedule.every().day.at("04:20").do(updateUsersNameInFile)
 schedule.every().monday.at("00:00").do(weeklyLotteryLostMoneyCoin)
 schedule.every().hour.at(":00").do(rec_file.bank_nachislenie, file_readed)
-schedule.every(2).hour.do(autoBackup)
+schedule.every(2).hours.do(autoBackup)
 
 #кнопки
 def main_menu_buttons():
