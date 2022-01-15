@@ -115,12 +115,11 @@ def whiletrue():
         rec_file.time_nachislenie(file_readed)
         schedule.run_pending()
         time.sleep(1)
-def backup_whiletrue():
+def autoBackup():
     today = datetime.datetime.today()
     name = f"backup-{today.strftime('%Y-%m-%d_%H.%M.%S')}.txt"
     shutil.copyfile("usrs.json", f"backups/{name}")
     y.upload(f"backups/{name}", (f"/kkh_backups/{name}"))
-    time.sleep(7200)
 def updateUsersNameInFile():
     dict = rec_file.updateUserName(file_readed)
     for i in dict:
@@ -169,11 +168,11 @@ def weeklyLotteryLostMoneyCoin():
         try: bot.send_message(id, f"Поздравляем!\nВы выиграли в еженедельном конкурсе {rec_file.ob_chisla(sum)} КШ!\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, file_readed))} КШ")
         except: pass
 Thread(target=whiletrue).start()
-Thread(target=backup_whiletrue).start()
 schedule.every().day.at("00:00").do(rec_file.balance_boost_nachislenie, file_readed)
 schedule.every().day.at("04:20").do(updateUsersNameInFile)
 schedule.every().monday.at("00:00").do(weeklyLotteryLostMoneyCoin)
 schedule.every().hour.at(":00").do(rec_file.bank_nachislenie, file_readed)
+schedule.every(2).hour.do(autoBackup)
 
 #кнопки
 def main_menu_buttons():
