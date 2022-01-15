@@ -567,7 +567,7 @@ class kmd:
         if userid not in rec_file.get_ids(file_readed): return bot.send_message(message.chat.id, "Юзер не найден!")
         rec_file.append_balance(userid, int(rec_file.ob_k_chisla(sum)), file_readed)
         file_readed["users"][str(userid)]["othersProceeds"] += int(rec_file.ob_k_chisla(sum))
-        bot.send_message(message.chat.id, f"Пользователю {getTag(userid)}({rec_file.getFullName(userid, file_readed)}) начислено {rec_file.ob_chisla(sum)} КШ")
+        bot.send_message(message.chat.id, f"Пользователю {getTag(userid)} ({rec_file.getFullName(userid, file_readed)}) начислено {rec_file.ob_chisla(sum)} КШ")
         bot.send_message(userid, f"Вам начислено {rec_file.ob_chisla(sum)} КШ администратором")
     def addMoneyBank(message, message_text):
         if rec_file.get_admin(message.from_user.id, file_readed) == False: return
@@ -588,7 +588,7 @@ class kmd:
         if userid not in rec_file.get_ids(file_readed): return bot.send_message(message.chat.id, "Юзер не найден!")
         rec_file.appendBank(userid, int(rec_file.ob_k_chisla(sum)), file_readed)
         file_readed["users"][str(userid)]["othersProceeds"] += int(rec_file.ob_k_chisla(sum))
-        bot.send_message(message.chat.id, f"Пользователю {getTag(userid)}({rec_file.getFullName(userid, file_readed)}) начислено {rec_file.ob_chisla(sum)} КШ")
+        bot.send_message(message.chat.id, f"Пользователю {getTag(userid)} ({rec_file.getFullName(userid, file_readed)}) начислено {rec_file.ob_chisla(sum)} КШ в банк")
         bot.send_message(userid, f"Вам начислено {rec_file.ob_chisla(sum)} КШ в банк администратором")
     def balance(message, message_text):
         if len(message_text) == 1: bot.send_message(message.chat.id, f"Имя: {rec_file.getFullName(message.from_user.id, file_readed)}\nid: `{message.from_user.id}`\nАпгрейды: {file_readed['users'][str(message.from_user.id)]['sec']}/сек; {file_readed['users'][str(message.from_user.id)]['click']}/клик; {rec_file.get_skidka(message.from_user.id, file_readed)}% скидки; {rec_file.get_boost_balance(message.from_user.id, file_readed)}% баланса/день\nБаланс: {rec_file.ob_chisla(file_readed['users'][str(message.from_user.id)]['balance'])} КШ\nВ банке: {rec_file.ob_chisla(file_readed['users'][str(message.from_user.id)]['bank'])} КШ", parse_mode="MARKDOWN")
