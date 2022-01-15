@@ -47,7 +47,7 @@ def getTag(toFind):
     else: return "ID не найден"
 @bot.message_handler(commands=["start"])
 def start_command(message):
-    messageLog.info(f"TEXT: {message.chat.id}: {rec_file.getFullName(message.from_user.id)}: {message.text}")
+    messageLog.info(f"TEXT: {message.chat.id}: {rec_file.getFullName(message.from_user.id)} ({message.from_user.id}): {message.text}")
     if (bot.get_chat(message.chat.id).type != "private"):
         if str(message.chat.id) not in file_readed["groups"].keys():
              firstName = bot.get_chat(message.chat.id).first_name;
@@ -64,7 +64,7 @@ def start_command(message):
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
-    messageLog.info(f"CALL: {call.message.chat.id}: {rec_file.getFullName(call.from_user.id)}: {call.data}")
+    messageLog.info(f"CALL: {call.message.chat.id}: {rec_file.getFullName(call.from_user.id)} ({call.from_user.id}): {call.data}")
     if (call.data.split(" ")[0] == "r"):
         call.data = call.data[2:]
         if (call.data in ["1:3", "1:3(2)", "1:3(3)", "1st12", "2nd12", "3rd12", "1to18", "19to36", "even", "odd", "red", "black"]):
@@ -399,6 +399,7 @@ def check_messages(message, message_text):
     else:
         return False
 def repeat_command(message):
+    messageLog.info(f"TEXT (repeat): {message.chat.id}: {rec_file.getFullName(message.from_user.id)} ({message.from_user.id}): {message.text}")
     command = rec_file.get_last_command(message.from_user.id, file_readed)
     comm = None
     try: comm = int(command)
