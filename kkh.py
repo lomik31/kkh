@@ -579,14 +579,14 @@ class kmd:
             else: userid = 0
         elif message_text[1] == "себе":
             try:
-                rec_file.append_bank(message.from_user.id, int(rec_file.ob_k_chisla(sum)), file_readed)
+                rec_file.appendBank(message.from_user.id, int(rec_file.ob_k_chisla(sum)), file_readed)
                 file_readed["users"][str(message.from_user.id)]["othersProceeds"] += int(rec_file.ob_k_chisla(sum))
                 bot.send_message(message.chat.id, f"Вам начислено {rec_file.ob_chisla(sum)} КШ в банк")
             except ValueError:
                 bot.send_message(message.chat.id, "Использование: добавить <id/себе> <сумма>")
         else: userid = getId(message_text[1])
         if userid not in rec_file.get_ids(file_readed): return bot.send_message(message.chat.id, "Юзер не найден!")
-        rec_file.append_bank(userid, int(rec_file.ob_k_chisla(sum)), file_readed)
+        rec_file.appendBank(userid, int(rec_file.ob_k_chisla(sum)), file_readed)
         file_readed["users"][str(userid)]["othersProceeds"] += int(rec_file.ob_k_chisla(sum))
         bot.send_message(message.chat.id, f"Пользователю {getTag(userid)}({rec_file.getFullName(userid, file_readed)}) начислено {rec_file.ob_chisla(sum)} КШ")
         bot.send_message(userid, f"Вам начислено {rec_file.ob_chisla(sum)} КШ в банк администратором")
