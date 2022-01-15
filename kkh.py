@@ -264,7 +264,7 @@ def manual_backup():
     return "Бэкап успешно выполнен и загружен на сервер!"
    
 def check_messages(message, message_text):
-    messageLog.info(f"TEXT: {message.chat.id}: {getName(message.from_user.id)}: {message.text}")
+    messageLog.info(f"TEXT: {message.chat.id}: {getName(message.from_user.id)} ({message.from_user.id}): {message.text}")
     if message.text.lower() == "клик" or message.text == "🔮":
         if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
         kmd.click(message, message_text)
