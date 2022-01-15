@@ -45,9 +45,16 @@ def getTag(toFind):
         if tags[str(toFind)] != None: return f"@{tags[str(toFind)]}"
         else: return int(toFind)
     else: return "ID не найден"
+def getName(id):
+     fullname = bot.get_chat(id)
+     name = fullname.first_name
+     lastname = fullname.last_name
+     if lastname != None:
+          name += f" {lastname}"
+     return name
 @bot.message_handler(commands=["start"])
 def start_command(message):
-    messageLog.info(f"TEXT: {message.chat.id}: {rec_file.getFullName(message.from_user.id, file_readed)} ({message.from_user.id}): {message.text}")
+    messageLog.info(f"TEXT: {message.chat.id}: {getName(message.from_user.id, file_readed)} ({message.from_user.id}): {message.text}")
     if (bot.get_chat(message.chat.id).type != "private"):
         if str(message.chat.id) not in file_readed["groups"].keys():
              firstName = bot.get_chat(message.chat.id).first_name;
@@ -257,7 +264,7 @@ def manual_backup():
     return "Бэкап успешно выполнен и загружен на сервер!"
    
 def check_messages(message, message_text):
-    messageLog.info(f"TEXT: {message.chat.id}: {rec_file.getFullName(message.from_user.id, file_readed)}: {message.text}")
+    messageLog.info(f"TEXT: {message.chat.id}: {getName(message.from_user.id, file_readed)}: {message.text}")
     if message.text.lower() == "клик" or message.text == "🔮":
         if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
         kmd.click(message, message_text)
@@ -398,7 +405,7 @@ def check_messages(message, message_text):
     else:
         return False
 def repeat_command(message):
-    messageLog.info(f"TEXT (repeat): {message.chat.id}: {rec_file.getFullName(message.from_user.id, file_readed)} ({message.from_user.id}): {message.text}")
+    messageLog.info(f"TEXT (repeat): {message.chat.id}: {getName(message.from_user.id, file_readed)} ({message.from_user.id}): {message.text}")
     command = rec_file.get_last_command(message.from_user.id, file_readed)
     comm = None
     try: comm = int(command)
