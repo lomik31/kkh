@@ -17,7 +17,7 @@ def time_nachislenie(fileRead):
     return fileRead
 def bank_nachislenie(fileRead):
     for i in fileRead["users"]:
-        add = int(fileRead["users"][i]["bank"] * random.uniform(0.002, 0.025))
+        add = int(fileRead["users"][i]["bank"] * random.uniform(0.002, 0.01466666666666666666666667))
         fileRead["users"][i]["bank"] += add
         fileRead["users"][i]["earnedKkh"] += add
     return fileRead
