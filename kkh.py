@@ -773,7 +773,7 @@ class kmd:
             if message_text[1] == "создать": bot.send_message(message.chat.id, manual_backup())
             else: bot.send_message(message.chat.id, "Использование: бэкап <создать>")
     def buy_procent_balance(message, message_text):
-        maxBoostLevel = 30
+        maxBoostLevel = 35
         if rec_file.get_boost_balance(message.from_user.id, file_readed) >= maxBoostLevel: return bot.send_message(message.chat.id, message_max_boost_balance())
         if len(message_text) == 1:
             if rec_file.get_balance(message.from_user.id, file_readed) < rec_file.cal_boost_balance(message.from_user.id, file_readed): return bot.send_message(message.chat.id, message_not_enough_money_boost_balance(message))
@@ -814,7 +814,7 @@ class kmd:
                 except:
                     pass
     def buy_procent_balance_2(message, message_text):
-        maxBoostLevel = 30
+        maxBoostLevel = 35
         if rec_file.get_boost_balance(message.from_user.id, file_readed) >= maxBoostLevel: return bot.send_message(message.chat.id, message_max_boost_balance())
         if len(message_text) >= 2:
             if message_text[1] == "баланса/день":
@@ -975,14 +975,14 @@ class kmd:
             if (rec_file.get_balance(message.from_user.id, file_readed) < 1000000): return bot.send_message(message.chat.id, "У вас недостаточно КШ!");
             rec_file.append_balance(message.from_user.id, -1000000, file_readed);
             file_readed["users"][str(message.from_user.id)]["othersSpends"] += 1000000
-            bot.send_message(id, f"Вас послал нахуй пользователь {rec_file.getFullName(message.from_user.id, file_readed)} ({message.from_user.id})");
-            bot.send_message(message.chat.id, f"Вы послали нахуй игрока {rec_file.getFullName(id, file_readed)} ({id})");
+            bot.send_message(id, f"Вас послал нахуй пользователь {rec_file.getFullName(message.from_user.id, file_readed)} ({getTag(message.from_user.id)})");
+            bot.send_message(message.chat.id, f"Вы послали нахуй игрока {rec_file.getFullName(id, file_readed)} ({getTag(id)})\nЗабрано 1.000.000 КШ");
         elif (message_text[0] == "послатьанон"):
             if (rec_file.get_balance(message.from_user.id, file_readed) < 3000000): return bot.send_message(message.chat.id, "У вас недостаточно КШ!");
             rec_file.append_balance(message.from_user.id, -3000000, file_readed);
             file_readed["users"][str(message.from_user.id)]["othersSpends"] += 3000000
             bot.send_message(id, f"Вас анонимно послали нахуй");
-            bot.send_message(message.chat.id, f"Вы анонимно послали нахуй игрока {rec_file.getFullName(id, file_readed)} ({id})");
+            bot.send_message(message.chat.id, f"Вы анонимно послали нахуй игрока {rec_file.getFullName(id, file_readed)} ({getTag(id)})\nЗабрано 3.000.000 КШ");
     def promoInf(message, message_text):
         if (rec_file.get_admin(message.from_user.id, file_readed) == False): return
         if (len(message_text) < 3): return bot.send_message(message.chat.id, "Использование: промо инфо <название промокода>")
