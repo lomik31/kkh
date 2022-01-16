@@ -57,9 +57,11 @@ def start_command(message):
     messageLog.info(f"TEXT: {message.chat.id}: {getName(message.from_user.id)} ({message.from_user.id}): {message.text}")
     if (bot.get_chat(message.chat.id).type != "private"):
         if str(message.chat.id) not in file_readed["groups"].keys():
-             firstName = bot.get_chat(message.chat.id).first_name;
-             lastName = bot.get_chat(message.chat.id).last_name
-             rec_file.append_id(message.chat.id, bot.get_chat(message.chat.id).type, firstName, lastName, file_readed);
+            fullinfo = bot.get_chat(message.chat.id)
+            firstName = fullinfo.first_name;
+            lastName = fullinfo.last_name
+            rec_file.append_id(message.chat.id, fullinfo.type, firstName, lastName, file_readed);
+            if (fullinfo.username != None): tags[str(message.chat.id)] = fullinfo.username.lower()
         bot.send_message(message.chat.id, "Эту команду можно использовать только в личных сообщениях с ботом!");
     else:
         if str(message.from_user.id) not in file_readed["users"].keys():
