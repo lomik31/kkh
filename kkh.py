@@ -71,7 +71,7 @@ def start_command(message):
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
-    messageLog.info(f"CALL: {call.message.chat.id}: {rec_file.getFullName(call.from_user.id)} ({call.from_user.id}): {call.data}")
+    messageLog.info(f"CALL: {call.message.chat.id}: {getName(call.from_user.id)} ({call.from_user.id}): {call.data}")
     if (call.data.split(" ")[0] == "r"):
         call.data = call.data[2:]
         if (call.data in ["1:3", "1:3(2)", "1:3(3)", "1st12", "2nd12", "3rd12", "1to18", "19to36", "even", "odd", "red", "black"]):
