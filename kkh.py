@@ -380,12 +380,9 @@ def check_messages(message, message_text):
     elif (message_text[0] == "послать") or (message_text[0] == "послатьанон"):
         if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
         kmd.sendUser(message, message_text);
-    elif (message_text[0] == "топ"):
+    elif (message_text[0] == "топ" or message_text[0] == "всетоп"):
         if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
         kmd.userTop(message, message_text)
-    elif (message_text[0] == "всетоп"):
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.allUserTop(message, message_text)
     elif (message_text[0] == "бит"):
         if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
         kmd.btcBet(message, message_text)
@@ -991,114 +988,18 @@ class kmd:
     def promoList(message, message_text):
         if (rec_file.get_admin(message.from_user.id, file_readed) == False): return
         bot.send_message(message.chat.id, rec_file.promo_list())
-    def allUserTop(message, message_text):
-        if (len(message_text) < 2) or ((len(message_text) >= 2) and message_text[1] == "баланс"):
-            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "б", message.from_user.id, 1, False), parse_mode="HTML")
-            else: 
-                try:
-                    page = int(message_text[2])
-                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "б", message.from_user.id, page, False), parse_mode="HTML")
-                except Exception as e:
-                    print(e)
-                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "б", message.from_user.id, 1, False), parse_mode="HTML")
-        elif (len(message_text) >= 2) and (message_text[1] == "клик"):
-            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "к", message.from_user.id, 1, False), parse_mode="HTML")
-            else:
-                try:
-                    page = int(message_text[2])
-                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "к", message.from_user.id, page, False), parse_mode="HTML")
-                except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "к", message.from_user.id, 1, False), parse_mode="HTML")
-        elif (len(message_text) >= 2) and (message_text[1] == "сек"):
-            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "с", message.from_user.id, 1, False), parse_mode="HTML")
-            else: 
-                try:
-                    page = int(message_text[2])
-                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "с", message.from_user.id, page, False), parse_mode="HTML")
-                except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "с", message.from_user.id, 1, False), parse_mode="HTML")
-        elif (len(message_text) >= 2) and (message_text[1] == "бб"):
-            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "бб", message.from_user.id, 1, False), parse_mode="HTML")
-            else: 
-                try:
-                    page = int(message_text[2])
-                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "бб", message.from_user.id, page, False), parse_mode="HTML")
-                except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "бб", message.from_user.id, 1, False), parse_mode="HTML")
-        elif (len(message_text) >= 2) and (message_text[1] == "регистрация"):
-            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "рег", message.from_user.id, 1, False), parse_mode="HTML")
-            else: 
-                try:
-                    page = int(message_text[2])
-                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "рег", message.from_user.id, page, False), parse_mode="HTML")
-                except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "рег", message.from_user.id, 1, False), parse_mode="HTML")
-        elif (len(message_text) >= 2) and (message_text[1] == "банк"):
-            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "банк", message.from_user.id, 1, False), parse_mode="HTML")
-            else: 
-                try:
-                    page = int(message_text[2])
-                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "банк", message.from_user.id, page, False), parse_mode="HTML")
-                except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "банк", message.from_user.id, 1, False), parse_mode="HTML")
-        elif (len(message_text) >= 2) and (message_text[1] == "деньги"):
-            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "деньги", message.from_user.id, 1, False), parse_mode="HTML")
-            else: 
-                try:
-                    page = int(message_text[2])
-                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "деньги", message.from_user.id, page, False), parse_mode="HTML")
-                except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "деньги", message.from_user.id, 1, False), parse_mode="HTML")
-        else:
-            bot.send_message(message.chat.id, "Использование: всетоп [<b>баланс</b>/клик/сек/бб/регистрация] [страница]", parse_mode="HTML")
     def userTop(message, message_text):
-        if (len(message_text) < 2) or ((len(message_text) >= 2) and message_text[1] == "баланс"):
-            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "б", message.from_user.id, 1, True), parse_mode="HTML")
-            else: 
-                try:
-                    page = int(message_text[2])
-                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "б", message.from_user.id, page, True), parse_mode="HTML")
-                except Exception as e:
-                    print(e)
-                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "б", message.from_user.id, 1, True), parse_mode="HTML")
-        elif (len(message_text) >= 2) and (message_text[1] == "клик"):
-            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "к", message.from_user.id, 1, True), parse_mode="HTML")
-            else:
-                try:
-                    page = int(message_text[2])
-                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "к", message.from_user.id, page, True), parse_mode="HTML")
-                except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "к", message.from_user.id, 1, True), parse_mode="HTML")
-        elif (len(message_text) >= 2) and (message_text[1] == "сек"):
-            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "с", message.from_user.id, 1, True), parse_mode="HTML")
-            else: 
-                try:
-                    page = int(message_text[2])
-                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "с", message.from_user.id, page, True), parse_mode="HTML")
-                except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "с", message.from_user.id, 1, True), parse_mode="HTML")
-        elif (len(message_text) >= 2) and (message_text[1] == "бб"):
-            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "бб", message.from_user.id, 1, True), parse_mode="HTML")
-            else: 
-                try:
-                    page = int(message_text[2])
-                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "бб", message.from_user.id, page, True), parse_mode="HTML")
-                except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "бб", message.from_user.id, 1, True), parse_mode="HTML")
-        elif (len(message_text) >= 2) and (message_text[1] == "регистрация"):
-            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "рег", message.from_user.id, 1, True), parse_mode="HTML")
-            else:
-                try:
-                    page = int(message_text[2])
-                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "рег", message.from_user.id, page, True), parse_mode="HTML")
-                except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "рег", message.from_user.id, 1, True), parse_mode="HTML")
-        elif (len(message_text) >= 2) and (message_text[1] == "банк"):
-            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "банк", message.from_user.id, 1, True), parse_mode="HTML")
-            else:
-                try:
-                    page = int(message_text[2])
-                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "банк", message.from_user.id, page, True), parse_mode="HTML")
-                except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "банк", message.from_user.id, 1, True), parse_mode="HTML")
-        elif (len(message_text) >= 2) and (message_text[1] == "деньги"):
-            if (len(message_text) < 3): bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "деньги", message.from_user.id, 1, True), parse_mode="HTML")
-            else:
-                try:
-                    page = int(message_text[2])
-                    bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "деньги", message.from_user.id, page, True), parse_mode="HTML")
-                except: bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, "деньги", message.from_user.id, 1, True), parse_mode="HTML")
-        else:
-            bot.send_message(message.chat.id, "Использование: топ [<b>баланс</b>/клик/сек/бб/регистрация] [страница]", parse_mode="HTML")
+        top = {"mode": "б", "page": 1, "active": True}
+        if message_text[0] == "всетоп": top["active"] = False
+        if (len(message_text) == 1): pass
+        elif (len(message_text) == 2):
+            top["mode"] = message_text[1]
+        elif (len(message_text) >= 3):
+            try: top["page"] = int(message_text[2])
+            except:
+                return bot.send_message(message.chat.id, "Страница топа должна быть числом")
+            top["mode"] = message_text[1]
+        return bot.send_message(message.chat.id, rec_file.leaderboard(file_readed, top["mode"], message.from_user.id, top["page"], top["active"]), parse_mode="HTML")
     def btcBet(message, message_text):
         if (len(message_text) < 3): return bot.send_message(message.chat.id, "Использование: бит <ставка> <вверх/вниз>")
         try: betAmount = int(rec_file.ob_k_chisla(message_text[1]))
