@@ -13,7 +13,7 @@ import json
 import requests
 import logging
 
-logging.basicConfig(filename=f"logs/{datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')}.log", level=logging.INFO, format="%(asctime)s: %(name)s: %(levelname)s: %(message)s")
+logging.basicConfig(filename=f"logs/logs.log", level=logging.INFO, format="%(asctime)s: %(name)s: %(levelname)s: %(message)s")
 
 main = logging.getLogger("main")
 messageLog = logging.getLogger("message")
