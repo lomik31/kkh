@@ -17,7 +17,7 @@ def time_nachislenie(fileRead):
     return fileRead
 def bank_nachislenie(fileRead):
     for i in fileRead["users"]:
-        add = int(fileRead["users"][i]["bank"] * random.uniform(0.002, 0.01466666666666666666666667))
+        add = int(fileRead["users"][i]["bank"] * random.uniform(0.002, 0.025))
         fileRead["users"][i]["bank"] += add
         fileRead["users"][i]["earnedKkh"] += add
     return fileRead
@@ -58,7 +58,7 @@ def append_id(id,userOrGroup,firstName,lastName,fileRead):
         fileRead["groups"][str(id)]=copy.copy(fileRead["groups"]["default"])
     return fileRead
 def append_balance(id,bappend,fileRead):
-    fileRead["users"][str(id)]["balance"] += bappend
+    fileRead["users"][str(id)]["balance"]=fileRead["users"][str(id)]["balance"]+bappend
     return fileRead
 def append_click(id,cappend,fileRead):
     fileRead["users"][str(id)]["click"]=fileRead["users"][str(id)]["click"]+cappend
@@ -75,9 +75,6 @@ def append_boost_balance(id,fappend,fileRead):
 def append_last_command(id, command, fileRead):
     fileRead["users"][str(id)]["lastCommand"]=command
     fileRead["users"][str(id)]["timeLastCommand"]=int(time.time())
-    return fileRead
-def appendBank(id,bappend,fileRead):
-    fileRead["users"][str(id)]["bank"] += bappend
     return fileRead
 def updateUserName(fileRead):
     dict = []
@@ -581,7 +578,7 @@ def leaderboard(fileRead, topmode, caller_id, page, active_top):
         inverse=True
     elif (topmode=="банк"):
         tofind="bank"
-    elif (topmode=="деньги"):
+    elif (topmode=="деньги" or topmode=="д"):
         tofind="bank"
         tofind2="balance"
         
@@ -666,7 +663,7 @@ def leaderboard2nd_step(fileRead, massive, topmode, caller_id, page, active_top)
         msg+="Баланс | Клик | Сек | Буст баланса | Регистрация | (Банк) | Деньги"
         t1,t2,t3,t4,t5,t6,t7="bank","balance","sec","click","balanceBoost","",""
         t1ru,t2ru,t3ru,t4ru,t5ru,t6ru,t7ru=" КШ в банке"," КШ","/сек","/клик","% баланса/день","",""
-    elif (topmode=="деньги"):
+    elif (topmode=="деньги" or topmode=="д"):
         msg+="Баланс | Клик | Сек | Буст баланса | Регистрация | Банк | (Деньги)"
         t1,t2,t3,t4,t5,t6,t7="","balance","bank","","","",""
         t1ru,t2ru,t3ru,t4ru,t5ru,t6ru,t7ru=" КШ (всего)"," КШ"," КШ в банке","","","",""
@@ -678,14 +675,14 @@ def leaderboard2nd_step(fileRead, massive, topmode, caller_id, page, active_top)
     #else:
     #    msg+="\nДля топа активных пользователей есть команда \"всетоп\""
     msg+="\n\n"
-    if (topmode=="деньги"):
+    if (topmode=="деньги" or topmode=="д"):
         for i in range(start_page, 10*page):
             if (i<len(massive)):
-                msg=msg+f"#{massive[i][0]}: <a href='tg://user?id={massive[i][1]}'>{massive[i][2]}</a>: {ob_chisla(fileRead['users'][str(massive[i][1])]['balance']+fileRead['users'][str(massive[i][1])]['bank'])}{t1ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t3])}{t3ru}"+"\n"# msg=msg+f"#{massive[i][0]}: {massive[i][2]} ({massive[i][1]}): {ob_chisla(fileRead['users'][str(massive[i][1])][t1])}{t1ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t4])}{t4ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t5])}{t5ru}"+"\n" #str(massive[i][0])+"-е место: "+str(massive[i][2])+" ("+str(massive[i][1])+")\n"+str(fileRead["users"][str(massive[i][1])][t1])+str(fileRead["users"][str(massive[i][1])][t2])+str(fileRead["users"][str(massive[i][1])][t3])+"\n"
+                msg=msg+f"#{massive[i][0]}: <a href='tg://user?id={massive[i][1]}'>{massive[i][2]}</a>: {ob_chisla(fileRead['users'][str(massive[i][1])]['balance']+fileRead['users'][str(massive[i][1])]['bank'])}{t1ru}, Баланс: {ob_chisla(fileRead['users'][str(massive[i][1])][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t3])}{t3ru}"+"\n"# msg=msg+f"#{massive[i][0]}: {massive[i][2]} ({massive[i][1]}): {ob_chisla(fileRead['users'][str(massive[i][1])][t1])}{t1ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t4])}{t4ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t5])}{t5ru}"+"\n" #str(massive[i][0])+"-е место: "+str(massive[i][2])+" ("+str(massive[i][1])+")\n"+str(fileRead["users"][str(massive[i][1])][t1])+str(fileRead["users"][str(massive[i][1])][t2])+str(fileRead["users"][str(massive[i][1])][t3])+"\n"
         msg+="__________\n"
         for i in massive:
             if (i[1]==caller_id):
-                msg+=f"Вы: #{i[0]}: {ob_chisla(fileRead['users'][str(caller_id)]['balance']+fileRead['users'][str(caller_id)]['bank'])}{t1ru}, {ob_chisla(fileRead['users'][str(caller_id)][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(caller_id)][t3])}{t3ru}"
+                msg+=f"Вы: #{i[0]}: {ob_chisla(fileRead['users'][str(caller_id)]['balance']+fileRead['users'][str(caller_id)]['bank'])}{t1ru}, Баланс: {ob_chisla(fileRead['users'][str(caller_id)][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(caller_id)][t3])}{t3ru}"
     elif (topmode=="банк"):
         for i in range(start_page, 10*page):
             if (i<len(massive)):
@@ -705,11 +702,11 @@ def leaderboard2nd_step(fileRead, massive, topmode, caller_id, page, active_top)
     else:
         for i in range(start_page, 10*page):
             if (i<len(massive)):
-                msg=msg+f"#{massive[i][0]}: <a href='tg://user?id={massive[i][1]}'>{massive[i][2]}</a>: {ob_chisla(fileRead['users'][str(massive[i][1])][t1])}{t1ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t4])}{t4ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t5])}{t5ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t6])}{t6ru}"+"\n"# msg=msg+f"#{massive[i][0]}: {massive[i][2]} ({massive[i][1]}): {ob_chisla(fileRead['users'][str(massive[i][1])][t1])}{t1ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t4])}{t4ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t5])}{t5ru}"+"\n" #str(massive[i][0])+"-е место: "+str(massive[i][2])+" ("+str(massive[i][1])+")\n"+str(fileRead["users"][str(massive[i][1])][t1])+str(fileRead["users"][str(massive[i][1])][t2])+str(fileRead["users"][str(massive[i][1])][t3])+"\n"
+                msg=msg+f"#{massive[i][0]}: <a href='tg://user?id={massive[i][1]}'>{massive[i][2]}</a>: {ob_chisla(fileRead['users'][str(massive[i][1])][t1])}{t1ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t4])}{t4ru}"+"\n"# msg=msg+f"#{massive[i][0]}: {massive[i][2]} ({massive[i][1]}): {ob_chisla(fileRead['users'][str(massive[i][1])][t1])}{t1ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t4])}{t4ru}, {ob_chisla(fileRead['users'][str(massive[i][1])][t5])}{t5ru}"+"\n" #str(massive[i][0])+"-е место: "+str(massive[i][2])+" ("+str(massive[i][1])+")\n"+str(fileRead["users"][str(massive[i][1])][t1])+str(fileRead["users"][str(massive[i][1])][t2])+str(fileRead["users"][str(massive[i][1])][t3])+"\n"
         msg+="__________\n"
         for i in massive:
             if (i[1]==caller_id):
-                msg+=f"Вы: #{i[0]}: {ob_chisla(fileRead['users'][str(caller_id)][t1])}{t1ru}, {ob_chisla(fileRead['users'][str(caller_id)][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(caller_id)][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(caller_id)][t4])}{t4ru}, {ob_chisla(fileRead['users'][str(caller_id)][t5])}{t5ru}, {ob_chisla(fileRead['users'][str(caller_id)][t6])}{t6ru}"
+                msg+=f"Вы: #{i[0]}: {ob_chisla(fileRead['users'][str(caller_id)][t1])}{t1ru}, {ob_chisla(fileRead['users'][str(caller_id)][t2])}{t2ru}, {ob_chisla(fileRead['users'][str(caller_id)][t3])}{t3ru}, {ob_chisla(fileRead['users'][str(caller_id)][t4])}{t4ru}"
     msg+="\n\nСтраница "+str(page)+"/"+str(okrugleno)
     return msg
 
