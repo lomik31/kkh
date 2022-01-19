@@ -557,8 +557,9 @@ class kmd:
             else: userid = 0
         elif message_text[1] == "себе":
             try:
-                rec_file.append_balance(message.from_user.id, int(rec_file.ob_k_chisla(sum)), file_readed)
-                file_readed["users"][str(message.from_user.id)]["othersProceeds"] += int(rec_file.ob_k_chisla(sum))
+                userid = message.from_user.id
+                rec_file.append_balance(userid, int(rec_file.ob_k_chisla(sum)), file_readed)
+                file_readed["users"][str(userid)]["othersProceeds"] += int(rec_file.ob_k_chisla(sum))
                 bot.send_message(message.chat.id, f"Вам начислено {rec_file.ob_chisla(sum)} КШ")
             except ValueError:
                 bot.send_message(message.chat.id, "Использование: добавить <id/себе> <сумма>")
