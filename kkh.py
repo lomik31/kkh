@@ -34,6 +34,7 @@ y = yadisk.YaDisk(token=config["yandexDiskToken"])
 main.info("CLOUD CONNECTED")
 
 def getId(toFind):
+    if len(toFind) < 2: return "Id не найден"
     if toFind[0] == "@": toFind = toFind[1:]
     if toFind in file_readed["users"].keys(): return int(toFind)
     elif toFind in list(tags.values()):
