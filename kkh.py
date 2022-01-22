@@ -1250,5 +1250,9 @@ def rouletteButtonsBet(betAmount, bet, userId, chatId, printBet = False):
                 rec_file.append_balance(userId, -betAmount, file_readed)
                 file_readed["users"][str(userId)]["lostRoulette"] += betAmount;
                 bot.send_message(chatId, loseMsg)
-bot.polling(none_stop=True, interval=1, timeout=123)
+try: bot.polling(none_stop=True, interval=1, timeout=123)
+except Exception as e:
+    print(e)
+    main.error(e)
+    bot.send_message(357694314, e)
 #962 -> 630
