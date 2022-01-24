@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import telebot
-from telebot import types
+from telebot import types, apihelper
 import time
 import rec_file
 from threading import Thread
@@ -29,6 +29,7 @@ with open("tags.json", encoding="utf-8") as tags:
 main.info("USERTAGS LOADED")
 
 bot = telebot.TeleBot(config["telegramToken"])
+apihelper.proxy = {'http':'http://10.10.1.10:3128'}
 main.info("BOT IS RUNNING NOW")
 y = yadisk.YaDisk(token=config["yandexDiskToken"])
 main.info("CLOUD CONNECTED")
