@@ -24,6 +24,10 @@ httpsServer.on('OCSPRequest', function(cert, issuer, callback) { //какаят�
     });
 });
 console.log(`Вроде запустился на порту ${port}`);
+function readFile() {
+    var content = fs.readFileSync('../logs/logs.log', 'utf8');
+    return content
+}
 app.get("/", (req, res) => {
     switch (req.query.action) {
         case "readFile":
