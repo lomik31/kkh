@@ -7,3 +7,5 @@ logs
 tags.json
 test.py
 usrs.json
+server/package-lock.json
+server/node_modules
