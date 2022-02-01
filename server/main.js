@@ -23,6 +23,7 @@ httpsServer.on('OCSPRequest', function(cert, issuer, callback) { //какаят�
         ocspCache.request(req.id, options, callback);
     });
 });
+console.log(`Вроде запустился на порту ${port}`);
 app.get("/", (req, res) => {
     switch (req.query.action) {
         case "readFile":
