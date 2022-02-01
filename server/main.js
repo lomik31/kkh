@@ -1,20 +1,29 @@
-
-import http from "https";
-var privateKey = fs.readFileSync('ssl/lomik31.codead.dev.pem').toString();
-var certificate = fs.readFileSync('ssl/lomik31.codead.dev.key').toString();
-const credentials = {
-    key: privateKey, 
-    cert: certificate
-};
-import cors from "cors";
+import express from "express";
+import https from "https";
 import fs from "fs";
-function readFile() {
-    var content = fs.readFileSync('../logs/logs.log', 'utf8');
-    return content
-}
+import ocsp from "ocsp/lib/ocsp.js";
+const app = express();
+const port = 3000;
+const ocspCache = new ocsp.Cache();
+const options = { //подключение сертификата и приватного ключа для него
+        key: fs.readFileSync('/home/sun/ssl/lomik31.codead.dev.key'),
+        cert: fs.readFileSync('/home/sun/ssl/lomik31.codead.dev.pem'),
+    };
+const httpsServer = https.createServer(options,app); //ставим сервер
+httpsServer.listen(port); //слушаем порт ${port}
 
-var server = http.createServer(credentials, (req, res) => {
-    //if (req. == "file") res.status(200).send(readFile());
+httpsServer.on('OCSPRequest', function(cert, issuer, callback) { //какаято хуета не разобрался сам
+    ocsp.getOCSPURI(cert, function(err, uri) {
+        if (err) return callback(error);
+        var req = ocsp.request.generate(cert, issuer);
+        var options = {
+            url: uri,
+            ocsp: req.data
+        };
+        ocspCache.request(req.id, options, callback);
+    });
+});
+app.get("/", (req, res) => {
     switch (req.query.action) {
         case "readFile":
             res.status(200).send(readFile());
@@ -29,4 +38,3 @@ var server = http.createServer(credentials, (req, res) => {
             break;
     }
 })
-server.listen(3000);
