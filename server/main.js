@@ -1,6 +1,7 @@
 import express from "express";
 import https from "https";
 import fs from "fs";
+import cors from "cors";
 import ocsp from "ocsp/lib/ocsp.js";
 const app = express();
 const port = 3000;
@@ -24,11 +25,12 @@ httpsServer.on('OCSPRequest', function(cert, issuer, callback) { //какаят�
     });
 });
 console.log(`Вроде запустился на порту ${port}`);
+app.use(cors());
 function readFile() {
-    var content = fs.readFileSync('../logs/logs.log', 'utf8');
+    var content = fs.readFileSync('../kkh/logs/logs.log', 'utf8');
     return content
 }
-app.get("/", (req, res) => {
+app.get("/kkh/logs", (req, res) => {
     switch (req.query.action) {
         case "readFile":
             res.status(200).send(readFile());
@@ -36,7 +38,7 @@ app.get("/", (req, res) => {
         case "getInfo":
             if (!req.query.id) break;
             console.log(req.query);
-            let usrs = JSON.parse(fs.readFileSync('../usrs.json', 'utf8'));
+            let usrs = JSON.parse(fs.readFileSync('../kkh/usrs.json', 'utf8'));
             if (usrs.users[req.query.id] != undefined) res.status(200).json(JSON.stringify(usrs.users[req.query.id], null, "\n"));
             else res.status(200).json({"error":"user is not found"});
         default:
