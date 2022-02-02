@@ -204,10 +204,10 @@ def upgades_buttons(id):
         button_skidka = types.KeyboardButton(message_max_skidka())
     else:
         button_skidka = types.KeyboardButton(f"+1% скидки ({rec_file.ob_chisla(rec_file.cal_boost_skidka(id, file_readed))} КШ)")
-    if rec_file.get_boost_balance(id, file_readed) >= 15:
+    if rec_file.get_boost_balance(id, file_readed) >= rec_file.cal_boost_balance(id, file_readed)[1]:
         button_boost_balance = types.KeyboardButton(message_max_boost_balance())
     else:
-        button_boost_balance = types.KeyboardButton(f"+1% баланса/день ({rec_file.ob_chisla(rec_file.cal_boost_balance(id, file_readed))} КШ)")
+        button_boost_balance = types.KeyboardButton(f"+1% баланса/день ({rec_file.ob_chisla(rec_file.cal_boost_balance(id, file_readed)[0])} КШ)")
     button_back = types.KeyboardButton("Назад")
     upgades_board.add(button_sec, button_click)
     upgades_board.add(button_skidka, button_boost_balance)
@@ -239,7 +239,7 @@ def message_not_enough_money_click(user_message):
 def message_not_enough_money_sec(user_message):
     return f"Недостаточно средств. Для покупки ещё необходимо {rec_file.ob_chisla(rec_file.cal_boost_sec(user_message.from_user.id, file_readed) - rec_file.get_balance(user_message.from_user.id, file_readed))} КШ"
 def message_not_enough_money_boost_balance(user_message):
-    return f"Недостаточно средств. Для покупки ещё необходимо {rec_file.ob_chisla(rec_file.cal_boost_balance(user_message.from_user.id, file_readed) - rec_file.get_balance(user_message.from_user.id, file_readed))} КШ"
+    return f"Недостаточно средств. Для покупки ещё необходимо {rec_file.ob_chisla(rec_file.cal_boost_balance(user_message.from_user.id, file_readed)[0] - rec_file.get_balance(user_message.from_user.id, file_readed))} КШ"
 def sendmessage_check_active_keyboard(chatid, userid, userOrGroup, send_message):
     if (userOrGroup == "private"):
         if rec_file.get_keyboard(userid, file_readed):
@@ -423,8 +423,8 @@ class kmd:
         if len(message_text) == 1:
             if rec_file.get_balance(message.from_user.id, file_readed) < rec_file.cal_boost_sec(message.from_user.id, file_readed): return bot.send_message(message.chat.id, message_not_enough_money_sec(message))
             rec_file.append_balance(message.from_user.id, -rec_file.cal_boost_sec(message.from_user.id, file_readed), file_readed)
+            file_readed["users"][str(message.from_user.id)]["spendKkhUpgrades"] += rec_file.cal_boost_balance(message.from_user.id, file_readed)[0]
             rec_file.append_sec(message.from_user.id, 1, file_readed)
-            file_readed["users"][str(message.from_user.id)]["spendKkhUpgrades"] += rec_file.cal_boost_balance(message.from_user.id, file_readed)
             sendmessage_check_active_keyboard(message.chat.id, message.from_user.id, bot.get_chat(message.chat.id).type, message_bought_upgrade(message, 1))
         elif len(message_text) >= 2:
             if rec_file.get_balance(message.from_user.id, file_readed) < rec_file.cal_boost_sec(message.from_user.id, file_readed): return bot.send_message(message.chat.id, message_not_enough_money_sec(message))
@@ -433,7 +433,7 @@ class kmd:
                 for i in range(0, int(message_text[1])):
                     if rec_file.get_balance(message.from_user.id, file_readed) >= rec_file.cal_boost_sec(message.from_user.id, file_readed):
                         rec_file.append_balance(message.from_user.id, -rec_file.cal_boost_sec(message.from_user.id, file_readed), file_readed)
-                        file_readed["users"][str(message.from_user.id)]["spendKkhUpgrades"] += rec_file.cal_boost_balance(message.from_user.id, file_readed)
+                        file_readed["users"][str(message.from_user.id)]["spendKkhUpgrades"] += rec_file.cal_boost_balance(message.from_user.id, file_readed)[0]
                         rec_file.append_sec(message.from_user.id, 1, file_readed)
                         a += 1
                 sendmessage_check_active_keyboard(message.chat.id, message.from_user.id, bot.get_chat(message.chat.id).type, message_bought_upgrade(message, a))
@@ -442,7 +442,7 @@ class kmd:
                     if rec_file.get_balance(message.from_user.id, file_readed) < rec_file.cal_boost_sec(message.from_user.id, file_readed): return bot.send_message(message.chat.id, message_not_enough_money_sec(message))
                     while rec_file.get_balance(message.from_user.id, file_readed) >= rec_file.cal_boost_sec(message.from_user.id, file_readed):
                         rec_file.append_balance(message.from_user.id, -rec_file.cal_boost_sec(message.from_user.id, file_readed), file_readed)
-                        file_readed["users"][str(message.from_user.id)]["spendKkhUpgrades"] += rec_file.cal_boost_balance(message.from_user.id, file_readed)
+                        file_readed["users"][str(message.from_user.id)]["spendKkhUpgrades"] += rec_file.cal_boost_balance(message.from_user.id, file_readed)[0]
                         rec_file.append_sec(message.from_user.id, 1, file_readed)
                         a += 1
                     sendmessage_check_active_keyboard(message.chat.id, message.from_user.id, bot.get_chat(message.chat.id).type, message_bought_upgrade(message, a))
@@ -451,7 +451,7 @@ class kmd:
                         if message_text[1][0] == "(" and message_text[2][-1] == ")":
                             if rec_file.get_balance(message.from_user.id, file_readed) < rec_file.cal_boost_sec(message.from_user.id, file_readed): return bot.send_message(message.chat.id, message_not_enough_money_sec(message))
                             rec_file.append_balance(message.from_user.id, -rec_file.cal_boost_sec(message.from_user.id, file_readed), file_readed)
-                            file_readed["users"][str(message.from_user.id)]["spendKkhUpgrades"] += rec_file.cal_boost_balance(message.from_user.id, file_readed)
+                            file_readed["users"][str(message.from_user.id)]["spendKkhUpgrades"] += rec_file.cal_boost_balance(message.from_user.id, file_readed)[0]
                             rec_file.append_sec(message.from_user.id, 1, file_readed)
                             sendmessage_check_active_keyboard(message.chat.id, message.from_user.id, bot.get_chat(message.chat.id).type, message_bought_upgrade(message, 1))  
                         else:
@@ -545,7 +545,7 @@ class kmd:
             if rec_file.get_skidka(message.from_user.id, file_readed) < 25: bot.send_message(message.chat.id, f"Цена за {rec_file.get_skidka(message.from_user.id, file_readed) + 1} апгрейд со скидкой {rec_file.get_skidka(message.from_user.id, file_readed)}%: {rec_file.ob_chisla(rec_file.cal_boost_skidka(message.from_user.id, file_readed))} КШ")
             else: bot.send_message(message.chat.id, message_max_skidka())
         elif message_text[1] == "бб" or message_text[1] == "+бб" or message_text[1] == "баланс" or message_text[1] == "баланса" or message_text[1] == "+баланса" or message_text[1] == "+баланс" or message_text[1] == "баланс/день" or message_text[1] == "+баланс/день":
-            if rec_file.get_boost_balance(message.from_user.id, file_readed) < 15: bot.send_message(message.chat.id, f"Цена за {rec_file.get_boost_balance(message.from_user.id, file_readed) + 1} апгрейд со скидкой {rec_file.get_skidka(message.from_user.id, file_readed)}%: {rec_file.ob_chisla(rec_file.cal_boost_balance(message.from_user.id, file_readed))} КШ")
+            if rec_file.get_boost_balance(message.from_user.id, file_readed) < rec_file.cal_boost_balance(id, file_readed)[1]: bot.send_message(message.chat.id, f"Цена за {rec_file.get_boost_balance(message.from_user.id, file_readed) + 1} апгрейд со скидкой {rec_file.get_skidka(message.from_user.id, file_readed)}%: {rec_file.ob_chisla(rec_file.cal_boost_balance(message.from_user.id, file_readed)[0])} КШ")
             else: bot.send_message(message.chat.id, message_max_boost_balance())
         else: bot.send_message(message.chat.id, "Неизвестный тип")
     def add_money(message, message_text):
@@ -774,39 +774,38 @@ class kmd:
             if message_text[1] == "создать": bot.send_message(message.chat.id, manual_backup())
             else: bot.send_message(message.chat.id, "Использование: бэкап <создать>")
     def buy_procent_balance(message, message_text):
-        maxBoostLevel = 35
-        if rec_file.get_boost_balance(message.from_user.id, file_readed) >= maxBoostLevel: return bot.send_message(message.chat.id, message_max_boost_balance())
+        if rec_file.get_boost_balance(message.from_user.id, file_readed) >= rec_file.cal_boost_balance(message.from_user.id, file_readed)[1]: return bot.send_message(message.chat.id, message_max_boost_balance())
         if len(message_text) == 1:
-            if rec_file.get_balance(message.from_user.id, file_readed) < rec_file.cal_boost_balance(message.from_user.id, file_readed): return bot.send_message(message.chat.id, message_not_enough_money_boost_balance(message))
-            rec_file.append_balance(message.from_user.id, -rec_file.cal_boost_balance(message.from_user.id, file_readed), file_readed)
+            if rec_file.get_balance(message.from_user.id, file_readed) < rec_file.cal_boost_balance(message.from_user.id, file_readed)[0]: return bot.send_message(message.chat.id, message_not_enough_money_boost_balance(message))
+            rec_file.append_balance(message.from_user.id, -rec_file.cal_boost_balance(message.from_user.id, file_readed)[0], file_readed)
+            file_readed["users"][str(message.from_user.id)]["spendKkhUpgrades"] += rec_file.cal_boost_balance(message.from_user.id, file_readed)[0]
             rec_file.append_boost_balance(message.from_user.id, 1, file_readed)
-            file_readed["users"][str(message.from_user.id)]["spendKkhUpgrades"] += rec_file.cal_boost_balance(message.from_user.id, file_readed)
             sendmessage_check_active_keyboard(message.chat.id, message.from_user.id, bot.get_chat(message.chat.id).type, message_bought_upgrade(message, 1))
         elif len(message_text) >= 2:
-            if rec_file.get_balance(message.from_user.id, file_readed) < rec_file.cal_boost_balance(message.from_user.id, file_readed): return bot.send_message(message.chat.id, message_not_enough_money_boost_balance(message))
+            if rec_file.get_balance(message.from_user.id, file_readed) < rec_file.cal_boost_balance(message.from_user.id, file_readed)[0]: return bot.send_message(message.chat.id, message_not_enough_money_boost_balance(message))
             a = 0
             try:
                 for i in range(0, int(message_text[1])):
-                    if rec_file.get_balance(message.from_user.id, file_readed) >= rec_file.cal_boost_balance(message.from_user.id, file_readed):
-                        rec_file.append_balance(message.from_user.id, -rec_file.cal_boost_balance(message.from_user.id, file_readed), file_readed)
-                        file_readed["users"][str(message.from_user.id)]["spendKkhUpgrades"] += rec_file.cal_boost_balance(message.from_user.id, file_readed)
+                    if rec_file.get_balance(message.from_user.id, file_readed) >= rec_file.cal_boost_balance(message.from_user.id, file_readed)[0]:
+                        rec_file.append_balance(message.from_user.id, -rec_file.cal_boost_balance(message.from_user.id, file_readed)[0], file_readed)
+                        file_readed["users"][str(message.from_user.id)]["spendKkhUpgrades"] += rec_file.cal_boost_balance(message.from_user.id, file_readed)[0]
                         rec_file.append_boost_balance(message.from_user.id, 1, file_readed)
                         a += 1
                 sendmessage_check_active_keyboard(message.chat.id, message.from_user.id, bot.get_chat(message.chat.id).type, message_bought_upgrade(message, a))
             except:
                 try:
                     if message_text[1][0] == "(" and message_text[2][-1] == ")":
-                        if rec_file.get_balance(message.from_user.id, file_readed) < rec_file.cal_boost_balance(message.from_user.id, file_readed): return bot.send_message(message.chat.id, message_not_enough_money_boost_balance(message))
-                        rec_file.append_balance(message.from_user.id, -rec_file.cal_boost_balance(message.from_user.id, file_readed), file_readed)
-                        file_readed["users"][str(message.from_user.id)]["spendKkhUpgrades"] += rec_file.cal_boost_balance(message.from_user.id, file_readed)
+                        if rec_file.get_balance(message.from_user.id, file_readed) < rec_file.cal_boost_balance(message.from_user.id, file_readed)[0]: return bot.send_message(message.chat.id, message_not_enough_money_boost_balance(message))
+                        rec_file.append_balance(message.from_user.id, -rec_file.cal_boost_balance(message.from_user.id, file_readed), file_readed)[0]
+                        file_readed["users"][str(message.from_user.id)]["spendKkhUpgrades"] += rec_file.cal_boost_balance(message.from_user.id, file_readed)[0]
                         rec_file.append_boost_balance(message.from_user.id, 1, file_readed)
                         sendmessage_check_active_keyboard(message.chat.id, message.from_user.id, bot.get_chat(message.chat.id).type, message_bought_upgrade(message, 1))
                     elif message_text[1] == "все" or message_text[1] == "всё":
-                        if rec_file.get_balance(message.from_user.id, file_readed) < rec_file.cal_boost_balance(message.from_user.id, file_readed): return bot.send_message(message.chat.id, message_not_enough_money_boost_balance(message))
-                        while rec_file.get_balance(message.from_user.id, file_readed) >= rec_file.cal_boost_balance(message.from_user.id, file_readed) and rec_file.get_boost_balance(message.from_user.id, file_readed) < maxBoostLevel:
-                            if rec_file.get_boost_balance(message.from_user.id, file_readed) >= maxBoostLevel: return bot.send_message(message.chat.id, message_max_boost_balance())
-                            rec_file.append_balance(message.from_user.id, -rec_file.cal_boost_balance(message.from_user.id, file_readed), file_readed)
-                            file_readed["users"][str(message.from_user.id)]["spendKkhUpgrades"] += rec_file.cal_boost_balance(message.from_user.id, file_readed)
+                        if rec_file.get_balance(message.from_user.id, file_readed) < rec_file.cal_boost_balance(message.from_user.id, file_readed)[0]: return bot.send_message(message.chat.id, message_not_enough_money_boost_balance(message))
+                        while rec_file.get_balance(message.from_user.id, file_readed) >= rec_file.cal_boost_balance(message.from_user.id, file_readed)[0] and rec_file.get_boost_balance(message.from_user.id, file_readed) < rec_file.cal_boost_balance(message.from_user.id, file_readed)[1]:
+                            if rec_file.get_boost_balance(message.from_user.id, file_readed) >= rec_file.cal_boost_balance(message.from_user.id, file_readed)[1]: return bot.send_message(message.chat.id, message_max_boost_balance())
+                            rec_file.append_balance(message.from_user.id, -rec_file.cal_boost_balance(message.from_user.id, file_readed)[0], file_readed)
+                            file_readed["users"][str(message.from_user.id)]["spendKkhUpgrades"] += rec_file.cal_boost_balance(message.from_user.id, file_readed)[0]
                             rec_file.append_boost_balance(message.from_user.id, 1, file_readed)
                             a += 1
                         sendmessage_check_active_keyboard(message.chat.id, message.from_user.id, bot.get_chat(message.chat.id).type, message_bought_upgrade(message, a))
@@ -815,14 +814,13 @@ class kmd:
                 except:
                     pass
     def buy_procent_balance_2(message, message_text):
-        maxBoostLevel = 35
-        if rec_file.get_boost_balance(message.from_user.id, file_readed) >= maxBoostLevel: return bot.send_message(message.chat.id, message_max_boost_balance())
+        if rec_file.get_boost_balance(message.from_user.id, file_readed) >= rec_file.cal_boost_balance(message.from_user.id, file_readed)[1]: return bot.send_message(message.chat.id, message_max_boost_balance())
         if len(message_text) >= 2:
             if message_text[1] == "баланса/день":
                 try:
-                    if rec_file.get_balance(message.from_user.id, file_readed) < rec_file.cal_boost_balance(message.from_user.id, file_readed): return bot.send_message(message.chat.id, message_not_enough_money_boost_balance(message))
-                    rec_file.append_balance(message.from_user.id, -rec_file.cal_boost_balance(message.from_user.id, file_readed), file_readed)
-                    file_readed["users"][str(message.from_user.id)]["spendKkhUpgrades"] += rec_file.cal_boost_balance(message.from_user.id, file_readed)
+                    if rec_file.get_balance(message.from_user.id, file_readed) < rec_file.cal_boost_balance(message.from_user.id, file_readed)[0]: return bot.send_message(message.chat.id, message_not_enough_money_boost_balance(message))
+                    rec_file.append_balance(message.from_user.id, -rec_file.cal_boost_balance(message.from_user.id, file_readed), file_readed)[0]
+                    file_readed["users"][str(message.from_user.id)]["spendKkhUpgrades"] += rec_file.cal_boost_balance(message.from_user.id, file_readed)[0]
                     rec_file.append_boost_balance(message.from_user.id, 1, file_readed)
                     sendmessage_check_active_keyboard(message.chat.id, message.from_user.id, bot.get_chat(message.chat.id).type, message_bought_upgrade(message, 1))
                 except: pass
@@ -1250,9 +1248,5 @@ def rouletteButtonsBet(betAmount, bet, userId, chatId, printBet = False):
                 rec_file.append_balance(userId, -betAmount, file_readed)
                 file_readed["users"][str(userId)]["lostRoulette"] += betAmount;
                 bot.send_message(chatId, loseMsg)
-try: bot.polling(none_stop=True, interval=1, timeout=123)
-except Exception as e:
-    print(e)
-    main.error(e)
-    bot.send_message(357694314, e)
+bot.infinity_polling(timeout=123, long_polling_timeout=123)
 #962 -> 630
