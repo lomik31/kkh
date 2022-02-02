@@ -180,6 +180,7 @@ def cal_boost_skidka(id,fileRead):
 def cal_boost_balance(id,fileRead):
     nac_cena=13000000 #изначальная цена
     procent=35 #процент стоимости следующего буста
+    maxBoostLevel = 10
     boost_level=int(fileRead["users"][str(id)]["balanceBoost"])
     skidka=int(fileRead["users"][str(id)]["sale"])
     if (skidka==0):
@@ -194,7 +195,7 @@ def cal_boost_balance(id,fileRead):
     for i in range(0,boost_level):
         nac_cena=nac_cena*(100+procent)//100
     nac_cena=nac_cena*skidka//100
-    return nac_cena
+    return nac_cena, maxBoostLevel
 #keyboard
 def keyboard_on(id,chatType,fileRead):
     if (chatType == "private"):
