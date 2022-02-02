@@ -545,7 +545,7 @@ class kmd:
             if rec_file.get_skidka(message.from_user.id, file_readed) < 25: bot.send_message(message.chat.id, f"Цена за {rec_file.get_skidka(message.from_user.id, file_readed) + 1} апгрейд со скидкой {rec_file.get_skidka(message.from_user.id, file_readed)}%: {rec_file.ob_chisla(rec_file.cal_boost_skidka(message.from_user.id, file_readed))} КШ")
             else: bot.send_message(message.chat.id, message_max_skidka())
         elif message_text[1] == "бб" or message_text[1] == "+бб" or message_text[1] == "баланс" or message_text[1] == "баланса" or message_text[1] == "+баланса" or message_text[1] == "+баланс" or message_text[1] == "баланс/день" or message_text[1] == "+баланс/день":
-            if rec_file.get_boost_balance(message.from_user.id, file_readed) < rec_file.cal_boost_balance(id, file_readed)[1]: bot.send_message(message.chat.id, f"Цена за {rec_file.get_boost_balance(message.from_user.id, file_readed) + 1} апгрейд со скидкой {rec_file.get_skidka(message.from_user.id, file_readed)}%: {rec_file.ob_chisla(rec_file.cal_boost_balance(message.from_user.id, file_readed)[0])} КШ")
+            if rec_file.get_boost_balance(message.from_user.id, file_readed) < rec_file.cal_boost_balance(message.from_user.id, file_readed)[1]: bot.send_message(message.chat.id, f"Цена за {rec_file.get_boost_balance(message.from_user.id, file_readed) + 1} апгрейд со скидкой {rec_file.get_skidka(message.from_user.id, file_readed)}%: {rec_file.ob_chisla(rec_file.cal_boost_balance(message.from_user.id, file_readed)[0])} КШ")
             else: bot.send_message(message.chat.id, message_max_boost_balance())
         else: bot.send_message(message.chat.id, "Неизвестный тип")
     def add_money(message, message_text):
