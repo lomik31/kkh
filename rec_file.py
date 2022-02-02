@@ -17,7 +17,7 @@ def time_nachislenie(fileRead):
     return fileRead
 def bank_nachislenie(fileRead):
     for i in fileRead["users"]:
-        add = int(fileRead["users"][i]["bank"] * random.uniform(0.002, 0.025))
+        add = int(fileRead["users"][i]["bank"] * random.uniform(0.0002, 0.001466666666666667))
         fileRead["users"][i]["bank"] += add
         fileRead["users"][i]["earnedKkh"] += add
     return fileRead
@@ -178,8 +178,8 @@ def cal_boost_skidka(id,fileRead):
     nac_cena=nac_cena*skidka//100
     return nac_cena
 def cal_boost_balance(id,fileRead):
-    nac_cena=5000000 #изначальная цена
-    procent=20 #процент стоимости следующего буста
+    nac_cena=13000000 #изначальная цена
+    procent=35 #процент стоимости следующего буста
     boost_level=int(fileRead["users"][str(id)]["balanceBoost"])
     skidka=int(fileRead["users"][str(id)]["sale"])
     if (skidka==0):
