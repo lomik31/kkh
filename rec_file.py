@@ -185,13 +185,13 @@ def cal_boost_balance(id,fileRead):
     skidka=int(fileRead["users"][str(id)]["sale"])
     if (skidka==0):
         if (boost_level==0):
-            return nac_cena
+            return nac_cena, maxBoostLevel
         for i in range(0,boost_level):
             nac_cena=nac_cena*(100+procent)//100
-        return nac_cena
+        return nac_cena, maxBoostLevel
     if (boost_level==0):
         nac_cena=nac_cena*skidka//100
-        return nac_cena
+        return nac_cena, maxBoostLevel
     for i in range(0,boost_level):
         nac_cena=nac_cena*(100+procent)//100
     nac_cena=nac_cena*skidka//100
