@@ -819,7 +819,7 @@ class kmd:
             if message_text[1] == "баланса/день":
                 try:
                     if rec_file.get_balance(message.from_user.id, file_readed) < rec_file.cal_boost_balance(message.from_user.id, file_readed)[0]: return bot.send_message(message.chat.id, message_not_enough_money_boost_balance(message))
-                    rec_file.append_balance(message.from_user.id, -rec_file.cal_boost_balance(message.from_user.id, file_readed), file_readed)[0]
+                    rec_file.append_balance(message.from_user.id, -rec_file.cal_boost_balance(message.from_user.id, file_readed)[0], file_readed)
                     file_readed["users"][str(message.from_user.id)]["spendKkhUpgrades"] += rec_file.cal_boost_balance(message.from_user.id, file_readed)[0]
                     rec_file.append_boost_balance(message.from_user.id, 1, file_readed)
                     sendmessage_check_active_keyboard(message.chat.id, message.from_user.id, bot.get_chat(message.chat.id).type, message_bought_upgrade(message, 1))
