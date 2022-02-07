@@ -1249,4 +1249,5 @@ def rouletteButtonsBet(betAmount, bet, userId, chatId, printBet = False):
                 file_readed["users"][str(userId)]["lostRoulette"] += betAmount;
                 bot.send_message(chatId, loseMsg)
 bot.infinity_polling(timeout=123, long_polling_timeout=123)
+# bot.polling(True, interval=0.5, timeout=123, long_polling_timeout=123)
 #962 -> 630
