@@ -765,8 +765,8 @@ class kmd:
         bot.send_message(message.chat.id, rec_file.promo_append(name, paramsDict, activationLimit, durationTime, file_readed));
         #except: return bot.send_message(message.chat.id, f"Использование: промо добавить <название> <params({paramsPromos})> <кол-во активаций> <время действия>")
     def commandsList(message, message_text):
-        if (rec_file.get_admin(message.from_user.id, file_readed)): bot.send_message(message.chat.id, config["messages"]["COMMANDSList"]);
-        else: bot.send_message(message.chat.id, config["messages"]["COMMANDSListUser"]);
+        if (rec_file.get_admin(message.from_user.id, file_readed)): bot.send_message(message.chat.id, config["messages"]["commandsList"]);
+        else: bot.send_message(message.chat.id, config["messages"]["commandsListUser"]);
     def helpCommand(message, message_text):
         if (len(message_text) < 2): return bot.send_message(message.chat.id, "Использование: команда <команда>");
         message.text = message.text[8:]
