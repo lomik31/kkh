@@ -11,6 +11,7 @@ import schedule
 import json
 import requests
 import logging
+from commands import COMMANDS
 
 logging.basicConfig(filename=f"logs/logs.log", level=logging.INFO, format="%(asctime)s: %(name)s: %(levelname)s: %(message)s")
 
@@ -268,142 +269,19 @@ def manual_backup():
     return "Бэкап успешно выполнен и загружен на сервер!"
    
 def check_messages(message, message_text):
-    if message.text.lower() == "клик" or message.text == "🔮":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.click(message, message_text)
-    elif message_text[0] == "+сек":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.buy_sec(message, message_text)
-    elif message_text[0] == "+клик":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.buy_click(message, message_text)
-    elif message_text[0] == "+скидка":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.buy_skidka(message, message_text)
-    elif message_text[0] == "+баланс" or message_text[0] == "+баланс/день" or message_text[0] == "+бб":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.buy_procent_balance(message, message_text)
-    elif message_text[0] == "+буст":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        if len(message_text) >= 2:
-            if message_text[1] == "баланса" or message_text[1] == "баланс":
-                kmd.buy_procent_balance(message, message_text)
-    elif message_text[0] == "+1%":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        if len(message_text) >= 2:
-            if message_text[1] == "скидки":
-                kmd.buy_skidka_2(message, message_text)
-            elif message_text[1] == "баланса/день":
-                kmd.buy_procent_balance_2(message, message_text)
-    elif message_text[0] == "цена":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.price(message, message_text)
-    elif message_text[0] == "добавить":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.add_money(message, message_text)
-    elif message_text[0] == "добавитьбанк":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.addMoneyBank(message, message_text)
-    elif message_text[0] == "баланс" or message_text[0] == "б":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.balance(message, message_text)
-    elif message.text.lower() == "апгрейды":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.upgrades(message, message_text)
-    elif message.text.lower() == "назад":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.back(message, message_text)
-    elif message_text[0] == "монета" or message_text[0] == "монетка":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.moneta(message, message_text)
-    elif message_text[0] == "сброс":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.reset(message, message_text)
-    elif message_text[0] == "перевод":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.pay(message, message_text)
-    elif message_text[0] == "админ":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.admin(message, message_text)
-    elif message.text.lower() == "бонус":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.bonus(message, message_text)
-    elif (message_text[0] == "промо") and (len(message_text) > 1) and(message_text[1] == "добавить"):
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.addPromo(message, message_text);
-    elif (message_text[0] == "промо") and (len(message_text) > 1) and (message_text[1] == "удалить"):
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.delPromo(message, message_text);
-    elif (message_text[0] == "промо") and (len(message_text) > 1) and (message_text[1] == "инфо"):
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.promoInf(message, message_text);
-    elif (message_text[0] == "промо") and (len(message_text) > 1) and(message_text[1] == "лист"):
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.promoList(message, message_text);
-    elif message_text[0] == "промо":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.activate_promo(message, message_text)
-    elif message_text[0] == "клавиатура":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.keyboard(message, message_text)
-    elif message_text[0] == "рассылка":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.rassilka(message, message_text)
-    elif message_text[0] == "бэкап":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.backup(message, message_text)
-    elif message.text.lower() == "главное меню":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.main_menu(message, message_text)
-    elif message.text.lower() == "начать":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        start_command(message)
-    elif message.text.lower() == "команды":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.commandsList(message, message_text)
-    elif message_text[0] == "инфо":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.full_inf_user(message, message_text);
-    elif message_text[0] == "дюзер":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.del_user(message, message_text);
-    elif message_text[0] == "юзерслист":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.userlist(message, message_text);
-    elif message_text[0] == "бдзапись" or message_text[0] == "записьбд" or message_text[0] == "запись":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        updateUsersNameInFile()
-        kmd.manual_write_file(message, message_text);
-    elif message.text.lower() == "бонус2":
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.bonus2(message, message_text)
-    elif (message_text[0] == "команда"):
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.helpCommand(message, message_text);
-    elif (message_text[0] == "послать") or (message_text[0] == "послатьанон"):
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.sendUser(message, message_text);
-    elif (message_text[0] == "топ" or message_text[0] == "всетоп"):
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.userTop(message, message_text)
-    elif (message_text[0] == "бит"):
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.btcBet(message, message_text)
-    elif (message_text[0] == "монетарозыгрыш"):
-        if (rec_file.get_admin(message.from_user.id, file_readed) == False): return
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        weeklyLotteryLostMoneyCoin()
-    elif (message_text[0] == "рулетка"):
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.roulette(message, message_text)
-    elif (message_text[0] == "+банк"):
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.bankPut(message, message_text);
-    elif (message_text[0] == "-банк"):
-        if (str(message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
-        kmd.bankTake(message, message_text);
-    else:
-        return False
+    i = 0
+    checkCommand = message_text[0]
+    while True:
+        if i > 3: return False
+        if checkCommand in COMMANDS.keys():
+            kmd(message).checkReg()
+            if "link" in COMMANDS[checkCommand].keys(): checkCommand = COMMANDS[checkCommand]["link"]
+            if COMMANDS[checkCommand]["permissions"] == "admin" and rec_file.get_admin(message.from_user.id, file_readed) == False: return False
+            if COMMANDS[checkCommand]["permissions"] == "owner" and message.from_user.id != config["ownerId"]: return False
+            eval(COMMANDS[checkCommand]["action"])
+        i += 1
+        if i != len(message_text) - 1: return False
+        checkCommand += f" { message_text[i]}"
 def repeat_command(message):
     messageLog.info(f"TEXT (repeat): {message.chat.id}: {getName(message.from_user.id)} ({message.from_user.id}): {message.text}")
     command = rec_file.get_last_command(message.from_user.id, file_readed)
@@ -416,6 +294,9 @@ def repeat_command(message):
         send_text(message)
 #kmd
 class kmd:
+    def __init__(self, message, message_text = None) -> None:
+        self.message = message
+        self.message_text = message_text
     def click(message, message_text):
         rec_file.click_nachislenie(message.from_user.id, file_readed)
         bot.send_message(message.chat.id, f"Коллекция кристальных шаров пополнена!\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(message.from_user.id, file_readed))} КШ")
@@ -549,7 +430,6 @@ class kmd:
             else: bot.send_message(message.chat.id, message_max_boost_balance())
         else: bot.send_message(message.chat.id, "Неизвестный тип")
     def add_money(message, message_text):
-        if rec_file.get_admin(message.from_user.id, file_readed) == False: return
         if len(message_text) <= 2: return bot.send_message(message.chat.id, "Использование: добавить <id/себе> <сумма>")
         sum = rec_file.ob_k_chisla(message_text[2])
         if message_text[1] == "_":
@@ -571,7 +451,6 @@ class kmd:
         bot.send_message(message.chat.id, f"Пользователю {getTag(userid)} ({rec_file.getFullName(userid, file_readed)}) начислено {rec_file.ob_chisla(sum)} КШ")
         bot.send_message(userid, f"Вам начислено {rec_file.ob_chisla(sum)} КШ администратором")
     def addMoneyBank(message, message_text):
-        if rec_file.get_admin(message.from_user.id, file_readed) == False: return
         if len(message_text) <= 2: return bot.send_message(message.chat.id, "Использование: добавить <id/себе> <сумма>")
         sum = rec_file.ob_k_chisla(message_text[2])
         if message_text[1] == "_":
@@ -769,10 +648,9 @@ class kmd:
             if rec_file.get_admin(message.from_user.id, file_readed) == True: bot.send_message(message.chat.id, "Использование: рассылка <да/нет> или рассылка <создать> <сообщение>")
             else: bot.send_message(message.chat.id, "Использование: рассылка <да/нет>")
     def backup(message, message_text):
-        if rec_file.get_admin(message.from_user.id, file_readed) == True:
-            if len(message_text) < 2: return bot.send_message(message.chat.id, "Использование: бэкап <создать>\nСоздаёт бэкап в папку с бекапами и загружает в облако.")
-            if message_text[1] == "создать": bot.send_message(message.chat.id, manual_backup())
-            else: bot.send_message(message.chat.id, "Использование: бэкап <создать>")
+        if len(message_text) < 2: return bot.send_message(message.chat.id, "Использование: бэкап <создать>\nСоздаёт бэкап в папку с бекапами и загружает в облако.")
+        if message_text[1] == "создать": bot.send_message(message.chat.id, manual_backup())
+        else: bot.send_message(message.chat.id, "Использование: бэкап <создать>")
     def buy_procent_balance(message, message_text):
         if rec_file.get_boost_balance(message.from_user.id, file_readed) >= rec_file.cal_boost_balance(message.from_user.id, file_readed)[1]: return bot.send_message(message.chat.id, message_max_boost_balance())
         if len(message_text) == 1:
@@ -833,7 +711,6 @@ class kmd:
             else: bot.send_message(message.chat.id, "Открыто главное меню")
         rec_file.set_active_passive_keyboard(message.chat.id, False, bot.get_chat(message.chat.id).type, file_readed)
     def full_inf_user(message, message_text):
-        if rec_file.get_admin(message.from_user.id, file_readed) == False: return
         if len(message_text) >= 2:
             if message_text[1] == "_":
                 if message.reply_to_message == None: return bot.send_message(message.chat.id, "Использовать _ можно только при ответе на сообщение")
@@ -848,7 +725,6 @@ class kmd:
             else: msg += f"{i}: {file_readed['users'][str(id)][i]}" + "\n"
         bot.send_message(message.chat.id, msg)
     def del_user(message, message_text):
-        if rec_file.get_admin(message.from_user.id, file_readed) == False: return
         if len(message_text) < 2: return bot.send_message(message.chat.id, "Использование: дюзер <id>")
         try: id = getId(message_text[1])
         except ValueError:
@@ -858,11 +734,10 @@ class kmd:
             return bot.send_message(message.chat.id, "ID дожден состоять только из цифр!")
         if id not in rec_file.get_ids(file_readed): return bot.send_message(message.chat.id, "ID не найден")
         if (rec_file.get_admin(id, file_readed) == True and message.from_user.id != 357694314): return bot.send_message(message.chat.id, "Невозможно использование дюзер для этого пользователя")
-        name = {rec_file.getFullName(id, file_readed)}
+        name = rec_file.getFullName(id, file_readed)
         rec_file.remove_id(id, file_readed)
         bot.send_message(message.chat.id, f"{name}: ID удалён из бд")
     def userlist(message, message_text):
-        if rec_file.get_admin(message.from_user.id, file_readed) == False: return
         send_message = f"Вот id всех {len(file_readed['users'].keys()) - 1} пользователей:"
         for i in file_readed["users"].keys():
             if (i != "default"):
@@ -873,92 +748,50 @@ class kmd:
         send_message = send_message[:-2:]
         bot.send_message(message.chat.id, send_message, parse_mode="HTML")
     def manual_write_file(message, message_text):
+        updateUsersNameInFile()
         rec_file.write(file_readed)
         bot.send_message(message.chat.id, "БД записана")
     def addPromo(message, message_text):
-        if (rec_file.get_admin(message.from_user.id, file_readed) == False): return;
-        paramsPromos = rec_file.promo_read("default");
-        paramsPromos.pop("activationLimit");
-        paramsPromos.pop("activatedTimes");
-        paramsPromos.pop("validity");
-        if (len(message_text) == 2):
-            bot.send_message(message.chat.id, f"Использование: промо добавить <название> <params({paramsPromos})> <кол-во активаций> <время действия>");
-        elif (len(message_text) >= 3) and (message_text[2] == "помощь"):
-            bot.send_message(message.chat.id, f"Использование: промо добавить <название> <params({paramsPromos})> <кол-во активаций> <время действия>");
-        elif (len(message_text) >= 6):
-            name = message_text[2];
-            paramsDictSTR = message_text[3];
-            try: paramsDict = json.loads(paramsDictSTR.replace("'",'"'))
-            except: return bot.send_message(message.chat.id, "Произошла ошибка, попробуйте ещё раз!")
-            activationLimit = int(message_text[4]);
-            durationTime = message_text[5];
-            bot.send_message(message.chat.id, rec_file.promo_append(name, paramsDict, activationLimit, durationTime, file_readed));
-            #except: return bot.send_message(message.chat.id, f"Использование: промо добавить <название> <params({paramsPromos})> <кол-во активаций> <время действия>")
+        if (len(message_text) < 6):
+            message.text = "команда нпромо"
+            message_text = message.text.split(" ")
+            return kmd.helpCommand(message, message_text)
+        name = message_text[2];
+        paramsDictSTR = message_text[3];
+        try: paramsDict = json.loads(paramsDictSTR.replace("'",'"'))
+        except: return bot.send_message(message.chat.id, "Произошла ошибка, попробуйте ещё раз!")
+        activationLimit = int(message_text[4]);
+        durationTime = message_text[5];
+        bot.send_message(message.chat.id, rec_file.promo_append(name, paramsDict, activationLimit, durationTime, file_readed));
+        #except: return bot.send_message(message.chat.id, f"Использование: промо добавить <название> <params({paramsPromos})> <кол-во активаций> <время действия>")
     def commandsList(message, message_text):
-        if (rec_file.get_admin(message.from_user.id, file_readed)): bot.send_message(message.chat.id, config["messages"]["commandsList"]);
-        else: bot.send_message(message.chat.id, config["messages"]["commandsListUser"]);
+        if (rec_file.get_admin(message.from_user.id, file_readed)): bot.send_message(message.chat.id, config["messages"]["COMMANDSList"]);
+        else: bot.send_message(message.chat.id, config["messages"]["COMMANDSListUser"]);
     def helpCommand(message, message_text):
         if (len(message_text) < 2): return bot.send_message(message.chat.id, "Использование: команда <команда>");
-        if (message_text[1] == "бэкап"):
-            bot.send_message(message.chat.id, "Использование: бэкап <создать>\nСоздаёт бэкап в папку с бекапами и загружает в облако.");
-        elif (message_text[1] == "бдзапись"):
-            bot.send_message(message.chat.id, "Записывает бд в файл");
-        elif (message_text[1] == "кмд"):
-            bot.send_message(message.chat.id, "Отправляет команду от имени другого юзера\nКмд <id юзера> <команда> [аргументы команды]");
-        elif (message_text[1] == "команды"):
-            bot.send_message(message.chat.id, "Показывает список команд\nКоманды");
-        elif (message_text[1] == "команда"):
-            bot.send_message(message.chat.id, "Показывает справку по использованию команды\nКоманда <команда>");
-        elif (len(message_text) > 2) and (message_text[1] == "главное") and (message_text[2] == "меню"):
-            bot.send_message(message.chat.id, "Открывает главное меню\nГлавное меню");
-        elif (message_text[1] == "апгрейды"):
-            bot.send_message(message.chat.id, "Открывает меню апгрейдов\nАпгрейды");
-        elif (message_text[1] == "бонус"):
-            bot.send_message(message.chat.id, "Забрать ежедневный бонус\nБонус");
-        elif (message_text[1] == "клик"):
-            bot.send_message(message.chat.id, "Добавляет к балансу количество \клик\nКлик");
-        elif (message_text[1] == "цена"):
-            bot.send_message(message.chat.id, "Показывает цену апгрейда\nЦена <апгрейд>");
-        elif (message_text[1] == "клавиатура"):
-            bot.send_message(message.chat.id, "Включает/выключает клавиатуру на экране\nКлавиатура <да/нет>");
-        elif (message_text[1] == "промо"):
-            bot.send_message(message.chat.id, "Активирует промокод\nПромо <промокод>");
-        elif (message_text[1] == "рассылка"):
-            bot.send_message(message.chat.id, "Включает/выключает получение рассылки\nРассылка <да/нет>");
-        elif (message_text[1] == "перевод"):
-            bot.send_message(message.chat.id, "Переводит деньги пользователю\nПеревод <сумма> <id получателя> [комментарий]");
-        elif (message_text[1] == "инфо"):
-            bot.send_message(message.chat.id, "Выдает полную информацию о пользователе из бд\nИнфо <id юзера>");
-        elif (message_text[1] == "дюзер"):
-            bot.send_message(message.chat.id, "Удаляет пользователя из бд\nДюзер <id пользователя>");
-        elif (message_text[1] == "баланс"):
-            bot.send_message(message.chat.id, "Показать информацию о пользователе\nБаланс [id пользователя]");
-        elif (message_text[1] == "бонус2"):
-            bot.send_message(message.chat.id, "Забрать бонус2\nБонус2");
-        elif (message_text[1] == "монета"):
-            bot.send_message(message.chat.id, "Играть в монету на деньги\nМонета <ставка> <орел/решка>");
-        elif (message_text[1] == "админ"):
-            bot.send_message(message.chat.id, "Проверка на админа\nАдмин");
-        elif (message_text[1] == "юзерслист"):
-            bot.send_message(message.chat.id, "Передаёт id всех юзеров\nЮзерслист");
-        elif (message_text[1] == "послать"):
-            bot.send_message(message.chat.id, "Посылает игрока (1.000.000 КШ)\nПослать <id пользователя>");
-        elif (message_text[1] == "послатьанон"):
-            bot.send_message(message.chat.id, "Анонимно посылает игрока (3.000.000 КШ)\nПослатьанон <id пользователя>");
-        elif (message_text[1] == "топ"):
-            bot.send_message(message.chat.id, "Выдаёт топ всех пользователей\nТоп [<b>баланс</b>/клик/сек] [страница]", parse_mode="HTML");
-        elif (message_text[1] == "бит"):
-            bot.send_message(message.chat.id, "Ставка на курс биткоина\nбит <ставка/все> <вверх/вниз>");
-        elif (message_text[1] == "монетарозыгрыш"):
-            bot.send_message(message.chat.id, "Принудительно проводит еженедельный розыгрыш проигранных денег в монете");
-        elif (message_text[1] == "банк"):
-            bot.send_message(message.chat.id, "Перевод КШ в банк/из банка\n+банк [сумма]\n-банк [сумма]");
-        elif (message_text[1] == "+банк"):
-            bot.send_message(message.chat.id, "Перевод КШ в банк\n+банк [сумма]");
-        elif (message_text[1] == "-банк"):
-            bot.send_message(message.chat.id, "Вывод КШ из банка\n-банк [сумма]");
+        message.text = message.text[8:]
+        message_text.pop(0)
+        i = 0
+        checkCommand = message_text[0]
+        while True:
+            if i > 3: return False
+            if checkCommand in COMMANDS.keys():
+                kmd(message).checkReg()
+                if "link" in COMMANDS[checkCommand].keys(): checkCommand = COMMANDS[checkCommand]["link"]
+                if COMMANDS[checkCommand]["permissions"] == "admin" and rec_file.get_admin(message.from_user.id, file_readed) == False: return False
+                if COMMANDS[checkCommand]["permissions"] == "owner" and message.from_user.id != config["ownerId"]: return False
+                break
+            i += 1
+            if i != len(message_text) - 1: return False
+            checkCommand += f" { message_text[i]}"
+        msg = f"{checkCommand} "
+        if "links" in COMMANDS[checkCommand].keys():
+            for i in COMMANDS[checkCommand]["links"]:
+                msg += f"/ {i} "
+        msg = msg[:-1] + f": {COMMANDS[checkCommand]['description']}\nИспользование: {COMMANDS[checkCommand]['usage']}"
+        if "parse" in COMMANDS[checkCommand].keys(): return bot.send_message(message.chat.id, msg, parse_mode=COMMANDS[checkCommand]["parse"])
+        bot.send_message(message.chat.id, msg);
     def delPromo(message, message_text):
-        if (rec_file.get_admin(message.from_user.id, file_readed) == False): return;
         if (len(message_text) < 3): return bot.send_message(message.chat.id, "Использование: промо удалить <название>");
         bot.send_message(message.chat.id, rec_file.promo_remove(message_text[2], file_readed));
     def sendUser(message, message_text):
@@ -983,12 +816,10 @@ class kmd:
             bot.send_message(id, f"Вас анонимно послали нахуй");
             bot.send_message(message.chat.id, f"Вы анонимно послали нахуй игрока {rec_file.getFullName(id, file_readed)} ({getTag(id)})\nЗабрано 3.000.000 КШ");
     def promoInf(message, message_text):
-        if (rec_file.get_admin(message.from_user.id, file_readed) == False): return
         if (len(message_text) < 3): return bot.send_message(message.chat.id, "Использование: промо инфо <название промокода>")
         if (rec_file.promo_check(message_text[2]) == False): return bot.send_message(message.chat.id, f"Промокод {message_text[2]} не найден!")
         bot.send_message(message.chat.id, rec_file.promo_info(message_text[2]))
     def promoList(message, message_text):
-        if (rec_file.get_admin(message.from_user.id, file_readed) == False): return
         bot.send_message(message.chat.id, rec_file.promo_list())
     def userTop(message, message_text):
         top = {"mode": "б", "page": 1, "active": True}
@@ -1077,6 +908,8 @@ class kmd:
         file_readed["users"][str(message.from_user.id)]["bank"] -= sum
         file_readed["users"][str(message.from_user.id)]["paidKkh"] += feeSum
         bot.send_message(message.chat.id, f"Выведено {rec_file.ob_chisla(sum)} КШ из банка\nКомиссия {rec_file.ob_chisla(feeSum)} КШ ({fee}%)\nВ банке: {rec_file.ob_chisla(rec_file.getBank(message.from_user.id, file_readed))} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(message.from_user.id, file_readed))} КШ")
+    def checkReg(self):
+        if (str(self.message.from_user.id) not in file_readed["users"].keys()): return bot.send_message(self.message.chat.id, message_bot_not_started(), parse_mode="MARKDOWN")
 def bitcoinBet(id, bet, betAmount, chatid):
     try: startPrice = float(requests.get("https://blockchain.info/ticker").json()["RUB"]["sell"])
     except: return bot.send_message(chatid, "Возникла ошибка! Сообщите об этом разработчику!")
