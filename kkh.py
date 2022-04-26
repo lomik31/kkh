@@ -279,6 +279,7 @@ def check_messages(message, message_text):
             if COMMANDS[checkCommand]["permissions"] == "admin" and rec_file.get_admin(message.from_user.id, file_readed) == False: return False
             if COMMANDS[checkCommand]["permissions"] == "owner" and message.from_user.id != config["ownerId"]: return False
             eval(COMMANDS[checkCommand]["action"])
+            break
         i += 1
         if i != len(message_text) - 1: return False
         checkCommand += f" { message_text[i]}"
