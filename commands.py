@@ -292,7 +292,7 @@ COMMANDS = {
     },
     "лпромо": {
         "description": "Показать список промокодов",
-        "action": "rec_file.promo_list()",
+        "action": "kmd.promoList(message, message_text)",
         "usage": "лпромо",
         "permissions": "admin"
     },
