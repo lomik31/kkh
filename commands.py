@@ -292,7 +292,7 @@ COMMANDS = {
     },
     "лпромо": {
         "description": "Показать список промокодов",
-        "action": "rec_file.promo_list();",
+        "action": "rec_file.promo_list()",
         "usage": "лпромо",
         "permissions": "admin"
     },
