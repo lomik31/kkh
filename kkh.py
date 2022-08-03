@@ -269,6 +269,13 @@ def manual_backup():
     return "Бэкап успешно выполнен и загружен на сервер!"
    
 def check_messages(message, message_text):
+    if message_text[0] == "+1%":
+        kmd(message).checkReg()
+        if len(message_text) >= 2:
+            if message_text[1] == "скидки":
+                kmd.buy_skidka_2(message, message_text)
+            elif message_text[1] == "баланса/день":
+                kmd.buy_procent_balance_2(message, message_text)
     i = 0
     checkCommand = message_text[0]
     while True:
