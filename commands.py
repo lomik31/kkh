@@ -280,13 +280,13 @@ COMMANDS = {
     },
     "дпромо": {
         "description": "Удалить промокод",
-        "action": "kmd.delPromo(message, message_text);",
+        "action": "kmd.delPromo(message, message_text)",
         "usage": "дпромо <название>",
         "permissions": "admin"
     },
     "ипромо": {
         "description": "Показать информацию по промокоду",
-        "action": "kmd.promoInf(message, message_text);",
+        "action": "kmd.promoInf(message, message_text)",
         "usage": "ипромо <название>",
         "permissions": "user"
     },
