@@ -767,7 +767,7 @@ class kmd:
         name = message_text[2];
         paramsDictSTR = message_text[3];
         try: paramsDict = json.loads(paramsDictSTR.replace("'",'"'))
-        except: return bot.send_message(message.chat.id, "Произошла ошибка, попробуйте ещё раз!")
+        except Exception as e: return bot.send_message(message.chat.id, f"Произошла ошибка, попробуйте ещё раз!\n{e}")
         activationLimit = int(message_text[4]);
         durationTime = message_text[5];
         bot.send_message(message.chat.id, rec_file.promo_append(name, paramsDict, activationLimit, durationTime, fileRead));
