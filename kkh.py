@@ -824,7 +824,7 @@ class kmd:
             bot.send_message(id, f"Вас анонимно послали нахуй");
             bot.send_message(message.chat.id, f"Вы анонимно послали нахуй игрока {rec_file.getFullName(id, fileRead)} ({getTag(id)})\nЗабрано 3.000.000 КШ");
     def promoInf(message, message_text):
-        if (len(message_text) < 3): return bot.send_message(message.chat.id, "Использование: промо инфо <название промокода>")
+        if (len(message_text) < 2): return bot.send_message(message.chat.id, "Использование: промо инфо <название промокода>")
         if (rec_file.promo_check(message_text[2]) == False): return bot.send_message(message.chat.id, f"Промокод {message_text[2]} не найден!")
         bot.send_message(message.chat.id, rec_file.promo_info(message_text[2]))
     def promoList(message, message_text):
