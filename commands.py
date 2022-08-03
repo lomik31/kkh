@@ -275,7 +275,7 @@ COMMANDS = {
     "нпромо": {
         "description": "Добавить новый промокод",
         "action": "kmd.addPromo(message, message_text)",
-        "usage": "нпромо <название> <params({'balance': 0, 'click': 0, 'sec': 0, 'sale': 0, 'multiplier': 0, 'balanceBoost': 0})> <кол-во активаций> <время действия>",
+        "usage": "нпромо <название> <params({'balance':0, 'click':0, 'sec':0, 'sale':0, 'multiplier':0, 'balanceBoost':0})> <кол-во активаций> <время действия>",
         "permissions": "admin"
     },
     "дпромо": {

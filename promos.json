@@ -43,6 +43,17 @@
             "sale": 0,
             "multiplier": 1,
             "balanceBoost": 0
+        },
+        "dev001": {
+            "activationLimit": 1,
+            "activatedTimes": 0,
+            "validity": -1,
+            "balance": 0,
+            "click": 0,
+            "sec": 0,
+            "sale": 0,
+            "multiplier": 0,
+            "balanceBoost": -1
         }
     }
 }
