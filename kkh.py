@@ -801,7 +801,7 @@ class kmd:
         bot.send_message(message.chat.id, msg);
     def delPromo(message, message_text):
         if (len(message_text) < 3): return bot.send_message(message.chat.id, "Использование: промо удалить <название>");
-        bot.send_message(message.chat.id, rec_file.promo_remove(message_text[2], fileRead));
+        bot.send_message(message.chat.id, rec_file.promo_remove(message_text[1], fileRead));
     def sendUser(message, message_text):
         if (len(message_text) < 2) and (message_text[0] == "послать"): return bot.send_message(message.chat.id, "Послать пользователя (1.000.000 КШ): Послать <id юзера>");
         if (len(message_text) < 2) and (message_text[0] == "послатьанон"): return bot.send_message(message.chat.id, "Анонимно послать пользователя (3.000.000 КШ): Послатьанон <id юзера>");
