@@ -800,7 +800,7 @@ class kmd:
         if "parse" in COMMANDS[checkCommand].keys(): return bot.send_message(message.chat.id, msg, parse_mode=COMMANDS[checkCommand]["parse"])
         bot.send_message(message.chat.id, msg);
     def delPromo(message, message_text):
-        if (len(message_text) < 3): return bot.send_message(message.chat.id, "Использование: промо удалить <название>");
+        if (len(message_text) < 2): return bot.send_message(message.chat.id, "Использование: промо удалить <название>");
         bot.send_message(message.chat.id, rec_file.promo_remove(message_text[1], fileRead));
     def sendUser(message, message_text):
         if (len(message_text) < 2) and (message_text[0] == "послать"): return bot.send_message(message.chat.id, "Послать пользователя (1.000.000 КШ): Послать <id юзера>");
