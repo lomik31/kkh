@@ -760,7 +760,7 @@ class kmd:
         rec_file.write(fileRead)
         bot.send_message(message.chat.id, "БД записана")
     def addPromo(message, message_text):
-        if (len(message_text) < 6):
+        if (len(message_text) < 5):
             message.text = "команда нпромо"
             message_text = message.text.split(" ")
             return kmd.helpCommand(message, message_text)
