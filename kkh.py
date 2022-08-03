@@ -764,12 +764,12 @@ class kmd:
             message.text = "команда нпромо"
             message_text = message.text.split(" ")
             return kmd.helpCommand(message, message_text)
-        name = message_text[2];
-        paramsDictSTR = message_text[3];
+        name = message_text[1];
+        paramsDictSTR = message_text[2];
         try: paramsDict = json.loads(paramsDictSTR.replace("'",'"'))
         except Exception as e: return bot.send_message(message.chat.id, f"Произошла ошибка, попробуйте ещё раз!\n{e}")
-        activationLimit = int(message_text[4]);
-        durationTime = message_text[5];
+        activationLimit = int(message_text[3]);
+        durationTime = message_text[4];
         bot.send_message(message.chat.id, rec_file.promo_append(name, paramsDict, activationLimit, durationTime, fileRead));
         #except: return bot.send_message(message.chat.id, f"Использование: промо добавить <название> <params({paramsPromos})> <кол-во активаций> <время действия>")
     def commandsList(message, message_text):
