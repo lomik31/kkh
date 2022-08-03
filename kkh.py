@@ -826,7 +826,7 @@ class kmd:
     def promoInf(message, message_text):
         if (len(message_text) < 2): return bot.send_message(message.chat.id, "Использование: промо инфо <название промокода>")
         if (rec_file.promo_check(message_text[1]) == False): return bot.send_message(message.chat.id, f"Промокод {message_text[1]} не найден!")
-        bot.send_message(message.chat.id, rec_file.promo_info(message_text[2]))
+        bot.send_message(message.chat.id, rec_file.promo_info(message_text[1]))
     def promoList(message, message_text):
         bot.send_message(message.chat.id, rec_file.promo_list())
     def userTop(message, message_text):
