@@ -758,7 +758,9 @@ class kmd:
             message_text = message.text.split(" ")
             return kmd.helpCommand(message, message_text)
         name = message_text[1];
-        paramsDictSTR = message.text.partition('{')[2];
+        a = message.text.partition('{')
+        b = a[2].partition('}')
+        paramsDictSTR = a[1] + b[0]+ b[1];
         try: paramsDict = json.loads(paramsDictSTR.replace("'",'"'))
         except Exception as e: return bot.send_message(message.chat.id, f"Произошла ошибка, попробуйте ещё раз!\n{e}")
         activationLimit = int(message_text[3]);
