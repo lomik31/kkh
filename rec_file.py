@@ -389,8 +389,11 @@ def promo_append(promo_okda,znachenie_in_usrs,kol_vo_activacij,vremja_dejstvija,
         with open('promos.json', encoding="utf-8") as promoRead:
             promoRead = json.load(promoRead)
             promoRead["allPromos"][promo_okda]=copy.copy(promoRead["allPromos"]["default"])
+            znachenie_in_promos = list(promoRead["allPromos"]["default"].keys())
+            for i in range(0, len(znachenie_in_promos)):
+                znachenie_in_promos[i] = znachenie_in_promos[i].lower()
             for i in znachenie_in_usrs.keys():
-                if (i not in promoRead["allPromos"]["default"].keys()) or (i=="validity") or (i=="activationLimit") or (i=="activatedTimes"):
+                if (i not in znachenie_in_promos) or (i=="validity") or (i=="activationLimit") or (i=="activatedTimes"):
                     promo_remove(promo_okda, fileRead)
                     return "Введено недопустимое значение! Операция отменена"
                 else:
