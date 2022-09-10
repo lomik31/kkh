@@ -1038,9 +1038,9 @@ def rouletteStart(chatId, text):
                 if number in firstLine:
                     if i["id"] in results:
                         results[i["id"]]["bet"].append(i["bet"])
-                        results[i["id"]]["sum"] += i["amount"]
+                        results[i["id"]]["sum"] += 3 * i["amount"]
                     else:
-                        results[i["id"]] = {"bet": [i["bet"]], "sum": i["amount"]}
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": 3 * i["amount"]}
                 else:
                     if i["id"] in results:
                         results[i["id"]]["bet"].append(i["bet"])
@@ -1051,9 +1051,9 @@ def rouletteStart(chatId, text):
                 if number in secondLine:
                     if i["id"] in results:
                         results[i["id"]]["bet"].append(i["bet"])
-                        results[i["id"]]["sum"] += i["amount"]
+                        results[i["id"]]["sum"] += 3 * i["amount"]
                     else:
-                        results[i["id"]] = {"bet": [i["bet"]], "sum": i["amount"]}
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": 3 * i["amount"]}
                 else:
                     if i["id"] in results:
                         results[i["id"]]["bet"].append(i["bet"])
@@ -1064,9 +1064,9 @@ def rouletteStart(chatId, text):
                 if number in thirdLine:
                     if i["id"] in results:
                         results[i["id"]]["bet"].append(i["bet"])
-                        results[i["id"]]["sum"] += i["amount"]
+                        results[i["id"]]["sum"] += 3 * i["amount"]
                     else:
-                        results[i["id"]] = {"bet": [i["bet"]], "sum": i["amount"]}
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": 3 * i["amount"]}
                 else:
                     if i["id"] in results:
                         results[i["id"]]["bet"].append(i["bet"])
@@ -1077,9 +1077,9 @@ def rouletteStart(chatId, text):
                 if number in firstColumn:
                     if i["id"] in results:
                         results[i["id"]]["bet"].append(i["bet"])
-                        results[i["id"]]["sum"] += i["amount"]
+                        results[i["id"]]["sum"] += 3 * i["amount"]
                     else:
-                        results[i["id"]] = {"bet": [i["bet"]], "sum": i["amount"]}
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": 3 * i["amount"]}
                 else:
                     if i["id"] in results:
                         results[i["id"]]["bet"].append(i["bet"])
@@ -1090,9 +1090,9 @@ def rouletteStart(chatId, text):
                 if number in secondColumn:
                     if i["id"] in results:
                         results[i["id"]]["bet"].append(i["bet"])
-                        results[i["id"]]["sum"] += i["amount"]
+                        results[i["id"]]["sum"] += 3 * i["amount"]
                     else:
-                        results[i["id"]] = {"bet": [i["bet"]], "sum": i["amount"]}
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": 3 * i["amount"]}
                 else:
                     if i["id"] in results:
                         results[i["id"]]["bet"].append(i["bet"])
@@ -1103,9 +1103,9 @@ def rouletteStart(chatId, text):
                 if number in thirdColumn:
                     if i["id"] in results:
                         results[i["id"]]["bet"].append(i["bet"])
-                        results[i["id"]]["sum"] += i["amount"]
+                        results[i["id"]]["sum"] += 3 * i["amount"]
                     else:
-                        results[i["id"]] = {"bet": [i["bet"]], "sum": i["amount"]}
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": 3 * i["amount"]}
                 else:
                     if i["id"] in results:
                         results[i["id"]]["bet"].append(i["bet"])
@@ -1146,9 +1146,9 @@ def rouletteStart(chatId, text):
                 if (number == bet):
                     if i["id"] in results:
                         results[i["id"]]["bet"].append(i["bet"])
-                        results[i["id"]]["sum"] += i["amount"]
+                        results[i["id"]]["sum"] += 36 * i["amount"]
                     else:
-                        results[i["id"]] = {"bet": [i["bet"]], "sum": i["amount"]}
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": 36 * i["amount"]}
                 else:
                     if i["id"] in results:
                         results[i["id"]]["bet"].append(i["bet"])
