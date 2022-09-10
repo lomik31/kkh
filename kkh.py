@@ -937,7 +937,7 @@ def bitcoinBet(id, bet, betAmount, chatid):
         return bot.send_message(chatid, f"Вы проиграли!\nКурс BTC изменился на {round(endPrice - startPrice, 2)} RUB.\nПроиграно {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, fileRead))} КШ")
 def rouletteButtonsBet(betAmount, bet, userId, chatId):
     if (type(betAmount) != str):
-        if userId != betAmount.from_user.id: return bot.register_next_step_handler(betAmount, rouletteButtonsBet, bet, userId, chatId, True)
+        if userId != betAmount.from_user.id: return bot.register_next_step_handler(betAmount, rouletteButtonsBet, bet, userId, chatId)
         betAmount = betAmount.text
     #["1:3", "1:3(2)", "1:3(3)", "1st12", "2nd12", "3rd12", "1to18", "19to36", "even", "odd", "red", "black"]
     try: betAmount = int(rec_file.ob_k_chisla(betAmount))
