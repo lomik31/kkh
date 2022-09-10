@@ -233,14 +233,26 @@ def set_mnoz_bonus(id,on_off,fileRead):
 def get_mnoz_bonus(id,fileRead): return fileRead["users"][str(id)]["multiplier"]
 def give_bonus(id,fileRead):
     mnoz=get_mnoz_bonus(id,fileRead)
-    bonus = (get_sec(id, fileRead) * 3600 + get_click(id, fileRead) * 5400 + get_boost_balance(id, fileRead) * 500000) * mnoz
+    mnoz2 = 0
+    t = time.time()
+    for i in fileRead["users"][str(id)]["timeLast3Bonus"]:
+        if (t - i < 172800):
+            t =  i
+            mnoz2 += 1
+        else: break
+    bonus = (get_sec(id, fileRead) * 3600 + get_click(id, fileRead) * 5400 + get_boost_balance(id, fileRead) * 500000) * (mnoz + mnoz2)
     append_balance(id,bonus,fileRead)
     fileRead["users"][str(id)]["othersProceeds"] += bonus
-    if (mnoz==1):
-        return 'Вы забрали ежедневный бонус ' + ob_chisla(bonus) + ' КШ\nБаланс: ' + ob_chisla(get_balance(id, fileRead)) + ' КШ'
-    return f"Вы забрали ежедневный бонус {ob_chisla(bonus)} КШ (ваш множитель — x{mnoz})\nБаланс: {ob_chisla(get_balance(id, fileRead))} КШ"
+    msg = f"Вы забрали ежедневный бонус {ob_chisla(bonus)} КШ\n"
+    if (mnoz > 1): msg += f"(Стандартный множитель - x{mnoz})\n"
+    if (mnoz2 > 0): msg += f"(Множитель за ежедневную активность - x{mnoz2})\n"
+    if (mnoz + mnoz2 > 1): msg += f"Суммарный множитель - x{mnoz + mnoz2}\n"
+    msg += f"Баланс: {ob_chisla(get_balance(id, fileRead))} КШ"
+    return msg
 def set_time_give_bonus(id,time,fileRead):
     fileRead["users"][str(id)]["timeLastBonus"] = time
+    fileRead["users"][str(id)]["timeLast3Bonus"].insert(0, time)
+    fileRead["users"][str(id)]["timeLast3Bonus"] = fileRead["users"][str(id)]["timeLast3Bonus"][:-1]
     return fileRead
 def set_time_give_bonus2(id,time,fileRead):
     fileRead["users"][str(id)]["timeLastSecondBonus"]=time

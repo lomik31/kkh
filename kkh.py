@@ -33,6 +33,7 @@ apihelper.proxy = {'http':'http://10.10.1.10:3128'}
 main.info("BOT IS RUNNING NOW")
 y = yadisk.YaDisk(token=config["yandexDiskToken"])
 main.info("CLOUD CONNECTED")
+roulette = []
 
 def getId(toFind):
     if len(toFind) < 2: return "Id не найден"
@@ -81,7 +82,8 @@ def callback_inline(call):
         if (call.data in ["1:3", "1:3(2)", "1:3(3)", "1st12", "2nd12", "3rd12", "1to18", "19to36", "even", "odd", "red", "black"]):
             bot.answer_callback_query(call.id)
             bot.edit_message_media(types.InputMediaPhoto("AgACAgIAAxkBAAEERyxh0ZLbF82ZvyLwUJfjbOvxh2Z3PwAC2rcxGyzskEoC-uMjPRKv6gEAAwIAA3kAAyME"), call.message.chat.id, call.message.id)
-            bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Введите вашу ставку"), rouletteButtonsBet, call.data, call.from_user.id, call.message.chat.id, True)
+            # bot.edit_message_media(types.InputMediaPhoto("AgACAgIAAxkBAAJS5mMcm3T2QwGsS2gw_Iq0k4jGAVf-AAI8tTEb4KQ5S_X7F-E3605YAQADAgADbQADKQQ"), call.message.chat.id, call.message.id)
+            bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Введите вашу ставку"), rouletteButtonsBet, call.data, call.from_user.id, call.message.chat.id)
 
 @bot.message_handler(content_types=["text"])
 def send_text(message):
@@ -602,8 +604,8 @@ class kmd:
             else: bot.send_message(message.chat.id, "Ты не админ")
     def bonus(message, message_text):
         if rec_file.get_time_now() - rec_file.get_time_give_bonus(message.from_user.id, fileRead) < 86400: return bot.send_message(message.chat.id, f"Ежедневный бонус уже был получен сегодня\nДо следующего бонуса: {rec_file.ob_vremeni_bonusa(rec_file.get_time_give_bonus(message.from_user.id, fileRead) + 86400 - rec_file.get_time_now())}")
-        rec_file.set_time_give_bonus(message.from_user.id, message.date, fileRead)
         bot.send_message(message.chat.id, rec_file.give_bonus(message.from_user.id, fileRead))
+        rec_file.set_time_give_bonus(message.from_user.id, message.date, fileRead)
     def bonus2(message, message_text):
         if (rec_file.get_time_now() - rec_file.get_time_give_bonus2(message.from_user.id, fileRead)) < 28800: return bot.send_message(message.chat.id, f"Бонус2 можно получать каждые 8 часов\nДо следующего бонуса2: {rec_file.ob_vremeni_bonusa(rec_file.get_time_give_bonus2(message.from_user.id, fileRead) + 28800 - rec_file.get_time_now())}")
         rec_file.set_time_give_bonus2(message.from_user.id, message.date, fileRead)
@@ -861,11 +863,15 @@ class kmd:
         else: return bot.send_message(message.chat.id, "Неверная ставка (меньше нуля или больше вашего баланса)")
     def roulette(message, message_text):
         if (len(message_text) == 1): return bot.send_photo(message.chat.id, "AgACAgIAAxkBAAEERyxh0ZLbF82ZvyLwUJfjbOvxh2Z3PwAC2rcxGyzskEoC-uMjPRKv6gEAAwIAA3kAAyME", reply_markup=rouletteKeyboard())
+        # if (len(message_text) == 1): return bot.send_photo(message.chat.id, "AgACAgIAAxkBAAJS5mMcm3T2QwGsS2gw_Iq0k4jGAVf-AAI8tTEb4KQ5S_X7F-E3605YAQADAgADbQADKQQ", reply_markup=rouletteKeyboard())
         else: bot.send_photo(message.chat.id, "AgACAgIAAxkBAAEERyxh0ZLbF82ZvyLwUJfjbOvxh2Z3PwAC2rcxGyzskEoC-uMjPRKv6gEAAwIAA3kAAyME")
+        # else: bot.send_photo(message.chat.id, "AgACAgIAAxkBAAJS5mMcm3T2QwGsS2gw_Iq0k4jGAVf-AAI8tTEb4KQ5S_X7F-E3605YAQADAgADbQADKQQ")
         if (len(message_text) < 3): return bot.send_message(message.chat.id, config["messages"]["rouletteHelp"])
         betAmount = message_text[1]
         bet = message_text[2]
-        if bet in ["1:3", "1:3(2)", "1:3(3)", "1st12", "2nd12", "3rd12", "1to18", "19to36", "even", "odd", "red", "black"]: return rouletteButtonsBet(betAmount, bet, message.from_user.id, message.chat.id)
+        if bet in ["1:3", "1:3(2)", "1:3(3)", "1st12", "2nd12", "3rd12", "1to18", "19to36", "even", "odd", "red", "black"]: 
+
+            return rouletteButtonsBet(betAmount, bet, message.from_user.id, message.chat.id)
         elif (bet == "#r"): return rouletteButtonsBet(betAmount, random.randint(0, 36), message.from_user.id, message.chat.id)
         else:
             try: bet = int(bet)
@@ -930,7 +936,7 @@ def bitcoinBet(id, bet, betAmount, chatid):
     else:
         fileRead["users"][str(id)]["lostBtcBets"] += betAmount * 2;
         return bot.send_message(chatid, f"Вы проиграли!\nКурс BTC изменился на {round(endPrice - startPrice, 2)} RUB.\nПроиграно {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(id, fileRead))} КШ")
-def rouletteButtonsBet(betAmount, bet, userId, chatId, printBet = False):
+def rouletteButtonsBet(betAmount, bet, userId, chatId):
     if (type(betAmount) != str):
         if userId != betAmount.from_user.id: return bot.register_next_step_handler(betAmount, rouletteButtonsBet, bet, userId, chatId, True)
         betAmount = betAmount.text
@@ -947,6 +953,18 @@ def rouletteButtonsBet(betAmount, bet, userId, chatId, printBet = False):
             else: return bot.send_message(chatId, "Неверное использование процентной ставки. Процентная ставка должна быть не менее 1 и не более 100% от вашего баланса!")
         else: return bot.send_message(chatId, "Ставка должна иметь численный вид")
     if (betAmount > rec_file.get_balance(userId, fileRead)): return bot.send_message(chatId, "Ставка не может быть больше вашего баланса")
+    if roulette != []: 
+        bot.send_message(chatId, "Ставка сделана. Игра уже в процессе!")
+        return roulette.append({"id": userId, "bet": bet, "amount": betAmount})
+    roulette.append({"id": userId, "bet": bet, "amount": betAmount})
+    bot.send_message(chatId, "Ставка сделана. Игра начнется через 30 секунд!")
+    Thread(target=rouletteStart, args=(chatId, "a")).start()
+
+def rouletteStart(chatId, text):
+    global roulette
+    time.sleep(30)
+
+
     number = random.randint(0, 36)
     red = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]
     black = [2,4,6,8,10,11,13,15,17,20,22,24,26,28,29,33,35]
@@ -960,133 +978,199 @@ def rouletteButtonsBet(betAmount, bet, userId, chatId, printBet = False):
     thirdLine = [i for i in range(3, 37, 3)]
     oneToEighteen = [i for i in range(1,19)]
     nineteenToThirtySix = [i for i in range (19, 37)]
-    if (printBet):
-        loseMsg = f"Вы проиграли\nВаша ставка: {bet}\n"
-        winMsg = f"Вы выиграли!\nВаша ставка: {bet}\n"
-    else:
-        loseMsg = f"Вы проиграли\n"
-        winMsg = f"Вы выиграли!\n"
-    loseMsg += f"Выпало {number}\nПроиграно: {rec_file.ob_chisla(betAmount)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, fileRead))} КШ"
-    match bet:
-        case "red":
-            if number in red:
-                rec_file.append_balance(userId, betAmount, fileRead)
-                fileRead["users"][str(userId)]["wonRoulette"] += betAmount;
-                bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*2)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, fileRead))} КШ")
-            else:
-                rec_file.append_balance(userId, -betAmount, fileRead)
-                fileRead["users"][str(userId)]["lostRoulette"] += betAmount;
-                bot.send_message(chatId, loseMsg)
-        case "black":
-            if number in black:
-                rec_file.append_balance(userId, betAmount, fileRead)
-                fileRead["users"][str(userId)]["wonRoulette"] += betAmount;
-                bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*2)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, fileRead))} КШ")
-            else:
-                rec_file.append_balance(userId, -betAmount, fileRead)
-                fileRead["users"][str(userId)]["lostRoulette"] += betAmount;
-                bot.send_message(chatId, loseMsg)
-        case "even":
-            if number in even:
-                rec_file.append_balance(userId, betAmount, fileRead)
-                fileRead["users"][str(userId)]["wonRoulette"] += betAmount;
-                bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*2)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, fileRead))} КШ")
-            else:
-                rec_file.append_balance(userId, -betAmount, fileRead)
-                fileRead["users"][str(userId)]["lostRoulette"] += betAmount;
-                bot.send_message(chatId, loseMsg)
-        case "odd":
-            if number in odd:
-                rec_file.append_balance(userId, betAmount, fileRead)
-                fileRead["users"][str(userId)]["wonRoulette"] += betAmount;
-                bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*2)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, fileRead))} КШ")
-            else:
-                rec_file.append_balance(userId, -betAmount, fileRead)
-                fileRead["users"][str(userId)]["lostRoulette"] += betAmount;
-                bot.send_message(chatId, loseMsg)
-        case "1:3":
-            if number in firstLine:
-                rec_file.append_balance(userId, betAmount*2, fileRead)
-                fileRead["users"][str(userId)]["wonRoulette"] += betAmount;
-                bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*3)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, fileRead))} КШ")
-            else:
-                rec_file.append_balance(userId, -betAmount, fileRead)
-                fileRead["users"][str(userId)]["lostRoulette"] += betAmount;
-                bot.send_message(chatId, loseMsg)
-        case "1:3(2)":
-            if number in secondLine:
-                rec_file.append_balance(userId, betAmount*2, fileRead)
-                fileRead["users"][str(userId)]["wonRoulette"] += betAmount;
-                bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*3)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, fileRead))} КШ")
-            else:
-                rec_file.append_balance(userId, -betAmount, fileRead)
-                fileRead["users"][str(userId)]["lostRoulette"] += betAmount;
-                bot.send_message(chatId, loseMsg)
-        case "1:3(3)":
-            if number in thirdLine:
-                rec_file.append_balance(userId, betAmount*2, fileRead)
-                fileRead["users"][str(userId)]["wonRoulette"] += betAmount;
-                bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*3)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, fileRead))} КШ")
-            else:
-                rec_file.append_balance(userId, -betAmount, fileRead)
-                fileRead["users"][str(userId)]["lostRoulette"] += betAmount;
-                bot.send_message(chatId, loseMsg)
-        case "1st12":
-            if number in firstColumn:
-                rec_file.append_balance(userId, betAmount*2, fileRead)
-                fileRead["users"][str(userId)]["wonRoulette"] += betAmount;
-                bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*3)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, fileRead))} КШ")
-            else:
-                rec_file.append_balance(userId, -betAmount, fileRead)
-                fileRead["users"][str(userId)]["lostRoulette"] += betAmount;
-                bot.send_message(chatId, loseMsg)
-        case "2nd12":
-            if number in secondColumn:
-                rec_file.append_balance(userId, betAmount*2, fileRead)
-                fileRead["users"][str(id)]["wonRoulette"] += betAmount;
-                bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*3)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, fileRead))} КШ")
-            else:
-                rec_file.append_balance(userId, -betAmount, fileRead)
-                fileRead["users"][str(userId)]["lostRoulette"] += betAmount;
-                bot.send_message(chatId, loseMsg)
-        case "3rd12":
-            if number in thirdColumn:
-                rec_file.append_balance(userId, betAmount*2, fileRead)
-                fileRead["users"][str(userId)]["wonRoulette"] += betAmount;
-                bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*3)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, fileRead))} КШ")
-            else:
-                rec_file.append_balance(userId, -betAmount, fileRead)
-                fileRead["users"][str(userId)]["lostRoulette"] += betAmount;
-                bot.send_message(chatId, loseMsg)
-        case "1to18":
-            if number in oneToEighteen:
-                rec_file.append_balance(userId, betAmount, fileRead)
-                fileRead["users"][str(userId)]["wonRoulette"] += betAmount;
-                bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*2)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, fileRead))} КШ")
-            else:
-                rec_file.append_balance(userId, -betAmount, fileRead)
-                fileRead["users"][str(userId)]["lostRoulette"] += betAmount;
-                bot.send_message(chatId, loseMsg)
-        case "19to36":
-            if number in nineteenToThirtySix:
-                rec_file.append_balance(userId, betAmount, fileRead)
-                fileRead["users"][str(userId)]["wonRoulette"] += betAmount;
-                bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*2)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, fileRead))} КШ")
-            else:
-                rec_file.append_balance(userId, -betAmount, fileRead)
-                fileRead["users"][str(userId)]["lostRoulette"] += betAmount;
-                bot.send_message(chatId, loseMsg)
-        case _:
-            try: bet = int(bet)
-            except: return bot.send_message(chatId, "Произошла ошибка!")
-            if (number == bet):
-                rec_file.append_balance(userId, betAmount*36, fileRead)
-                fileRead["users"][str(userId)]["wonRoulette"] += betAmount;
-                bot.send_message(chatId, f"{winMsg}Выпало {number}\nВыигрыш: {rec_file.ob_chisla(betAmount*37)} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(userId, fileRead))} КШ")
-            else:
-                rec_file.append_balance(userId, -betAmount, fileRead)
-                fileRead["users"][str(userId)]["lostRoulette"] += betAmount;
-                bot.send_message(chatId, loseMsg)
+
+    msg = f"Выпало число {number}\nСтавки:"
+    results = {}
+    for i in roulette:
+        match i["bet"]:
+            case "red":
+                if number in red:
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] += i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": i["amount"]}
+                else:
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] -= i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": -i["amount"]}
+            case "black":
+                if number in black:
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] += i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": i["amount"]}
+                else:
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] -= i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": -i["amount"]}
+            case "even":
+                if number in even:
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] += i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": i["amount"]}
+                else:
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] -= i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": -i["amount"]}
+            case "odd":
+                if number in odd:
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] += i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": i["amount"]}
+                else:
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] -= i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": -i["amount"]}
+            case "1:3":
+                if number in firstLine:
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] += i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": i["amount"]}
+                else:
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] -= i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": -i["amount"]}
+            case "1:3(2)":
+                if number in secondLine:
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] += i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": i["amount"]}
+                else:
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] -= i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": -i["amount"]}
+            case "1:3(3)":
+                if number in thirdLine:
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] += i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": i["amount"]}
+                else:
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] -= i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": -i["amount"]}
+            case "1st12":
+                if number in firstColumn:
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] += i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": i["amount"]}
+                else:
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] -= i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": -i["amount"]}
+            case "2nd12":
+                if number in secondColumn:
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] += i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": i["amount"]}
+                else:
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] -= i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": -i["amount"]}
+            case "3rd12":
+                if number in thirdColumn:
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] += i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": i["amount"]}
+                else:
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] -= i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": -i["amount"]}
+            case "1to18":
+                if number in oneToEighteen:
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] += i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": i["amount"]}
+                else:
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] -= i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": -i["amount"]}
+            case "19to36":
+                if number in nineteenToThirtySix:
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] += i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": i["amount"]}
+                else:
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] -= i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": -i["amount"]}
+            case _:
+                try: bet = int(bet)
+                except:
+                    results[i["id"]] = {"error": "Произошла ошибка!"}
+                    continue
+                if (number == bet):
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] += i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": i["amount"]}
+                else:
+                    if i["id"] in results:
+                        results[i["id"]]["bet"].append(i["bet"])
+                        results[i["id"]]["sum"] -= i["amount"]
+                    else:
+                        results[i["id"]] = {"bet": [i["bet"]], "sum": -i["amount"]}
+    
+    for i in results.keys():
+        rec_file.append_balance(i, results[i]["sum"], fileRead)
+        fileRead["users"][str(i)]["wonRoulette"] += results[i]["sum"]
+        msg += f"\n\n<a href = 'tg://user?id={i}'>{getName(i)}</a>:\nCтавки: {results[i]['bet']}\nОбщее изменение баланса: "
+        if results[i]["sum"] > 0: msg += "+"
+        elif results[i]["sum"] < 0: msg += "-"
+        msg += f"{rec_file.ob_chisla(abs(results[i]['sum']))} КШ\nБаланс: {rec_file.ob_chisla(rec_file.get_balance(i, fileRead))} КШ"
+    
+    bot.send_photo(chatId, "AgACAgIAAxkBAAEERyxh0ZLbF82ZvyLwUJfjbOvxh2Z3PwAC2rcxGyzskEoC-uMjPRKv6gEAAwIAA3kAAyME")
+    # bot.send_photo(chatId, "AgACAgIAAxkBAAJS5mMcm3T2QwGsS2gw_Iq0k4jGAVf-AAI8tTEb4KQ5S_X7F-E3605YAQADAgADbQADKQQ")
+    bot.send_message(chatId, msg, parse_mode="HTML")
+    roulette = []
+    results = {}
+
 bot.infinity_polling(timeout=123, long_polling_timeout=123)
 # bot.polling(True, interval=0.5, timeout=123, long_polling_timeout=123)
 #962 -> 630
