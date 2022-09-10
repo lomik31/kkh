@@ -98,7 +98,7 @@ COMMANDS = {
         "description": "Выдает полную информацию о пользователе из бд",
         "action": "kmd.full_inf_user(message, message_text)",
         "usage": "инфо <id юзера>",
-        "permissions": "user"
+        "permissions": "admin"
     },
     "дюзер": {
         "description": "Удаляет пользователя из бд",
