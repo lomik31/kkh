@@ -1139,11 +1139,7 @@ def rouletteStart(chatId, text):
                     else:
                         results[i["id"]] = {"bet": [i["bet"]], "sum": -i["amount"]}
             case _:
-                try: bet = int(bet)
-                except:
-                    results[i["id"]] = {"error": "Произошла ошибка!"}
-                    continue
-                if (number == bet):
+                if (number == i["bet"]):
                     if i["id"] in results:
                         results[i["id"]]["bet"].append(i["bet"])
                         results[i["id"]]["sum"] += 36 * i["amount"]
@@ -1157,6 +1153,9 @@ def rouletteStart(chatId, text):
                         results[i["id"]] = {"bet": [i["bet"]], "sum": -i["amount"]}
     
     for i in results.keys():
+        if ("error" in results[i]):
+            msg += f"\n\n<a href = 'tg://user?id={i}'>{getName(i)}</a>:\n{results[i]['error']}"
+            continue
         rec_file.append_balance(i, results[i]["sum"], fileRead)
         fileRead["users"][str(i)]["wonRoulette"] += results[i]["sum"]
         msg += f"\n\n<a href = 'tg://user?id={i}'>{getName(i)}</a>:\nCтавки: {results[i]['bet']}\nОбщее изменение баланса: "
