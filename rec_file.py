@@ -160,7 +160,7 @@ def cal_boost_sec(id,fileRead):
     return nac_cena
 def cal_boost_skidka(id,fileRead):
     nac_cena=7500 #изначальная цена
-    procent=22 #процент стоимости следующего буста
+    procent=35 #процент стоимости следующего буста
     boost_level=100-int(fileRead["users"][str(id)]["sale"])
     skidka=int(fileRead["users"][str(id)]["sale"])
     if (skidka==0):
