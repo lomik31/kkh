@@ -282,7 +282,7 @@ def check_messages(message, message_text):
             eval(COMMANDS[checkCommand]["action"])
             break
         i += 1
-        # if i != len(message_text) - 1: return False
+        if i > len(message_text) - 1: return False
         checkCommand += f" { message_text[i]}"
 def repeat_command(message):
     messageLog.info(f"TEXT (repeat): {message.chat.id}: {getName(message.from_user.id)} ({message.from_user.id}): {message.text}")
@@ -1169,6 +1169,6 @@ def rouletteStart(chatId, text):
     roulette = []
     results = {}
 
-bot.infinity_polling(timeout=123, long_polling_timeout=123)
-# bot.polling(True, interval=0.5, timeout=123, long_polling_timeout=123)
+# bot.infinity_polling(timeout=123, long_polling_timeout=123)
+bot.polling(True, interval=0.5, timeout=123, long_polling_timeout=123)
 #962 -> 630
