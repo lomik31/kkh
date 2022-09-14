@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#test
 import random
 import time
 import json
@@ -161,7 +160,7 @@ def cal_boost_sec(id,fileRead):
     return nac_cena
 def cal_boost_skidka(id,fileRead):
     nac_cena=7500 #изначальная цена
-    procent=15 #процент стоимости следующего буста
+    procent=22 #процент стоимости следующего буста
     boost_level=100-int(fileRead["users"][str(id)]["sale"])
     skidka=int(fileRead["users"][str(id)]["sale"])
     if (skidka==0):
@@ -240,7 +239,7 @@ def give_bonus(id,fileRead):
             t =  i
             mnoz2 += 1
         else: break
-    bonus = (get_sec(id, fileRead) * 3600 + get_click(id, fileRead) * 5400 + get_boost_balance(id, fileRead) * 500000) * (mnoz + mnoz2)
+    bonus = round(get_sec(id, fileRead) * 4000 + get_click(id, fileRead) * 6500 + get_boost_balance(id, fileRead) * 500000 + 1.135**get_sec(id, fileRead) + 1.145**get_click(id, fileRead) + 1.22**get_boost_balance(id, fileRead) + 1.14**get_skidka(id, fileRead)) * (mnoz + mnoz2)
     append_balance(id,bonus,fileRead)
     fileRead["users"][str(id)]["othersProceeds"] += bonus
     msg = f"Вы забрали ежедневный бонус {ob_chisla(bonus)} КШ\n"

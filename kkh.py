@@ -202,7 +202,7 @@ def upgades_buttons(id):
     upgades_board = types.ReplyKeyboardMarkup(True)
     button_sec = types.KeyboardButton(f"+сек ({rec_file.ob_chisla(rec_file.cal_boost_sec(id, fileRead))} КШ)")
     button_click = types.KeyboardButton(f"+клик ({rec_file.ob_chisla(rec_file.cal_boost_click(id, fileRead))} КШ)")
-    if rec_file.get_skidka(id, fileRead) >= 25:
+    if rec_file.get_skidka(id, fileRead) >= 45:
         button_skidka = types.KeyboardButton(message_max_skidka())
     else:
         button_skidka = types.KeyboardButton(f"+1% скидки ({rec_file.ob_chisla(rec_file.cal_boost_skidka(id, fileRead))} КШ)")
@@ -380,7 +380,7 @@ class kmd:
                     except:
                         pass
     def buy_skidka(message, message_text):
-        if rec_file.get_skidka(message.from_user.id, fileRead) >= 25: return bot.send_message(message.chat.id, message_max_skidka())
+        if rec_file.get_skidka(message.from_user.id, fileRead) >= 45: return bot.send_message(message.chat.id, message_max_skidka())
         if len(message_text) == 1:
             if rec_file.get_balance(message.from_user.id, fileRead) < rec_file.cal_boost_skidka(message.from_user.id, fileRead): return bot.send_message(message.chat.id, message_not_enough_money_skidka(message))
             rec_file.append_balance(message.from_user.id, -rec_file.cal_boost_skidka(message.from_user.id, fileRead), fileRead)
@@ -391,7 +391,7 @@ class kmd:
             a = 0
             try:
                 for i in range(0, int(message_text[1])):
-                    if rec_file.get_skidka(message.from_user.id, fileRead) < 25:
+                    if rec_file.get_skidka(message.from_user.id, fileRead) < 45:
                         if rec_file.get_balance(message.from_user.id, fileRead) >= rec_file.cal_boost_skidka(message.from_user.id, fileRead):
                             rec_file.append_balance(message.from_user.id, -rec_file.cal_boost_skidka(message.from_user.id, fileRead), fileRead)
                             fileRead["users"][str(message.from_user.id)]["spendKkhUpgrades"] += rec_file.cal_boost_skidka(message.from_user.id, fileRead)
@@ -401,7 +401,7 @@ class kmd:
             except:
                 if message_text[1] == "все" or message_text[1] == "всё":
                     if rec_file.get_balance(message.from_user.id, fileRead) < rec_file.cal_boost_skidka(message.from_user.id, fileRead): return bot.send_message(message.chat.id, message_not_enough_money_skidka(message))
-                    while rec_file.get_balance(message.from_user.id, fileRead) >= rec_file.cal_boost_skidka(message.from_user.id, fileRead) and rec_file.get_skidka(message.from_user.id, fileRead) < 25:
+                    while rec_file.get_balance(message.from_user.id, fileRead) >= rec_file.cal_boost_skidka(message.from_user.id, fileRead) and rec_file.get_skidka(message.from_user.id, fileRead) < 45:
                         rec_file.append_balance(message.from_user.id, -rec_file.cal_boost_skidka(message.from_user.id, fileRead), fileRead)
                         fileRead["users"][str(message.from_user.id)]["spendKkhUpgrades"] += rec_file.cal_boost_skidka(message.from_user.id, fileRead)
                         rec_file.append_skidka(message.from_user.id, 1, fileRead)
@@ -409,7 +409,7 @@ class kmd:
                     sendmessage_check_active_keyboard(message.chat.id, message.from_user.id, bot.get_chat(message.chat.id).type, message_bought_upgrade(message, a))
                 else: bot.send_message(message.chat.id, "Неверный параметр +скидка [кол-во апгрейдов]")
     def buy_skidka_2(message, message_text):
-        if rec_file.get_skidka(message.from_user.id, fileRead) >= 25: return bot.send_message(message.chat.id, message_max_skidka())
+        if rec_file.get_skidka(message.from_user.id, fileRead) >= 45: return bot.send_message(message.chat.id, message_max_skidka())
         if len(message_text) >= 4:
             if message_text[1] == 'скидки':
                 try:
@@ -425,7 +425,7 @@ class kmd:
         if message_text[1] == "сек" or message_text[1] == "+сек": bot.send_message(message.chat.id, f"Цена за {fileRead['users'][str(message.from_user.id)]['sec'] + 1} апгрейд +сек со скидкой {rec_file.get_skidka(message.from_user.id, fileRead)}%: {rec_file.ob_chisla(rec_file.cal_boost_sec(message.from_user.id, fileRead))} КШ")
         elif message_text[1] == "клик" or message_text[1] == "+клик": bot.send_message(message.chat.id, f"Цена за {fileRead['users'][str(message.from_user.id)]['click'] + 1} апгрейд +клик со скидкой {rec_file.get_skidka(message.from_user.id, fileRead)}%: {rec_file.ob_chisla(rec_file.cal_boost_click(message.from_user.id, fileRead))} КШ")
         elif message_text[1] == "скидка" or message_text[1] == "+скидка" or message_text[1] == "скидки" or message_text[1] == "+скидки":
-            if rec_file.get_skidka(message.from_user.id, fileRead) < 25: bot.send_message(message.chat.id, f"Цена за {rec_file.get_skidka(message.from_user.id, fileRead) + 1} апгрейд со скидкой {rec_file.get_skidka(message.from_user.id, fileRead)}%: {rec_file.ob_chisla(rec_file.cal_boost_skidka(message.from_user.id, fileRead))} КШ")
+            if rec_file.get_skidka(message.from_user.id, fileRead) < 45: bot.send_message(message.chat.id, f"Цена за {rec_file.get_skidka(message.from_user.id, fileRead) + 1} апгрейд со скидкой {rec_file.get_skidka(message.from_user.id, fileRead)}%: {rec_file.ob_chisla(rec_file.cal_boost_skidka(message.from_user.id, fileRead))} КШ")
             else: bot.send_message(message.chat.id, message_max_skidka())
         elif message_text[1] == "бб" or message_text[1] == "+бб" or message_text[1] == "баланс" or message_text[1] == "баланса" or message_text[1] == "+баланса" or message_text[1] == "+баланс" or message_text[1] == "баланс/день" or message_text[1] == "+баланс/день":
             if rec_file.get_boost_balance(message.from_user.id, fileRead) < rec_file.cal_boost_balance(message.from_user.id, fileRead)[1]: bot.send_message(message.chat.id, f"Цена за {rec_file.get_boost_balance(message.from_user.id, fileRead) + 1} апгрейд со скидкой {rec_file.get_skidka(message.from_user.id, fileRead)}%: {rec_file.ob_chisla(rec_file.cal_boost_balance(message.from_user.id, fileRead)[0])} КШ")
