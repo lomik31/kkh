@@ -1169,6 +1169,6 @@ def rouletteStart(chatId, text):
     roulette = []
     results = {}
 
-# bot.infinity_polling(timeout=123, long_polling_timeout=123)
-bot.polling(True, interval=0.5, timeout=123, long_polling_timeout=123)
+bot.infinity_polling(timeout=123, long_polling_timeout=123)
+# bot.polling(True, interval=0.5, timeout=123, long_polling_timeout=123)
 #962 -> 630
