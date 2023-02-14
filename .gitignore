@@ -10,3 +10,6 @@ usrs.json
 promos.json
 server
 ._*
+node_modules
+package.json
+package-lock.json
