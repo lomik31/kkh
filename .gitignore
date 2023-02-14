@@ -7,5 +7,6 @@ logs
 tags.json
 test.py
 usrs.json
+promos.json
 server
 ._*
