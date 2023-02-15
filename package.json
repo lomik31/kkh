@@ -1,0 +1,24 @@
+{
+  "name": "kkh-core",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "console.log(\"Hello World!\")"
+  },
+  "author": "lomik31",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.7.2",
+    "date-fns": "^2.29.1",
+    "deasync": "^0.1.28",
+    "express": "^4.18.2",
+    "ftp-client": "^0.2.0",
+    "node-schedule": "^2.1.0",
+    "request": "^2.88.2",
+    "ws": "^8.10.0",
+    "ya-disk": "^4.0.1",
+    "yandex-disk": "^0.0.8"
+  },
+  "type": "commonjs"
+}
