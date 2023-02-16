@@ -7,18 +7,33 @@ const http = require("http");
 const { request } = require('https');
 const { parse } = require('url');
 const { upload } = require("ya-disk");
-const express = require( "express");
+const express = require("express");
 const WebSocket = require("ws");
 const app = express();
 const server = http.createServer(app);
 const webSocketServer = new WebSocket.Server({ server });
 const request1 = require('request');
+const { COMMANDS } = require("./commands");
 
 let CLIENTS = {};
 webSocketServer.on('connection', (ws, req) => {
     ws.on('message', m => dispatchEvent(m, ws));
     let name = req.url.replace('/?client=', '');
     CLIENTS[name] = ws;
+    CLIENTS[name].sendData = ws.send;
+    CLIENTS[name].send = (data) => {
+        if (!data.serverId) delete data.serverId;
+        ws.send(JSON.stringify(data))
+    }
+    CLIENTS[name].sendMessage = ({chatId, serverId = undefined, text, parseMode = undefined, keyboard = undefined}) => {
+        let message = {};
+        if (serverId) message.serverId = serverId;
+        message.chatId = chatId;
+        message.text = text;
+        if (parseMode) message.parseMode = parseMode;
+        if (keyboard) message.keyboard = keyboard;
+        CLIENTS[name].send({event: "sendMessage", message})
+    }
     console.log(`New connection: ${name}. All connections: ${Object.keys(CLIENTS)}`);
     ws.on("error", e => {
         throw new Error(e);
@@ -31,33 +46,88 @@ webSocketServer.on('connection', (ws, req) => {
 });
 const dispatchEvent = (message, ws) => {
     const json = JSON.parse(message);
-    if (json.action && json.id && json.action.function) {
-        let data;
-        console.log(json);
-        if (json.action.args) {
-            if (typeof json.action.args == "object") data = eval(json.action.function)(...json.action.args)
-            else data = eval(json.action.function)(json.action.args)
-        }
-        else if (json.action.function == "backup") return eval(json.action.function)(ws, json.id)
-        else data = eval(json.action.function)()
-        data.id = json.id;
-        ws.send(JSON.stringify(data))
-    }
-    else if (json.action == "test" && json.data) {
-        console.log("your data is", json.data);
-        data = randomNumber()
-        data.id = json.id
-        ws.send(JSON.stringify(data))
-    }
+    if (json.event == "newMessage") textReceiver(json.message, json.client)
+    // else if (json.action && json.id && json.action.function) {
+    //     let data;
+    //     console.log(json);
+    //     if (json.action.args) {
+    //         if (typeof json.action.args == "object") data = eval(json.action.function)(...json.action.args)
+    //         else data = eval(json.action.function)(json.action.args)
+    //     }
+    //     else if (json.action.function == "backup") return eval(json.action.function)(ws, json.id)
+    //     else data = eval(json.action.function)()
+    //     data.id = json.id;
+    //     ws.send(JSON.stringify(data))
+    // }
     else console.log(json);
 }
 server.listen(3200, () => console.log("Server started"))
 
-
+function textReceiver(message, client) {
+    if (!get.id(message.from_user.id)) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Для взаимодействия с ботом вам необходимо сначала активировать его. Напишите боту *в ЛС* команду /start!", parseMode: "MARKDOWN"})
+    let message_text = message.text.toLowerCase().split(" ");
+    if (!(["кмд", "_"].includes(message_text[0]) || (message_text[0][0] == "+" && message_text[0].slice(1) != "банк"))) {
+        let i = 0;
+        let checkCommand = message_text[0];
+        while (true) {
+            if (i > 3) return;
+            if (Object.keys(COMMANDS).includes(checkCommand)) {
+                if (Object.keys(COMMANDS[checkCommand]).includes("link")) checkCommand = COMMANDS[checkCommand].link;
+                if (COMMANDS[checkCommand].permissions == "admin" && !get.get(message.from_user.id, "isAdmin")) return;
+                if (COMMANDS[checkCommand].permissions == "owner" && message.from_user.id != 357694314) return; //ВНИМАНИЕ БЛЯТЬ
+                //лог
+                eval(COMMANDS[checkCommand]["action"]);
+                break;
+            }
+            i++;
+            if (i > message_text.length - 1 ) return;
+            checkCommand += ` ${message_text[i]}`
+        }
+    }
+    else if (message_text[0] == "кмд") {
+        if (!get.get(message.from_user.id, "isAdmin")) return;
+        if (message_text.length < 3) {
+            message.text = "команда кмд";
+            return textReceiver(message, client);
+        }
+        if (message_text[1] == "_" && message.reply_to_message) userId = message.reply_to_message.from_user.id;
+        else userId = message_text[1];
+        if (!get.id(userId)) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Id не найден"});
+        if (message_text[2] == "кмд") return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "э, так нельзя, бан"});
+        if (get.get(userId, "isAdmin") && message.from_user.id != 357694314) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Невозможно выполнить кмд для этого юзера!"});
+        new kmd(message, message_text);
+        message.from_user.id = userId;
+        let a = message.text.split(" ").slice(2);
+        message.text = "";
+        let b = 0;
+        for (i of a) {
+            b = a.length - 1;
+            if (b == 0) message.text += i;
+            else message.text += `${i} `;
+        }
+        textReceiver(message, client);
+    }
+    else if (message_text[0] == "_") {
+        let command = get.get(message.from_user.id, "lastCommand");
+        if (command == "") return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Последняя команда не обнаружена"});
+        message.text = command;
+        textReceiver(message, client);
+    }
+    else if (message_text[0][0] == "+" && message_text[0].slice(1) != "банк") {
+        let loxtext = message.text;
+        message.text = message.text.replace(" \(\d+[\.\d]* КШ\)", "").slice(1);
+        message_text = message.text.toLowerCase().split(" ");
+        let t = message_text[0];
+        for (i in message_text) {
+            if (["сек", "клик", "скидка", "1% скидки", "бб", "баланс", "баланс/день", "буст баланса", "буст баланс", "1% баланса/день"].includes(t)) return new kmd(message, client, loxtext).buyBoost(t);
+            t += ` ${message_text[i+1]}`;
+        }
+        return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Неверный тип апгрейда"});
+    }
+}
 function choose(choices) {
     return choices[Math.floor(Math.random() * choices.length)];
 }
-
 
 let accrual = {
     sec: function () {
@@ -88,18 +158,6 @@ let accrual = {
             data.users[i].earnedKkh += add;
         }
     }
-}
-function removeId(toRemove) {
-    if (!get.id(toRemove).data) return {success: false, message: `Пользователя ${toRemove} не существует`}
-    delete data.users[toRemove];
-    return {success: true}
-}
-function resetId(toReset, type, id = 0) {
-    if (!get.id(toReset).data) return {success: false, message: `Пользователя ${toReset} не существует`}
-    if (type == 1) {}
-    else if (type == 2 && get.get(toReset, "isAdmin").data && id != 357694314) return {success: false, message: "Невозможно сбросить прогресс этого пользователя"}
-    for (i in data.users[toReset]) if (data.doNotClear.indexOf(i) === -1) data.users[toReset][i] = data.users.default[i]; //ВНИМАНИЕ БЛЯТЬ удаляется default при сбросе пофиксить
-    return {success: true}
 }
 let file = {
     write: function () {
@@ -143,63 +201,53 @@ let get = {
         let getValues = ["balance", "click", "sec", "balanceBoost", "keyboard", "sale", "isAdmin",
         "activeKeyboard", "mails", "timeLastBonus", "timeLastSecondBonus", "lastCommand", "bank",
         "multiplier", "receiver"]
-        if (!get.id(id).data) return {success: false, message: "Неверный пользователь"};
-        if (toGet == "all") return {success: true, data: data.users[id]}
+        if (toGet == "all") return data.users[id]
         else if (toGet == "fullName") {
             let name = data.users[id]["firstName"];
             if (data.users[id]["lastName"] !== null) name += ` ${data.users[id]["lastName"]}`;
-            return {success: true, data: name};
+            return name;
         }
         else if (toGet == "sale") return {success: true, data: 100 - data.users[id][toGet]};
         if (getValues.indexOf(toGet) == -1) return {success: false, message: "Данный параметр не найден"};
         let toReturn = data.users[id][toGet];
-        return {success: true, data: toReturn, id};
+        return toReturn;
         
     },
     ids: function () {
         let ids = Object.keys(data.users);
         ids.splice(ids.indexOf('default'), 1);
-        return {success: true, data: ids};
+        return ids;
     },
     id: function (id, type = "private") {
-        if (type == "private" && id in data.users) return {success: true, data: true}
-        if (id in data.groups) return {success: true, data: true} 
-        return {success: true, data: false}
+        if (type == "private" && id in data.users) return true
+        if (id in data.groups) return true
+        return false
     },
     time: function () {
         return Number(Math.floor(Date.now() / 1000))
     },
     keyboardCosts: function (id) {
-        if (!get.id(id)) return {success: false, message: "Id не найден"};
         let sec = obrabotka.chisla(calc.boost(id, "sec").cost);
         let click = obrabotka.chisla(calc.boost(id, "click").cost);
         let sale = function () {
-            a = calc.boost(id, "sale");
+            let a = calc.boost(id, "sale");
             if (a.success) return `+1% скидки (${obrabotka.chisla(a.cost)} КШ)`
             else return a.message
         }();
         let balanceBoost = function() {
-            a = calc.boost(id, "balanceBoost");
+            let a = calc.boost(id, "balanceBoost");
             if (a.success) return `+1% баланса/день (${obrabotka.chisla(a.cost)} КШ)`
             else return a.message
         }();
-        return {success: true, data: [sec, click, sale, balanceBoost]}
+        return {sec, click, sale, balanceBoost}
     },
     keyboard: function (id, keyboardType, chatType = "private") {
         if (chatType == "private") {
-            d = get.get(id, keyboardType)
-            if (d.success) return {success: true, data: d.data}
-            return {success: false, message: d.message}
+            return get.get(id, keyboardType)
         }
-        else {
-            if (!get.id(id, chatType).data) return {success: false, message: "Id не найден"}
-            return {success: true, data: data.groups[id][keyboardType]}
-        }
+        else return data.groups[id][keyboardType]
     },
-    data: function (id) {
-        if (!get.id(id).data) return {success: false, data: "Пользователь не найден"};
-        return {success: true, data: data.users[id]};
-    }
+    data: (id) => data.users[id]
 }
 let calc = {
     boost: function (id, boost) {
@@ -224,21 +272,11 @@ let calc = {
             var limit = 10;
         }
         else return {success: false, message: "Неверный параметр boost"}
-        if (!get.id(id).data) return {success: false, message: `Пользователя с id ${id} не существует`}
         let boost_level = data.users[id][boost];
         if (boost != "sale" && boost_level >= limit && limit != -1) return {success: false, message: `Достигнут максимум апгрейдов этого типа`}
         else if (boost == "sale" && 100 - boost_level >= limit) return {success: false, message: `Достигнут максимум апгрейдов этого типа`}
         let skidka = data.users[id].sale;
         if (boost == "sale") boost_level = 100 - boost_level
-        // if (skidka == 0) {
-        //     if (boost_level == 0) return {success: true, cost: nac_cena, data: `Цена за ${boost_level + 1} апгрейд со скидкой ${100 - skidka}%: ${obrabotka.chisla(nac_cena)} КШ`};
-        //     for (let i = 0; i < boost_level; i++) nac_cena = Math.floor(nac_cena * (100 + procent) / 100);
-        //     return {success: true, cost: nac_cena, data: `Цена за ${boost_level + 1} апгрейд со скидкой ${100 - skidka}%: ${obrabotka.chisla(nac_cena)} КШ`};
-        // }
-        // if (boost_level == 1) {
-        //     nac_cena = Math.floor(nac_cena * skidka / 100);
-        //     return {success: true, cost: nac_cena, data: `Цена за ${boost_level + 1} апгрейд со скидкой ${100 - skidka}%: ${obrabotka.chisla(nac_cena)} КШ`};
-        // }
         for (let i = 0; i < boost_level; i++) nac_cena = Math.floor(nac_cena * (100 + procent) / 100);
         nac_cena = Math.floor(nac_cena * skidka / 100);
         return {success: true, cost: nac_cena, data: `Цена за ${boost_level + 1} апгрейд со скидкой ${100 - skidka}%: ${obrabotka.chisla(nac_cena)} КШ`};
@@ -327,7 +365,6 @@ let give = {
         data.users[id].othersProceeds += bonus;
         data.users[id].timeLastSecondBonus = get.time();
         return {success: true, data: 'Вы получили случайный бонус2  в размере ' + obrabotka.chisla(bonus) + ' КШ\nБаланс: ' + obrabotka.chisla(get.get(id, "balance").data) + ' КШ'};
-
     }
 }
 let set = {
@@ -629,9 +666,155 @@ let game = {
         return {success: true};
     }
 }
-let kmd = {
-    leaderboard: function (mode, active_top, caller_id, page) {
-        console.log({mode, active_top, caller_id, page});
+
+class kmd {
+    constructor(message, client, customCommand = undefined) {
+        this.message = message;
+        this.message_text = message.text.toLowerCase().split(" ");
+        this.client = client;
+        let command = message.text;
+        if (customCommand) command = customCommand;
+        set.lastCommand(message.from_user.id, command);
+    }
+    top() {
+        let top = {page: 1, mode: "balance", activeTop: true, id: this.message.from_user.id};
+        if (this.message_text[0] == "всетоп") top.activeTop = false;
+        if (this.message_text.length >= 2) {
+            if (["клик", "к", "click"].includes(this.message_text[1])) top.mode = "click";
+            else if (["сек", "с", "sec"].includes(this.message_text[1])) top.mode = "sec";
+            else if (["бб", "бустбаланса", "bb", "balanceboost", "балансбуст", "balanceBoost"].includes(this.message_text[1])) top.mode = "balanceBoost";
+            else if (this.message_text[1] == "буст" && this.message_text.length >= 3 && ["баланс", "баланса"].includes(this.message_text[2])) {
+            top.mode = "balanceBoost";
+            this.message_text.splice(2, 1);
+            }
+            else if (["регистрация", "р", "рег", "register", "registerTime"].includes(this.message_text[1])) top.mode = "registerTime";
+            else if (["банк", "bank"].includes(this.message_text[1])) top.mode = "bank";
+            else if (["д", "деньги", "money"].includes(this.message_text[1])) top.mode = "money";
+            if (this.message_text.length >= 3) {
+                let a = Number(this.message_text[2]);
+                if (!isNan(a)) top.page = a;
+            }
+        }
+        CLIENTS[client].sendMessage({chatId: this.message.chat.id, text: others.leaderbord(top), parseMode: "HTML"});
+    }
+    buyBoost(boost) {
+        let a = boost.split(" ");
+        args = this.message_text.filter((i) => a.includes(i));
+        if (boost = "клик") boost = "click";
+        else if (boost == "сек") boost = "sec";
+        else if (["скидка", "1% скидки"].includes(boost)) boost = "sale";
+        else if (["бб", "баланс", "баланс/день", "буст баланса", "буст баланс", "1% баланса/день"].includes(boost)) boost = "balanceBoost";
+        else return CLIENTS[this.client]
+        let amount = 1;
+        if (args.length > 0) {
+            if (["все", "всё"].includes(args[0])) amount = -1;
+            else amount = args[0];
+        }
+        let cost = calc.boost(id, boost);
+        if (cost.cost == undefined) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: cost.message});
+        //^^^: Отправка пользователю сообщения об ошибке покупки по причине достижения лимита ибо cost.cost == undefined только если
+        //произошло достижение лимита либо неверно выбран апгрейд
+        cost = cost.cost;
+        let balance = get.get(id, "balance");
+        let i;
+        for (i = 0; (i < amount || amount == -1) && balance >= cost && cost != undefined; i++) {
+            append.appendToUser(id, boost, 1);
+            append.appendToUser(id, "balance", -cost);
+            balance = get.get(id, "balance");
+            cost = calc.boost(id, boost).cost;
+        }
+        if (i == 0) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Недостаточно средств. Для покупки ещё необходимо ${obrabotka.chisla(cost - balance)} КШ`});
+        else return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Успешно куплено Успешно куплено апгрейдов: ${i}\nid: <code>${id}</code>
+Апгрейды: ${get.get(id, "sec")}/сек; ${get.get(id, "click")}/клик; ${get.get(id, "sale")}% скидки; ${get.get(id, "balanceBoost")}% баланса/день
+Баланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`, parseMode: "HTML"});
+    }
+    click() {
+        userId = this.message.from_user.id;
+        accrual.click(userId);
+        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Коллекция кристальных шаров пополнена!\nБаланс: ${obrabotka.chisla(get.get(userId, "balance"))} КШ`});
+    }
+    balance() {
+        if (this.message_text.length > 1) {
+            if (message_text[1] == "_" && this.message.reply_to_message) userId = this.message.reply_to_message.from_user.id;
+            else {
+                userId = this.message_text[1];
+                if (!get.id(userId)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Id не найден"});
+            }
+        }
+        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Имя: ${get.get(userId, "fullName")}\nid: \`${userId}\`\nАпгрейды: ${get.get(userId, "sec")}/сек; ${get.get(userId, "click")}/клик; ${get.get(userId, "sale")}% скидки; ${get.get(userId, "balanceBoost")}% баланса/день\nБаланс: ${obrabotka.chisla(get.get(userId, "balance"))} КШ\nВ банке: ${obrabotka.chisla(get.get(userId, "bank"))} КШ`})
+    }
+    helpCommand() {
+        if (this.message_text.length < 2) {
+            this.message.text = "команда команда"
+            return new kmd(this.message, this.client);
+        }
+        this.message = this.message.slice(8);
+        this.message_text = this.message_text.splice(0, 1);
+        let i = 0;
+        checkCommand = this.message_text[0];
+        while (true) {
+            if (i > 3) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Команда не найдена"});
+            if (Object.keys(COMMANDS).includes(checkCommand)) {
+                if (Object.keys(COMMANDS[checkCommand]).includes("link")) checkCommand = COMMANDS[checkCommand].link;
+                if (COMMANDS[checkCommand].permissions == "admin" && !get.get(message.from_user.id, "isAdmin")) return;
+                if (COMMANDS[checkCommand].permissions == "owner" && message.from_user.id != 357694314) return; //ВНИМАНИЕ БЛЯТЬ
+                break
+            }
+            i++;
+            if (i != this.message_text.length - 1) return;
+            checkCommand += ` ${this.message_text[i]}`;
+        }
+        let msg = `${checkCommand} `;
+        if (Object.keys(COMMANDS[checkCommand]).includes("links")) COMMANDS[checkCommand].links.forEach((i) => msg += `/ ${i} `);
+        msg = msg.slice(0, -1) + `: ${COMMANDS[checkCommand].description}\nИспользование: ${COMMANDS[checkCommand].usage}`;
+        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: msg});
+    }
+    sendUser() {
+        if (this.message_text.length < 2) {
+            this.message.text = "команда " + this.message.text;
+            new kmd(this.message, this.client).helpCommand();
+        }
+        let from = this.message.from_user.id;
+        if (message_text[1] == "_" && this.message.reply_to_message) to = this.message.reply_to_message.from_user.id;
+        else {
+            to = this.message_text[1];
+            if (!get.id(to)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Id не найден"});
+        }
+        let type;
+        if (this.message_text[0] == "послать") type = "normal";
+        else if (this.message_text[0] == "послатьанон") type = "anonymous";
+        cost = {
+            normal: 1_000_000,
+            anonymous: 3_000_000
+        };
+        if (get.get(from, "balance") < cost[type]) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Недостаточно средств"});
+        append.appendToUser(from, "balance", -cost[type]);
+        data.users[from].othersSpends += cost[type];
+        if (type == "anonymous") {
+            CLIENTS[get.get(to, "receiver")].sendMessage({chatId: to, text: "Вас анонимно послали нахуй"});
+            return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Вы анонимно послали нахуй игрока ${get.get(to, "fullName")} (${to})\nЗабрано ${obrabotka.chisla(cost[type])} КШ`});
+        }
+        else if (type == "normal") {
+            CLIENTS[get.get(to, "receiver")].sendMessage({chatId: to, text: `Вас послал нахуй пользователь ${get.get(from, "fullName")} (${from})`});
+            return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Вы послали нахуй игрока ${get.get(to, "fullName")} (${to})\nЗабрано ${obrabotka.chisla(cost[type])} КШ`});
+        }
+    }
+
+    resetId(toReset, type, id = 0) {
+        if (!get.id(toReset).data) return {success: false, message: `Пользователя ${toReset} не существует`}
+        if (type == 1) {}
+        else if (type == 2 && get.get(toReset, "isAdmin").data && id != 357694314) return {success: false, message: "Невозможно сбросить прогресс этого пользователя"}
+        for (i in data.users[toReset]) if (data.doNotClear.indexOf(i) === -1) data.users[toReset][i] = data.users.default[i]; //ВНИМАНИЕ БЛЯТЬ удаляется default при сбросе пофиксить
+        return {success: true}
+    }
+    removeId(toRemove) {
+        if (!get.id(toRemove).data) return {success: false, message: `Пользователя ${toRemove} не существует`}
+        delete data.users[toRemove];
+        return {success: true}
+    }
+}
+let others = {
+    leaderbord: function ({mode, active_top, caller_id, page}) {
         let lb_data = data;
         let inverse;
         let sorted = [];
@@ -745,19 +928,9 @@ let kmd = {
             msg += "__________\n"
             msg += `Вы: #${top[caller_place][0]}: ${obrabotka.chisla(data.users[top[caller_place][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[2]])}${order_words[2]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[3]])}${order_words[3]}\n`
         }
-        msg += "\nСтраница " + page + " из " + Math.floor(top.length / 10)
-        return {success: true, data: msg}
+        msg += `\nСтраница ${page} из ${Math.ceil(top.length / 10)}`
+        return msg
     },
-    click: function (userId) {
-        if (!get.id(userId).data) return {success: false, message: "Id не найден"}
-        accrual.click(userId);
-        return {success: true, data: `Коллекция кристальных шаров пополнена!\nБаланс: ${obrabotka.chisla(get.get(userId, "balance").data)} КШ`}
-    },
-    balance: function (userId) {
-        if (!get.id(userId).data) return {success: false, message: "Id не найден"}
-        return {success: true, data: `Имя: ${get.get(userId, "fullName").data}\nid: \`${userId}\`\nАпгрейды: ${get.get(userId, "sec").data}/сек; ${get.get(userId, "click").data}/клик; ${get.get(userId, "sale").data}% скидки; ${get.get(userId, "balanceBoost").data}% баланса/день\nБаланс: ${obrabotka.chisla(get.get(userId, "balance").data)} КШ\nВ банке: ${obrabotka.chisla(get.get(userId, "bank").data)} КШ`}
-    },
-    resetMessage: function () {return {success: true, data: "Обнуляет прогресс и вы начинаете игру заново.\nЧтобы сбросить прогресс, введите `сброс подтвердить`"}},
     pay: function(from, to, amount, comment = undefined) {
         if (amount == "#r") amount = randomInt(1, get.get(from, "balance").data);
         else if (amount.slice(-1) == "%") {
@@ -791,44 +964,6 @@ let kmd = {
             CLIENTS[get.get(to, "receiver").data].send(JSON.stringify({action: "sendMessage", data: {chatId: to, text: `Получен перевод ${obrabotka.chisla(amount)} КШ от пользователя ${get.get(from, "fullName").data} (${from})`}}));
             return {success: true, data: `Перевод ${obrabotka.chisla(amount)} КШ пользователю ${get.get(to, "fullName").data} (${to}) выполнен успешно!`};
         }
-    },
-    buyBoost: function(id, boost, amount = 1) {
-        if (!get.id(id).data) return {success: false, message: "Пользователь не существует"};
-        let cost = calc.boost(id, boost);
-        if (cost.cost == undefined) return cost;
-        cost = cost.cost;
-        let balance = get.get(id, "balance").data;
-        let i;
-        for (i = 0; (i < amount || amount == -1) && balance >= cost && cost != undefined; i++) {
-            append.appendToUser(id, boost, 1);
-            append.appendToUser(id, "balance", -cost);
-            balance = get.get(id, "balance").data;
-            cost = calc.boost(id, boost).cost;
-        }
-        if (i == 0) return {success: false, message: `Недостаточно средств. Для покупки ещё необходимо ${obrabotka.chisla(cost - balance)}`};
-        else return {success: true, data: `Успешно куплено Успешно куплено апгрейдов: ${i}\nid: <code>${id}</code>
-Апгрейды: ${get.get(id, "sec").data}/сек; ${get.get(id, "click").data}/клик; ${get.get(id, "sale").data}% скидки; ${get.get(id, "balanceBoost").data}% баланса/день
-Баланс: ${obrabotka.chisla(get.get(id, "balance").data)} КШ`};
-    },
-    sendUser: function(from, to, type) {
-        if (!get.id(from).data || !get.id(to).data) return {success: false, message: "Id не найден"};
-        cost = {
-            normal: 1_000_000,
-            anonymous: 3_000_000
-        };
-        if (get.get(from, "balance").data < cost[type]) return {success: false, message: "Недостаточно средств"};
-        if (!append.appendToUser(from, "balance", cost[type]).success) return {success: false, message: "Ошибка"};
-        data.users[from].othersSpends += cost[type];
-        if (type == "anonymous") {
-            CLIENTS[get.get(to, "receiver").data].send(JSON.stringify({action: "sendMessage", data: {chatId: to, text: "Вас анонимно послали нахуй"}}));
-            return {success: true, data: `Вы анонимно послали нахуй игрока ${get.get(to, "fullName").data} (${to})\nЗабрано ${obrabotka.chisla(cost[type])} КШ`};
-        }
-        else if (type == "normal") {
-            CLIENTS[get.get(to, "receiver").data].send(JSON.stringify({action: "sendMessage", data: {chatId: to, text: `Вас послал нахуй пользователь ${get.get(from, "fullName").data} (${from})`}}));
-            return {success: true, data: `Вы послали нахуй игрока ${get.get(to, "fullName").data} (${to})\nЗабрано ${obrabotka.chisla(cost[type])} КШ`};
-        }
-
-        
     },
     bankTransfer: function(id, action, value = -1) {
         console.log(value);
@@ -866,6 +1001,46 @@ let kmd = {
 
         }
     },
+    backup: function (ws = undefined, id = undefined) {
+        let t = new Date((get.time() + 10800) * 1000);
+        let td = t.toISOString()
+        let name = `backup-${td.slice(0, 4)}-${td.slice(5, 7)}-${td.slice(8, 10)}_${t.getUTCHours()}.${t.getUTCMinutes()}.${t.getUTCSeconds()}.json`;
+        let error;
+        fs.copyFile("usrs.json", `backups/${name}`, (err) => {if (err) {
+            console.log(err);
+            error = err;
+        }});
+        (async () => {
+            try {
+                const { href, method } = await upload.link(config.tokens.yadisk, `disk:/kkh_backups/${name}`, true);
+                const fileStream = fs.createReadStream(`backups/${name}`);
+                const uploadStream = request({ ...parse(href), method });
+                fileStream.pipe(uploadStream);
+                fileStream.on('end', () => uploadStream.end());
+            }
+            catch (err) {
+                error = err;
+                console.error(err);
+            }
+            if (!ws & !id) return
+            let data = {id}
+            if (error) data.success = false, data.message = error
+            else data.success = true, data.data = "Бэкап успешно выполнен и выгружен в облако!"
+            ws.send(JSON.stringify(data))
+        })();
+    },
+    dbWrite: function () {
+        let t = new Date((get.time() + 10800) * 1000);
+        let td = t.toISOString()
+        let name = `backup-${td.slice(0, 4)}-${td.slice(5, 7)}-${td.slice(8, 10)}_${t.getUTCHours()}.${t.getUTCMinutes()}.${t.getUTCSeconds()}.json`;
+        // let error;
+        fs.copyFileSync("usrs.json", `backups/${name}`);
+        // if (error) return {success: false, message: error}
+        return {success: true, data: "БД записана"}
+    }
+}
+let kmd2 = {
+    resetMessage: function () {return {success: true, data: "Обнуляет прогресс и вы начинаете игру заново.\nЧтобы сбросить прогресс, введите `сброс подтвердить`"}},
     mailingSend: function (text) {
         text += "\n\n____\nДля отключения рассылки введите рассылка нет"
         for (let i of get.ids().data) {
@@ -934,46 +1109,8 @@ let onSchedule = {
 
 const jobs = [
     // schedule.scheduleJob({hour: 0, minute: 0, dayOfWeek: 1}, () => onSchedule.coinLottery()),
-    schedule.scheduleJob("* * */2 * *", () => backup()),
+    schedule.scheduleJob("* * */2 * *", () => others.backup()),
     schedule.scheduleJob("*/1 * * * * *", () => accrual.sec()),
     schedule.scheduleJob({minute: 0}, () => accrual.bank()),
     schedule.scheduleJob({hour: 0, minute: 0}, () => accrual.balanceBoost())
 ]
-
-function backup(ws = undefined, id = undefined) {
-    let t = new Date((get.time() + 10800) * 1000);
-    let td = t.toISOString()
-    let name = `backup-${td.slice(0, 4)}-${td.slice(5, 7)}-${td.slice(8, 10)}_${t.getUTCHours()}.${t.getUTCMinutes()}.${t.getUTCSeconds()}.json`;
-    let error;
-    fs.copyFile("usrs.json", `backups/${name}`, (err) => {if (err) {
-        console.log(err);
-        error = err;
-    }});
-    (async () => {
-        try {
-            const { href, method } = await upload.link(config.tokens.yadisk, `disk:/kkh_backups/${name}`, true);
-            const fileStream = fs.createReadStream(`backups/${name}`);
-            const uploadStream = request({ ...parse(href), method });
-            fileStream.pipe(uploadStream);
-            fileStream.on('end', () => uploadStream.end());
-        }
-        catch (err) {
-            error = err;
-            console.error(err);
-        }
-        if (!ws & !id) return
-        let data = {id}
-        if (error) data.success = false, data.message = error
-        else data.success = true, data.data = "Бэкап успешно выполнен и выгружен в облако!"
-        ws.send(JSON.stringify(data))
-    })();
-}
-function dbWrite() {
-    let t = new Date((get.time() + 10800) * 1000);
-    let td = t.toISOString()
-    let name = `backup-${td.slice(0, 4)}-${td.slice(5, 7)}-${td.slice(8, 10)}_${t.getUTCHours()}.${t.getUTCMinutes()}.${t.getUTCSeconds()}.json`;
-    // let error;
-    fs.copyFileSync("usrs.json", `backups/${name}`);
-    // if (error) return {success: false, message: error}
-    return {success: true, data: "БД записана"}
-}
