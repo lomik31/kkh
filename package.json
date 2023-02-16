@@ -9,16 +9,15 @@
   "author": "lomik31",
   "license": "ISC",
   "dependencies": {
-    "bluebird": "^3.7.2",
-    "date-fns": "^2.29.1",
-    "deasync": "^0.1.28",
+    "crypto": "^1.0.1",
     "express": "^4.18.2",
-    "ftp-client": "^0.2.0",
-    "node-schedule": "^2.1.0",
+    "http": "^0.0.1-security",
+    "https": "^1.0.0",
+    "node-schedule": "^2.1.1",
     "request": "^2.88.2",
-    "ws": "^8.10.0",
-    "ya-disk": "^4.0.1",
-    "yandex-disk": "^0.0.8"
+    "url": "^0.11.0",
+    "ws": "^8.12.1",
+    "ya-disk": "^4.0.1"
   },
   "type": "commonjs"
 }
