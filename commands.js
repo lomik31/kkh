@@ -35,7 +35,7 @@ exports.COMMANDS = {
     },
     "команда": {
         description: "Показывает справку по использованию команды",
-        action: "kmd.helpCommand(message, message_text)",
+        action: "new kmd(message, client).helpCommand()",
         usage: "команда <команда>",
         permissions: "user"
     },
@@ -59,7 +59,7 @@ exports.COMMANDS = {
     },
     "клик": {
         description: "Добавляет к балансу количество \клик",
-        action: "kmd.click(message, message_text)",
+        action: "new kmd(message, client).click()",
         links: ["🔮"],
         usage: "клик",
         permissions: "user"
@@ -108,7 +108,7 @@ exports.COMMANDS = {
     },
     "баланс": {
         description: "Показать информацию о пользователе",
-        action: "kmd.balance(message, message_text)",
+        action: "new kmd(message, client).balance()",
         links: ["б"],
         usage: "баланс [id пользователя]",
         permissions: "user"
@@ -134,26 +134,26 @@ exports.COMMANDS = {
     },
     "послать": {
         description: "Посылает игрока (1.000.000 КШ)",
-        action: "kmd.sendUser(message, message_text)",
+        action: "new kmd(message, client).sendUser()",
         usage: "послать <id пользователя>",
         permissions: "user"
     },
     "послатьанон": {
         description: "Анонимно посылает игрока (3.000.000 КШ)",
-        action: "kmd.sendUser(message, message_text)",
+        action: "new kmd(message, client).sendUser()",
         usage: "послатьанон <id пользователя>",
         permissions: "user"
     },
     "топ": {
         description: "Показывает топ пользователей по параметру",
-        action: "new kmd(message, message_text, client).top()",
+        action: "new kmd(message, client).top()",
         usage: "топ [<b>баланс</b>/клик/сек/буст баланса/рег/банк/деньги] [страница]",
         parse: "HTML",
         permissions: "user"
     },
     "всетоп": {
         description: "Показывает топ всех пользователей по параметру",
-        action: "new kmd(message, message_text, client).top()",
+        action: "new kmd(message, client).top()",
         usage: "топ [<b>баланс</b>/клик/сек] [страница]",
         parse: "HTML",
         permissions: "user"
