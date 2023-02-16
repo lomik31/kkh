@@ -145,15 +145,18 @@ exports.COMMANDS = {
         permissions: "user"
     },
     "топ": {
-        description: "Выдаёт топ всех пользователей",
-        action: "kmd.userTop(message, message_text)",
-        usage: "топ [<b>баланс</b>/клик/сек] [страница]",
+        description: "Показывает топ пользователей по параметру",
+        action: "new kmd(message, message_text, client).top()",
+        usage: "топ [<b>баланс</b>/клик/сек/буст баланса/рег/банк/деньги] [страница]",
         parse: "HTML",
-        permissions: "user",
-        links: ["всетоп"]
+        permissions: "user"
     },
     "всетоп": {
-        link: "топ"
+        description: "Показывает топ всех пользователей по параметру",
+        action: "new kmd(message, message_text, client).top()",
+        usage: "топ [<b>баланс</b>/клик/сек] [страница]",
+        parse: "HTML",
+        permissions: "user"
     },
     "бит": {
         description: "Ставка на курс биткоина",
@@ -184,67 +187,6 @@ exports.COMMANDS = {
         action: "kmd.bankTake(message, message_text)",
         usage: "-банк [сумма]",
         permissions: "user"
-    },
-    "+сек": {
-        description: "Улучшить \сек",
-        action: "kmd.buy_sec(message, message_text)",
-        usage: "+сек [кол-во]",
-        permissions: "user"
-    },
-    "+баланс": {
-        link: "+бб"
-    },
-    "+баланс/день": {
-        link: "+бб"
-    },
-    "+буст баланса": {
-        link: "+бб"
-    },
-    "+буст баланс": {
-        link: "+бб"
-    },
-    "+бб": {
-        description: "Улучшить баланс/день",
-        action: "kmd.buy_procent_balance(message, message_text)",
-        links: ["+баланс", "+баланс/день", "+буст баланса", "+буст баланс"],
-        usage: "+бб [кол-во]",
-        permissions: "user"
-    },
-    "+клик": {
-        description: "Улучшить \клик",
-        action: "kmd.buy_click(message, message_text)",
-        usage: "+клик [кол-во]",
-        permissions: "user"
-    },
-    "+скидка": {
-        description: "Улучшить % скидки",
-        action: "kmd.buy_skidka(message, message_text)",
-        usage: "+скидка [кол-во]",
-        permissions: "user"
-    },
-    "+1% скидки": {
-        description: "Улучшить % скидки",
-        action: "kmd.buy_skidka_2(message, message_text)",
-        usage: "+1% скидки",
-        permissions: "user"
-    },
-    "+1% баланса/день": {
-        description: "Улучшить % баланса/день",
-        action: "kmd.buy_procent_balance_2(message, message_text)",
-        usage: "+1% баланса/день",
-        permissions: "user"
-    },
-    "добавить": {
-        description: "Добавить пользователю КШ",
-        action: "kmd.add_money(message, message_text)",
-        usage: "добавить <id пользователя> <кол-во КШ>",
-        permissions: "admin"
-    },
-    "добавитьбанк": {
-        description: "Добавить пользователю КШ в банк",
-        action: "kmd.addMoneyBank(message, message_text)",
-        usage: "добавитьбанк <id пользователя> <кол-во КШ>",
-        permissions: "admin"
     },
     "назад": {
         description: "Выйти из меню",
@@ -295,11 +237,5 @@ exports.COMMANDS = {
         action: "kmd.promoList(message, message_text)",
         usage: "лпромо",
         permissions: "admin"
-    },
-    "рулетка": {
-        description: "Игра в рулетку",
-        action: "kmd.roulette(message, message_text)",
-        usage: "рулетка <ставка> <на что ставим>",
-        permissions: "user"
     }
 }
