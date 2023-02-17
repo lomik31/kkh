@@ -33,9 +33,12 @@ class CONNECTION:
         if (json.get("event") == "sendMessage" and json.get("message")):
             chatId = json["message"].get("chatId")
             text = json["message"].get("text")
+            parseMode = json["message"].get("parseMode")
             if (chatId and text):
-                try: bot.send_message(chatId, text)
-                except: pass
+                data = [chatId, text]
+                if (parseMode): data.append(parseMode)
+                try: bot.send_message(*data)
+                except Exception as e: print(e)
         else: pass
     def on_close(self, ws, close_status_code, close_msg):
         print("### closed ###\ncode: {}, message: {}".format(close_status_code, close_msg))
