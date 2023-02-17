@@ -24,7 +24,7 @@ webSocketServer.on('connection', (ws, req) => {
     CLIENTS[name].sendData = ws.send;
     CLIENTS[name].send = (data) => {
         if (!data.serverId) delete data.serverId;
-        ws.send(JSON.stringify(data))
+        ws.sendData(JSON.stringify(data))
     }
     CLIENTS[name].sendMessage = ({chatId, serverId = undefined, text, parseMode = undefined, keyboard = undefined}) => {
         let message = {};
@@ -208,7 +208,7 @@ let get = {
             if (data.users[id]["lastName"] !== null) name += ` ${data.users[id]["lastName"]}`;
             return name;
         }
-        else if (toGet == "sale") return {success: true, data: 100 - data.users[id][toGet]};
+        else if (toGet == "sale") return 100 - data.users[id][toGet];
         if (getValues.indexOf(toGet) == -1) return {success: false, message: "Данный параметр не найден"};
         let toReturn = data.users[id][toGet];
         return toReturn;
@@ -735,6 +735,7 @@ class kmd {
         CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Коллекция кристальных шаров пополнена!\nБаланс: ${obrabotka.chisla(get.get(userId, "balance"))} КШ`});
     }
     balance() {
+        let userId;
         if (this.message_text.length > 1) {
             if (message_text[1] == "_" && this.message.reply_to_message) userId = this.message.reply_to_message.from_user.id;
             else {
@@ -742,23 +743,24 @@ class kmd {
                 if (!get.id(userId)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Id не найден"});
             }
         }
-        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Имя: ${get.get(userId, "fullName")}\nid: \`${userId}\`\nАпгрейды: ${get.get(userId, "sec")}/сек; ${get.get(userId, "click")}/клик; ${get.get(userId, "sale")}% скидки; ${get.get(userId, "balanceBoost")}% баланса/день\nБаланс: ${obrabotka.chisla(get.get(userId, "balance"))} КШ\nВ банке: ${obrabotka.chisla(get.get(userId, "bank"))} КШ`})
+        else userId = this.message.from_user.id;
+        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Имя: ${get.get(userId, "fullName")}\nid: \`${userId}\`\nАпгрейды: ${get.get(userId, "sec")}/сек; ${get.get(userId, "click")}/клик; ${get.get(userId, "sale")}% скидки; ${get.get(userId, "balanceBoost")}% баланса/день\nБаланс: ${obrabotka.chisla(get.get(userId, "balance"))} КШ\nВ банке: ${obrabotka.chisla(get.get(userId, "bank"))} КШ`, parseMode: "MARKDOWN"})
     }
     helpCommand() {
         if (this.message_text.length < 2) {
             this.message.text = "команда команда"
             return new kmd(this.message, this.client);
         }
-        this.message = this.message.slice(8);
-        this.message_text = this.message_text.splice(0, 1);
+        this.message.text = this.message.text.slice(8);
+        this.message_text = this.message_text.splice(1, 1);
         let i = 0;
-        checkCommand = this.message_text[0];
+        let checkCommand = this.message_text[0];
         while (true) {
             if (i > 3) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Команда не найдена"});
             if (Object.keys(COMMANDS).includes(checkCommand)) {
                 if (Object.keys(COMMANDS[checkCommand]).includes("link")) checkCommand = COMMANDS[checkCommand].link;
-                if (COMMANDS[checkCommand].permissions == "admin" && !get.get(message.from_user.id, "isAdmin")) return;
-                if (COMMANDS[checkCommand].permissions == "owner" && message.from_user.id != 357694314) return; //ВНИМАНИЕ БЛЯТЬ
+                if (COMMANDS[checkCommand].permissions == "admin" && !get.get(this.message.from_user.id, "isAdmin")) return;
+                if (COMMANDS[checkCommand].permissions == "owner" && this.message.from_user.id != 357694314) return; //ВНИМАНИЕ БЛЯТЬ
                 break
             }
             i++;
@@ -803,7 +805,7 @@ class kmd {
     backup() {
         if (this.message_text.length < 2 || this.message_text[1] != "создать") {
             this.message.text = "команда " + this.message.text;
-            new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client).helpCommand();
         }
         let t = new Date((get.time() + 10800) * 1000);
         let td = t.toISOString();
