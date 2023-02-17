@@ -14,6 +14,7 @@ const server = http.createServer(app);
 const webSocketServer = new WebSocket.Server({ server });
 const request1 = require('request');
 const { COMMANDS } = require("./commands");
+const dateFormat = require('dateformat');
 
 let CLIENTS = {};
 webSocketServer.on('connection', (ws, req) => {
@@ -1103,10 +1104,9 @@ let onSchedule = {
 
 const jobs = [
     // schedule.scheduleJob({hour: 0, minute: 0, dayOfWeek: 1}, () => onSchedule.coinLottery()),
-    schedule.scheduleJob("* * */2 * *", () => {
-        let t = new Date((get.time() + 10800) * 1000);
-        let td = t.toISOString();
-        let name = `backup-${td.slice(0, 4)}-${td.slice(5, 7)}-${td.slice(8, 10)}_${t.getUTCHours()}.${t.getUTCMinutes()}.${t.getUTCSeconds()}.json`;
+    setInterval(() => {
+        let t = new Date();
+        let name = `backup-${dateFormat(t, "yyyy-mm-dd_hh.MM.ss")}.json`;
         fs.copyFileSync("usrs.json", `backups/${name}`);
         (async () => {
             try {
@@ -1120,7 +1120,7 @@ const jobs = [
                 console.log(err);
             }
         })();
-    }),
+    }, 1000 * 60 * 60 * 2),
     schedule.scheduleJob("*/1 * * * * *", () => accrual.sec()),
     schedule.scheduleJob({minute: 0}, () => accrual.bank()),
     schedule.scheduleJob({hour: 0, minute: 0}, () => accrual.balanceBoost())
