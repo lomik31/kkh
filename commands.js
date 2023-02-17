@@ -1,7 +1,7 @@
 exports.COMMANDS = {
     "бэкап": {
-        description: "Создаёт бэкап в папку с бекапами и загружает в облако",
-        action: "kmd.backup(message, message_text)",
+        description: "Создаёт бэкап в папку с бэкапами и загружает в облако",
+        action: "kmd(message, client).backup()",
         usage: "бэкап <создать>",
         permissions: "admin"
     },

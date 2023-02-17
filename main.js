@@ -799,7 +799,29 @@ class kmd {
             return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Вы послали нахуй игрока ${get.get(to, "fullName")} (${to})\nЗабрано ${obrabotka.chisla(cost[type])} КШ`});
         }
     }
-
+    backup() {
+        if (this.message_text.length < 2 || this.message_text[1] != "создать") {
+            this.message.text = "команда " + this.message.text;
+            new kmd(this.message, this.client).helpCommand();
+        }
+        let t = new Date((get.time() + 10800) * 1000);
+        let td = t.toISOString();
+        let name = `backup-${td.slice(0, 4)}-${td.slice(5, 7)}-${td.slice(8, 10)}_${t.getUTCHours()}.${t.getUTCMinutes()}.${t.getUTCSeconds()}.json`;
+        fs.copyFileSync("usrs.json", `backups/${name}`);
+        (async () => {
+            try {
+                const { href, method } = await upload.link(config.tokens.yadisk, `disk:/kkh_backups/${name}`, true);
+                const fileStream = fs.createReadStream(`backups/${name}`);
+                const uploadStream = request({ ...parse(href), method });
+                fileStream.pipe(uploadStream);
+                fileStream.on('end', () => uploadStream.end());
+                CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Бэкап успешно выполнен и выгружен в облако!"});
+            }
+            catch (err) {
+                CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `При выгрузке бэкапа возникла ошибка:\n${err}`});
+            }
+        })();
+    }
     resetId(toReset, type, id = 0) {
         if (!get.id(toReset).data) return {success: false, message: `Пользователя ${toReset} не существует`}
         if (type == 1) {}
@@ -1001,34 +1023,6 @@ let others = {
 
         }
     },
-    backup: function (ws = undefined, id = undefined) {
-        let t = new Date((get.time() + 10800) * 1000);
-        let td = t.toISOString()
-        let name = `backup-${td.slice(0, 4)}-${td.slice(5, 7)}-${td.slice(8, 10)}_${t.getUTCHours()}.${t.getUTCMinutes()}.${t.getUTCSeconds()}.json`;
-        let error;
-        fs.copyFile("usrs.json", `backups/${name}`, (err) => {if (err) {
-            console.log(err);
-            error = err;
-        }});
-        (async () => {
-            try {
-                const { href, method } = await upload.link(config.tokens.yadisk, `disk:/kkh_backups/${name}`, true);
-                const fileStream = fs.createReadStream(`backups/${name}`);
-                const uploadStream = request({ ...parse(href), method });
-                fileStream.pipe(uploadStream);
-                fileStream.on('end', () => uploadStream.end());
-            }
-            catch (err) {
-                error = err;
-                console.error(err);
-            }
-            if (!ws & !id) return
-            let data = {id}
-            if (error) data.success = false, data.message = error
-            else data.success = true, data.data = "Бэкап успешно выполнен и выгружен в облако!"
-            ws.send(JSON.stringify(data))
-        })();
-    },
     dbWrite: function () {
         let t = new Date((get.time() + 10800) * 1000);
         let td = t.toISOString()
@@ -1109,7 +1103,24 @@ let onSchedule = {
 
 const jobs = [
     // schedule.scheduleJob({hour: 0, minute: 0, dayOfWeek: 1}, () => onSchedule.coinLottery()),
-    schedule.scheduleJob("* * */2 * *", () => others.backup()),
+    schedule.scheduleJob("* * */2 * *", () => {
+        let t = new Date((get.time() + 10800) * 1000);
+        let td = t.toISOString();
+        let name = `backup-${td.slice(0, 4)}-${td.slice(5, 7)}-${td.slice(8, 10)}_${t.getUTCHours()}.${t.getUTCMinutes()}.${t.getUTCSeconds()}.json`;
+        fs.copyFileSync("usrs.json", `backups/${name}`);
+        (async () => {
+            try {
+                const { href, method } = await upload.link(config.tokens.yadisk, `disk:/kkh_backups/${name}`, true);
+                const fileStream = fs.createReadStream(`backups/${name}`);
+                const uploadStream = request({ ...parse(href), method });
+                fileStream.pipe(uploadStream);
+                fileStream.on('end', () => uploadStream.end());
+            }
+            catch (err) {
+                console.log(err);
+            }
+        })();
+    }),
     schedule.scheduleJob("*/1 * * * * *", () => accrual.sec()),
     schedule.scheduleJob({minute: 0}, () => accrual.bank()),
     schedule.scheduleJob({hour: 0, minute: 0}, () => accrual.balanceBoost())

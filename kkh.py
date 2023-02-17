@@ -81,15 +81,7 @@ class kmd:
             else: command = message.text
             connection.send({"action": {"function": "set.lastCommand", "args": [self.message.from_user.id, command]}}, chatId)
         connection.send({"action": {"function": "get.id", "args": self.message.from_user.id}}, self.message.chat.id, callback)
-    
-    def backup(self):
-        if (len(self.message_text) < 2): return bot.send_message(self.message.chat.id, "Использование: бэкап <создать>\nСоздаёт бэкап в папку с бекапами и загружает в облако.")
-        if (self.message_text[1] == "создать"):
-            def callback(chatId, message):
-                bot.send_message(chatId, message)
-            connection.send({"action": {"function": "backup"}}, self.message.chat.id, callback)
-        else: bot.send_message(self.message.chat.id, "Использование: бэкап <создать>")
-    
+
     def balance(self):
         user = self.message.from_user.id
         if (len(self.message_text) > 1): 
