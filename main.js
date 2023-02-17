@@ -171,7 +171,7 @@ let file = {
 let append = {
     appendId: function (appendType, appendId, firstName = null, lastName = null) {
         if (appendType === "private") {
-            if (get.id(appendId).data) return {success: false, message: `Пользователь ${appendId} уже существует`} 
+            if (get.id(appendId)) return {success: false, message: `Пользователь ${appendId} уже существует`} 
             data.users[appendId] = data.users.default;
             console.log(data.users[appendId]);
             data.users[appendId].firstName = firstName;
@@ -337,7 +337,7 @@ let obrabotka = {
 }
 let give = {
     bonus: function (id) {
-        if (get.time() - get.get(id, "timeLastBonus").data < 86400) return {success: false, message: `Ежедневный бонус уже был получен сегодня\nДо следующего бонуса: ${obrabotka.vremeniBonusa(get.get(id, "timeLastBonus").data + 86400 - get.time())}`};
+        if (get.time() - get.get(id, "timeLastBonus") < 86400) return {success: false, message: `Ежедневный бонус уже был получен сегодня\nДо следующего бонуса: ${obrabotka.vremeniBonusa(get.get(id, "timeLastBonus") + 86400 - get.time())}`};
         let mnoz = data.users[id].multiplier;
         let mnoz2 = 0;
         let t = get.time();
@@ -346,7 +346,7 @@ let give = {
             t = i;
             mnoz2++;
         }
-        let bonus = Math.round(get.get(id, "sec").data * 4000 + get.get(id, "click").data * 6500 + get.get(id, "balanceBoost").data * 500000 + 1.135**get.get(id, "sec").data + 1.145**get.get(id, "click").data + 1.22**get.get(id, "balanceBoost").data + 1.14**get.get(id, "sale").data) * (mnoz + mnoz2);
+        let bonus = Math.round(get.get(id, "sec") * 4000 + get.get(id, "click") * 6500 + get.get(id, "balanceBoost") * 500000 + 1.135**get.get(id, "sec") + 1.145**get.get(id, "click") + 1.22**get.get(id, "balanceBoost") + 1.14**get.get(id, "sale")) * (mnoz + mnoz2);
         append.appendToUser(id, "balance", bonus);
         data.users[id].othersProceeds += bonus;
         data.users[id].timeLastBonus = get.time();
@@ -356,16 +356,16 @@ let give = {
         if (mnoz > 1) msg += `(Стандартный множитель - x${mnoz})\n`
         if (mnoz2 > 0) msg += `(Множитель за ежедневную активность - x${mnoz2})\n`
         if (mnoz + mnoz2 > 1) msg += `Суммарный множитель - x${mnoz + mnoz2}\n`
-        msg += `Баланс: ${obrabotka.chisla(get.get(id, "balance").data)} КШ`
+        msg += `Баланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`
         return {success: true, data: msg};
     },
     bonus2: function (id) {
-        if (get.time() - get.get(id, "timeLastSecondBonus").data < 28800) return {success: false, message: `Бонус2 можно получать каждые 8 часов\nДо следующего бонуса2: ${obrabotka.vremeniBonusa(get.get(id, "timeLastSecondBonus").data + 28800 - get.time())}`}
-        let bonus = randomInt(10000, (get.get(id, "sec").data * 3600 + get.get(id, "click").data * 5400 + get.get(id, "balanceBoost").data * 500000) + 10000);
+        if (get.time() - get.get(id, "timeLastSecondBonus") < 28800) return {success: false, message: `Бонус2 можно получать каждые 8 часов\nДо следующего бонуса2: ${obrabotka.vremeniBonusa(get.get(id, "timeLastSecondBonus") + 28800 - get.time())}`}
+        let bonus = randomInt(10000, (get.get(id, "sec") * 3600 + get.get(id, "click") * 5400 + get.get(id, "balanceBoost") * 500000) + 10000);
         append.appendToUser(id, "balance", bonus);
         data.users[id].othersProceeds += bonus;
         data.users[id].timeLastSecondBonus = get.time();
-        return {success: true, data: 'Вы получили случайный бонус2  в размере ' + obrabotka.chisla(bonus) + ' КШ\nБаланс: ' + obrabotka.chisla(get.get(id, "balance").data) + ' КШ'};
+        return {success: true, data: 'Вы получили случайный бонус2  в размере ' + obrabotka.chisla(bonus) + ' КШ\nБаланс: ' + obrabotka.chisla(get.get(id, "balance")) + ' КШ'};
     }
 }
 let set = {
@@ -387,7 +387,7 @@ let set = {
     keyboard: {
         passive: function (id, type, state) {
             if (type == "private") {
-                if (!get.id(id).data) return {success: false, message: "Неверный пользователь"};
+                if (!get.id(id)) return {success: false, message: "Неверный пользователь"};
                 data.users[id].keyboard = state;
                 return {success: true}
             }
@@ -399,7 +399,7 @@ let set = {
         },
         active: function (id, type, state) {
             if (type == "private") {
-                if (!get.id(id).data) return {success: false, message: "Неверный пользователь"};
+                if (!get.id(id)) return {success: false, message: "Неверный пользователь"};
                 data.users[id].activeKeyboard = state;
                 {success: true}
             }
@@ -555,18 +555,18 @@ let promo = {
 }
 let game = {
     coin: function (id, stavka, or_or_re) {
-        if (stavka == "#r") stavka = randomInt(1, get.get(id, "balance").data);
-        else if (stavka == "все" || stavka == "всё") stavka = get.get(id, "balance").data;
+        if (stavka == "#r") stavka = randomInt(1, get.get(id, "balance"));
+        else if (stavka == "все" || stavka == "всё") stavka = get.get(id, "balance");
         else {
             if (isNaN(parseInt(stavka))) return {success: false, message: "Неверный параметр ставка\nИспользование: монета <ставка/всё> <орел/решка>"};
             if (stavka.slice(-1) == "%") {
                 stavka = stavka.slice(0, -1);
                 if (stavka > 100 || stavka < 1) return {success: false, message: "Неверное использование процентной ставки. Процент должен быть от 1 до 100"}
-                stavka = Math.round(stavka / 100 * get.get(id, "balance").data);
+                stavka = Math.round(stavka / 100 * get.get(id, "balance"));
             }
             else stavka = obrabotka.kChisla(stavka);
         }
-        if (stavka > get.get(id, "balance").data || stavka <= 0) return {success: false, message: "Неверная ставка (меньше нуля или больше вашего баланса)"}
+        if (stavka > get.get(id, "balance") || stavka <= 0) return {success: false, message: "Неверная ставка (меньше нуля или больше вашего баланса)"}
         if (or_or_re == "#r") or_or_re = randomInt(1, 3);
         else if (or_or_re == "орел" || or_or_re == "орёл") or_or_re = 1;
         else if (or_or_re == "решка") or_or_re = 2;
@@ -575,12 +575,12 @@ let game = {
         if (result == or_or_re) {
             data.users[id].balance += stavka;
             data.users[id].wonMoneta += stavka;
-            return {success: true, data: `Вы выиграли! Ваш выигрыш: ${obrabotka.chisla(stavka)} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance").data)} КШ`};
+            return {success: true, data: `Вы выиграли! Ваш выигрыш: ${obrabotka.chisla(stavka)} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`};
         }
         else {
             data.users[id].balance -= stavka;
             data.users[id].wonMoneta -= stavka;
-            return {success: true, data: `Вы проиграли. Проиграно ${obrabotka.chisla(stavka)} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance").data)} КШ`};
+            return {success: true, data: `Вы проиграли. Проиграно ${obrabotka.chisla(stavka)} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`};
         }
     },
     // roulette: {
@@ -621,19 +621,19 @@ let game = {
     //     }
     // },
     btcBet: function (client, chatId, id, amount, bet) {
-        if (!get.id(id).data) return {success: false, message: "Id не найден"};
-        if (amount == "#r") amount = randomInt(1, get.get(id, "balance").data);
-        else if (amount == "все" || amount == "всё") amount = get.get(id, "balance").data;
+        if (!get.id(id)) return {success: false, message: "Id не найден"};
+        if (amount == "#r") amount = randomInt(1, get.get(id, "balance"));
+        else if (amount == "все" || amount == "всё") amount = get.get(id, "balance");
         else {
             if (isNaN(parseInt(amount))) return {success: false, message: "Неверный параметр ставка\nИспользование: бит <ставка/всё> <вверх/вниз>"};
             if (amount.slice(-1) == "%") {
                 amount = amount.slice(0, -1);
                 if (amount > 100 || amount < 1) return {success: false, message: "Неверное использование процентной ставки. Процент должен быть от 1 до 100"}
-                amount = Math.round(amount / 100 * get.get(id, "balance").data);
+                amount = Math.round(amount / 100 * get.get(id, "balance"));
             }
             else amount = obrabotka.kChisla(amount);
         };
-        if (amount > get.get(id, "balance").data || amount <= 0) return {success: false, message: "Неверная ставка (меньше нуля или больше вашего баланса)"};
+        if (amount > get.get(id, "balance") || amount <= 0) return {success: false, message: "Неверная ставка (меньше нуля или больше вашего баланса)"};
         if (["вверх", "вниз"].indexOf(bet) == -1) return {success: false, message: "Использование: бит <ставка/всё> <вверх/вниз>"};
         let error;
         append.appendToUser(id, "balance", -amount);
@@ -650,11 +650,11 @@ let game = {
                     if ((startPrice < endPrice && bet == "вверх") || (startPrice > endPrice && bet == "вниз")) {
                         append.appendToUser(id, "balance", amount * 2);
                         data.users[id].wonBtcBets += amount;
-                        CLIENTS[client].send(JSON.stringify({action: "sendMessage", data: {chatId, text: `Вы выиграли!\nКурс BTC изменился на ${(endPrice - startPrice).toFixed(2)} RUB.\nВаш выигрыш: ${obrabotka.chisla(amount)} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance").data)} КШ`}}));
+                        CLIENTS[client].send(JSON.stringify({action: "sendMessage", data: {chatId, text: `Вы выиграли!\nКурс BTC изменился на ${(endPrice - startPrice).toFixed(2)} RUB.\nВаш выигрыш: ${obrabotka.chisla(amount)} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`}}));
                     }
                     else {
                         data.users[id].lostBtcBets += amount;
-                        CLIENTS[client].send(JSON.stringify({action: "sendMessage", data: {chatId, text: `Вы проиграли.\nКурс BTC изменился на ${(endPrice - startPrice).toFixed(2)} RUB.\nПроиграно ${obrabotka.chisla(amount)} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance").data)} КШ`}}));
+                        CLIENTS[client].send(JSON.stringify({action: "sendMessage", data: {chatId, text: `Вы проиграли.\nКурс BTC изменился на ${(endPrice - startPrice).toFixed(2)} RUB.\nПроиграно ${obrabotka.chisla(amount)} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`}}));
                     }
                 });
             }, 60000);
@@ -696,7 +696,7 @@ class kmd {
                 if (!isNan(a)) top.page = a;
             }
         }
-        CLIENTS[client].sendMessage({chatId: this.message.chat.id, text: others.leaderbord(top), parseMode: "HTML"});
+        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: others.leaderbord(top), parseMode: "HTML"});
     }
     buyBoost(boost) {
         let a = boost.split(" ");
@@ -826,14 +826,14 @@ class kmd {
         })();
     }
     resetId(toReset, type, id = 0) {
-        if (!get.id(toReset).data) return {success: false, message: `Пользователя ${toReset} не существует`}
+        if (!get.id(toReset)) return {success: false, message: `Пользователя ${toReset} не существует`}
         if (type == 1) {}
-        else if (type == 2 && get.get(toReset, "isAdmin").data && id != 357694314) return {success: false, message: "Невозможно сбросить прогресс этого пользователя"}
+        else if (type == 2 && get.get(toReset, "isAdmin") && id != 357694314) return {success: false, message: "Невозможно сбросить прогресс этого пользователя"}
         for (i in data.users[toReset]) if (data.doNotClear.indexOf(i) === -1) data.users[toReset][i] = data.users.default[i]; //ВНИМАНИЕ БЛЯТЬ удаляется default при сбросе пофиксить
         return {success: true}
     }
     removeId(toRemove) {
-        if (!get.id(toRemove).data) return {success: false, message: `Пользователя ${toRemove} не существует`}
+        if (!get.id(toRemove)) return {success: false, message: `Пользователя ${toRemove} не существует`}
         delete data.users[toRemove];
         return {success: true}
     }
@@ -867,7 +867,7 @@ let others = {
         let place = 1;
         let to_append = [];
         for (let i = 0; i < Object.keys(lb_data.users).length; i++) {
-            to_append = [place, sorted[i][0], get.get(sorted[i][0], "fullName").data];
+            to_append = [place, sorted[i][0], get.get(sorted[i][0], "fullName")];
             if (to_append[1] == caller_id) caller_place = place - 1
             if (i != 0) {
                 if (sorted[i - 1][1] == sorted[i][1]) {
@@ -957,14 +957,14 @@ let others = {
         return msg
     },
     pay: function(from, to, amount, comment = undefined) {
-        if (amount == "#r") amount = randomInt(1, get.get(from, "balance").data);
+        if (amount == "#r") amount = randomInt(1, get.get(from, "balance"));
         else if (amount.slice(-1) == "%") {
             amount = obrabotka.kChisla(amount.slice(0, -1));
             if (isNaN(amount)) return {success: false, message: "Неверный тип суммы\nИспользование: перевод <сумма> <id получателя> [комментарий]"};
             if (!(amount >= 1 && amount <= 100)) return {success: false, message: "Неверное использование процентного перевода.\nИспользование: перевод <1%-100%> <id получателя> [комментарий]"};
-            amount = Math.round(get.get(from, "balance").data * amount / 100);
+            amount = Math.round(get.get(from, "balance") * amount / 100);
         }
-        else if (["все", "всё"].indexOf(amount) != -1) amount = get.get(from, "balance").data
+        else if (["все", "всё"].indexOf(amount) != -1) amount = get.get(from, "balance")
         else {
             amount = obrabotka.kChisla(amount);
             if (isNaN(amount)) return {success: false, message: "Неверное значение параметра суммы\nИспользование: перевод <сумма> <id получателя> [комментарий]"};
@@ -974,41 +974,41 @@ let others = {
             to = keys[randomInt(0, keys.length)];
             delete keys;
         }
-        if (!get.id(to).data) return {success: false, message: `Id ${to} не существует`}
+        if (!get.id(to)) return {success: false, message: `Id ${to} не существует`}
         if (amount < 100) return {success: false, message: "Переводы меньше 100 КШ запрещены"}
-        if (amount > get.get(from, "balance").data) return {success: false, message: "Недостаточно средств"}
+        if (amount > get.get(from, "balance")) return {success: false, message: "Недостаточно средств"}
         append.appendToUser(from, "balance", -amount);
         data.users[from].paidKkh += amount;
         append.appendToUser(to, "balance", amount);
         data.users[to].receivedKkh += amount;
         if (comment) {
-            CLIENTS[get.get(to, "receiver").data].send(JSON.stringify({action: "sendMessage", data: {chatId: to, text: `Получен перевод ${obrabotka.chisla(amount)} КШ от пользователя ${get.get(from, "fullName").data} (${from})\nСообщение: ${comment}`}}));
-            return {success: true, data: `Перевод ${obrabotka.chisla(amount)} КШ пользователю ${get.get(to, "fullName").data} (${to}) выполнен успешно!\nКомментарий к переводу: ${comment}`};
+            CLIENTS[get.get(to, "receiver")].send(JSON.stringify({action: "sendMessage", data: {chatId: to, text: `Получен перевод ${obrabotka.chisla(amount)} КШ от пользователя ${get.get(from, "fullName")} (${from})\nСообщение: ${comment}`}}));
+            return {success: true, data: `Перевод ${obrabotka.chisla(amount)} КШ пользователю ${get.get(to, "fullName")} (${to}) выполнен успешно!\nКомментарий к переводу: ${comment}`};
         }
         else {
-            CLIENTS[get.get(to, "receiver").data].send(JSON.stringify({action: "sendMessage", data: {chatId: to, text: `Получен перевод ${obrabotka.chisla(amount)} КШ от пользователя ${get.get(from, "fullName").data} (${from})`}}));
-            return {success: true, data: `Перевод ${obrabotka.chisla(amount)} КШ пользователю ${get.get(to, "fullName").data} (${to}) выполнен успешно!`};
+            CLIENTS[get.get(to, "receiver")].send(JSON.stringify({action: "sendMessage", data: {chatId: to, text: `Получен перевод ${obrabotka.chisla(amount)} КШ от пользователя ${get.get(from, "fullName")} (${from})`}}));
+            return {success: true, data: `Перевод ${obrabotka.chisla(amount)} КШ пользователю ${get.get(to, "fullName")} (${to}) выполнен успешно!`};
         }
     },
     bankTransfer: function(id, action, value = -1) {
         console.log(value);
         let fee = 0.2//% (комиссия)
-        if (value == "#r") value = randomInt(1, get.get(id, "balance").data)
+        if (value == "#r") value = randomInt(1, get.get(id, "balance"))
         else if (value == "все" || value == "всё" || value == -1) {
-            if (action == "put") value = get.get(id, "balance").data
-            else if (action == "take") value = get.get(id, "bank").data
+            if (action == "put") value = get.get(id, "balance")
+            else if (action == "take") value = get.get(id, "bank")
         }
         else {
             if (isNaN(parseInt(value))) return {success: false, message: "Неверный параметр суммы\nИспользование: +банк/-банк [сумма]"};
             if (value.slice(-1) == "%") {
                 value = value.slice(0, -1);
                 if (value > 100 || value < 1) return {success: false, message: "Неверное использование процентного числа. Процентное число должно быть не менее 1 и не более 100% от вашего баланса!"}
-                value = Math.round(value / 100 * get.get(id, "balance").data);
+                value = Math.round(value / 100 * get.get(id, "balance"));
             }
             else value = obrabotka.kChisla(value);
         }
         console.log(value);
-        if ((action == "put" && value > get.get(id, "balance").data) || (action == "take" && value > get.get(id, "bank")) || value <= 0) return {success: false, message: "Неверное значение (меньше нуля или больше вашего баланса)"}
+        if ((action == "put" && value > get.get(id, "balance")) || (action == "take" && value > get.get(id, "bank")) || value <= 0) return {success: false, message: "Неверное значение (меньше нуля или больше вашего баланса)"}
         
         let feeSum = Math.round(value*fee/100)
         if (!get.get(id)) return {success: false, message: "Id не найден"}
@@ -1016,13 +1016,13 @@ let others = {
             append.appendToUser(id, "bank", value-feeSum);
             append.appendToUser(id, "balance", -value);
             data.users[id].paidKkh += feeSum;
-            return {success: true, data: `Переведено ${obrabotka.chisla(value-feeSum)} КШ в банк\nКомиссия ${obrabotka.chisla(feeSum)} КШ (${fee}%)\nВ банке: ${obrabotka.chisla(get.get(id, "bank").data)} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance").data)} КШ`};
+            return {success: true, data: `Переведено ${obrabotka.chisla(value-feeSum)} КШ в банк\nКомиссия ${obrabotka.chisla(feeSum)} КШ (${fee}%)\nВ банке: ${obrabotka.chisla(get.get(id, "bank"))} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`};
         }
         else if (action == "take") {
             append.appendToUser(id, "bank", -value);
             append.appendToUser(id, "balance", value-feeSum);
             data.users[id].paidKkh += feeSum;
-            return {success: true, data: `Выведено ${obrabotka.chisla(value-feeSum)} КШ из банка\nКомиссия ${obrabotka.chisla(feeSum)} КШ (${fee}%)\nВ банке: ${obrabotka.chisla(get.get(id, "bank").data)} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance").data)} КШ`};
+            return {success: true, data: `Выведено ${obrabotka.chisla(value-feeSum)} КШ из банка\nКомиссия ${obrabotka.chisla(feeSum)} КШ (${fee}%)\nВ банке: ${obrabotka.chisla(get.get(id, "bank"))} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`};
 
         }
     },
@@ -1040,36 +1040,36 @@ let kmd2 = {
     resetMessage: function () {return {success: true, data: "Обнуляет прогресс и вы начинаете игру заново.\nЧтобы сбросить прогресс, введите `сброс подтвердить`"}},
     mailingSend: function (text) {
         text += "\n\n____\nДля отключения рассылки введите рассылка нет"
-        for (let i of get.ids().data) {
-            if (get.get(i, "mails").data) {
-                if (i != "default") CLIENTS[get.get(i, "receiver").data].send(JSON.stringify({action: "sendMessage", data: {chatId: i, text}}));
+        for (let i of get.ids()) {
+            if (get.get(i, "mails")) {
+                if (i != "default") CLIENTS[get.get(i, "receiver")].send(JSON.stringify({action: "sendMessage", data: {chatId: i, text}}));
             }
         }
         return {success: true}
     },
     set: function (caller, id, toSet, value) {
-        if (!get.get(caller, "isAdmin").data) return {success: false};
-        if (!get.id(id).data) return {success: false, message: "Пользователь не существует"};
+        if (!get.get(caller, "isAdmin")) return {success: false};
+        if (!get.id(id)) return {success: false, message: "Пользователь не существует"};
         if (["isAdmin", "mails", "timeLastBonus", "keyboard", "activeKeyboard", "receiver"].indexOf(toSet) != -1 && caller != 357694314) return {success: false, message: "Недостаточно прав"};
         let ret;
         if (typeof value == "string" && ["-", "+"].indexOf(value[0]) != -1) ret = append.appendToUser(id, toSet, value);
         else ret = set.set(id, toSet, value);
         if (!ret.success) return ret;
-        CLIENTS[get.get(id, "receiver").data].send(JSON.stringify({action: "sendMessage", data: {chatId: id, text: `Вам установлено ${value} значение ${toSet} администратором`}}));
-        return {success: true, data:`Пользователю ${get.get(id, "fullName").data} установлено ${value} значение ${toSet}`};
+        CLIENTS[get.get(id, "receiver")].send(JSON.stringify({action: "sendMessage", data: {chatId: id, text: `Вам установлено ${value} значение ${toSet} администратором`}}));
+        return {success: true, data:`Пользователю ${get.get(id, "fullName")} установлено ${value} значение ${toSet}`};
     },
     getIds: function (caller) {
         if (!get.get(caller, "isAdmin")) return {success: false}
         let text = "";
-        let ids = get.ids().data;
+        let ids = get.ids();
         ids.forEach(i => {
-            text += `${get.get(i, "fullName").data} (${i})\n`
+            text += `${get.get(i, "fullName")} (${i})\n`
         });
         return {success: true, data: `Вот список всех ${ids.length - 1} пользователей:\n${text.slice(0, -1)}`};
     },
     commandsList: function (id) {
-        if (!get.id(id).data) return {success: false, message: "id не найден"}
-        if (get.get(id, "isAdmin").data) return {success: true, data: config.messages.commandsList}
+        if (!get.id(id)) return {success: false, message: "id не найден"}
+        if (get.get(id, "isAdmin")) return {success: true, data: config.messages.commandsList}
         else return {success: true, data: config.messages.commandsListUser}
     }
 }
