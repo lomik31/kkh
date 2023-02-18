@@ -330,13 +330,12 @@ let obrabotka = {
         return dateFormat(vremya_okda*1000, "dd.mm.yyyy HH:MM:ss");
     },
     vremeniBonusa: function(vremya_okda) {
-        let t = new Date(vremya_okda * 1000);
-        return `${t.getUTCHours()}:${t.getUTCMinutes()}:${t.getUTCSeconds()}`;
+        return `${dateFormat(vremya_okda*1000, "HH:MM:ss")}`;
     }
 }
 let give = {
     bonus: function (id) {
-        if (get.time() - get.get(id, "timeLastBonus") < 86400) return {success: false, message: `Ежедневный бонус уже был получен сегодня\nДо следующего бонуса: ${obrabotka.vremeniBonusa(get.get(id, "timeLastBonus") + 86400 - get.time())}`};
+        if (get.time() - get.get(id, "timeLastBonus") < 86400) return {success: false, message: `Ежедневный бонус уже был получен сегодня\nДо следующего бонуса: ${obrabotka.vremeniBonusa(get.get(id, "timeLastBonus") + 86400 - get.time() - 10800)}`};
         let mnoz = data.users[id].multiplier;
         let mnoz2 = 0;
         let t = get.time();
@@ -359,7 +358,7 @@ let give = {
         return {success: true, data: msg};
     },
     bonus2: function (id) {
-        if (get.time() - get.get(id, "timeLastSecondBonus") < 28800) return {success: false, message: `Бонус2 можно получать каждые 8 часов\nДо следующего бонуса2: ${obrabotka.vremeniBonusa(get.get(id, "timeLastSecondBonus") + 28800 - get.time())}`}
+        if (get.time() - get.get(id, "timeLastSecondBonus") < 28800) return {success: false, message: `Бонус2 можно получать каждые 8 часов\nДо следующего бонуса2: ${obrabotka.vremeniBonusa(get.get(id, "timeLastSecondBonus") + 28800 - get.time() - 10800)}`}
         let bonus = randomInt(10000, (get.get(id, "sec") * 3600 + get.get(id, "click") * 5400 + get.get(id, "balanceBoost") * 500000) + 10000);
         append.appendToUser(id, "balance", bonus);
         data.users[id].othersProceeds += bonus;
@@ -845,6 +844,16 @@ class kmd {
             msg += `${i[0].charAt(0).toUpperCase() + i[0].slice(1)}: ${i[1]}\n`
         });
         CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: msg});
+    }
+    bonus() {
+        let res = give.bonus(this.message.from_user.id);
+        if (res.success) CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.data});
+        else CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
+    }
+    bonus2() {
+        let res = give.bonus2(this.message.from_user.id);
+        if (res.success) CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.data});
+        else CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
     }
 
     resetId(toReset, type, id = 0) {

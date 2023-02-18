@@ -60,7 +60,7 @@ exports.COMMANDS = {
     },
     "бонус": {
         description: "Забрать ежедневный бонус",
-        action: "kmd.bonus(message, message_text)",
+        action: "new kmd(message, client).bonus()",
         usage: "бонус",
         permissions: "user"
     },
@@ -122,7 +122,7 @@ exports.COMMANDS = {
         },
     "бонус2": {
         description: "Забрать бонус2",
-        action: "kmd.bonus2(message, message_text)",
+        action: "new kmd(message, client).bonus2()",
         usage: "бонус2",
         permissions: "user"
     },

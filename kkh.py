@@ -87,7 +87,7 @@ class kmd:
             else: command = message.text
             connection.send({"action": {"function": "set.lastCommand", "args": [self.message.from_user.id, command]}}, chatId)
         connection.send({"action": {"function": "get.id", "args": self.message.from_user.id}}, self.message.chat.id, callback)
-        
+
     def price(self):
         if (len(self.message_text) < 2): return bot.send_message(self.message.chat.id, "Использование: цена <апгрейд>")
         upgrade = self.message.text[5:].replace("+", "")
@@ -147,15 +147,6 @@ class kmd:
             bot.send_message(chatId, message)
         if (comment): connection.send({"action": {"function": "kmd.pay", "args": [fr0m, to, amount, comment]}}, self.message.chat.id, callback)
         else: connection.send({"action": {"function": "kmd.pay", "args": [fr0m, to, amount]}}, self.message.chat.id, callback)
-    def bonus(self):
-        def callback(chatId, message):
-            bot.send_message(chatId, message)
-        connection.send({"action": {"function": "give.bonus", "args": [self.message.from_user.id]}}, self.message.chat.id, callback)
-    def bonus2(self):
-        def callback(chatId, message):
-            bot.send_message(chatId, message)
-        connection.send({"action": {"function": "give.bonus2", "args": [self.message.from_user.id]}}, self.message.chat.id, callback)
-    
     def upgrades(self):
         type = bot.get_chat(self.message.chat.id).type
         def callback(chatId, value):
