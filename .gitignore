@@ -3,7 +3,7 @@ backups
 folder
 logs
 tags.json
-test.py
+test.*
 usrs.json
 promos.json
 server
