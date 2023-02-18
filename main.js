@@ -678,7 +678,7 @@ class kmd {
         set.lastCommand(message.from_user.id, command);
     }
     top() {
-        let top = {page: 1, mode: "balance", activeTop: true, id: this.message.from_user.id};
+        let top = {mode: "balance", active_top: true, caller_id: this.message.from_user.id, page: 1};
         if (this.message_text[0] == "всетоп") top.activeTop = false;
         if (this.message_text.length >= 2) {
             if (["клик", "к", "click"].includes(this.message_text[1])) top.mode = "click";
