@@ -145,8 +145,8 @@ let accrual = {
     },
     balanceBoost: function () {
         for(i in data.users) {
-            data.users[i].balance += data.users[i].balance * (data.users[i].balanceBoost / 100);
-            data.users[i].earnedKkh += data.users[i].balance * (data.users[i].balanceBoost / 100);
+            data.users[i].balance += Math.round(data.users[i].balance * (data.users[i].balanceBoost / 100));
+            data.users[i].earnedKkh += Math.round(data.users[i].balance * (data.users[i].balanceBoost / 100));
         }
     },
     bank: function() {
