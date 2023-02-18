@@ -327,9 +327,7 @@ let obrabotka = {
         // return chislo_oknet
     },
     vremeni: function (vremya_okda) {
-        let t = new Date((vremya_okda + 10800) * 1000);
-        let td = t.toISOString()
-        return `${td.slice(8, 10)}.${td.slice(5, 7)}.${td.slice(2, 4)} ${t.getUTCHours()}:${t.getUTCMinutes()}:${t.getUTCSeconds()}`;
+        return dateFormat(vremya_okda*1000, "dd.mm.yyyy HH:MM:ss");
     },
     vremeniBonusa: function(vremya_okda) {
         let t = new Date(vremya_okda * 1000);
@@ -1030,12 +1028,8 @@ let others = {
         }
     },
     dbWrite: function () {
-        let t = new Date((get.time() + 10800) * 1000);
-        let td = t.toISOString()
-        let name = `backup-${td.slice(0, 4)}-${td.slice(5, 7)}-${td.slice(8, 10)}_${t.getUTCHours()}.${t.getUTCMinutes()}.${t.getUTCSeconds()}.json`;
-        // let error;
+        let name = `backup-${dateFormat(get.time()*1000, "yyyy-mm-dd_HH.MM.ss")}.json`;
         fs.copyFileSync("usrs.json", `backups/${name}`);
-        // if (error) return {success: false, message: error}
         return {success: true, data: "БД записана"}
     }
 }
@@ -1110,8 +1104,7 @@ let onSchedule = {
 const jobs = [
     // schedule.scheduleJob({hour: 0, minute: 0, dayOfWeek: 1}, () => onSchedule.coinLottery()),
     setInterval(() => {
-        let t = new Date();
-        let name = `backup-${dateFormat(t, "yyyy-mm-dd_hh.MM.ss")}.json`;
+        let name = `backup-${dateFormat(get.time()*1000, "yyyy-mm-dd_HH.MM.ss")}.json`;
         fs.copyFileSync("usrs.json", `backups/${name}`);
         (async () => {
             try {
