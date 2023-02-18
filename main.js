@@ -824,6 +824,10 @@ class kmd {
             }
         })();
     }
+    dbWrite() {
+        let res = others.dbWrite();
+        if (res.success) CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.data});
+    }
 
     resetId(toReset, type, id = 0) {
         if (!get.id(toReset)) return {success: false, message: `Пользователя ${toReset} не существует`}

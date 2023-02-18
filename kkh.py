@@ -87,11 +87,7 @@ class kmd:
             else: command = message.text
             connection.send({"action": {"function": "set.lastCommand", "args": [self.message.from_user.id, command]}}, chatId)
         connection.send({"action": {"function": "get.id", "args": self.message.from_user.id}}, self.message.chat.id, callback)
-
-    def writeDB(self):
-        def callback(chatId, msg):
-            bot.send_message(chatId, msg)
-        connection.send({"action": {"function": "dbWrite"}}, self.message.chat.id, callback)
+        
     def price(self):
         if (len(self.message_text) < 2): return bot.send_message(self.message.chat.id, "Использование: цена <апгрейд>")
         upgrade = self.message.text[5:].replace("+", "")

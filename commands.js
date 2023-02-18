@@ -13,7 +13,7 @@ exports.COMMANDS = {
     },
     "бдзапись": {
         description: "Записывает бд в файл",
-        action: "kmd.manual_write_file(message, message_text)",
+        action: "new kmd(message, client).dbWrite()",
         usage: "бдзапись",
         permissions: "admin",
         links: ["записьбд"]
