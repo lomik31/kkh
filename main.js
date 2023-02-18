@@ -828,6 +828,24 @@ class kmd {
         let res = others.dbWrite();
         if (res.success) CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.data});
     }
+    commandsList() {
+        let userId = this.message.from_user.id;
+        let commands = [];
+        if (userId == 357694314) Object.keys(COMMANDS).forEach((i) => {
+            if (!COMMANDS[i].link) commands.push([i, COMMANDS[i].description]);
+        });
+        else if (get.get(userId, "isAdmin")) Object.keys(COMMANDS).forEach((i) => {
+            if (COMMANDS[i].permissions != "owner" && !COMMANDS[i].link) commands.push([i, COMMANDS[i].description]);
+        });
+        else Object.keys(COMMANDS).forEach((i) => {
+            if (COMMANDS[i].permissions == "user" && !COMMANDS[i].link) commands.push([i, COMMANDS[i].description]);
+        });
+        let msg = "";
+        commands.forEach((i) => {
+            msg += `${i[0].charAt(0).toUpperCase() + i[0].slice(1)}: ${i[1]}\n`
+        });
+        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: msg});
+    }
 
     resetId(toReset, type, id = 0) {
         if (!get.id(toReset)) return {success: false, message: `Пользователя ${toReset} не существует`}

@@ -27,9 +27,16 @@ exports.COMMANDS = {
         usage: "кмд <id юзера> <команда> [...аргументы команды]",
         permissions: "admin"
     },
+    "_": {
+        description: "Повторить последнюю выполненную команду",
+        action: "",
+        usage: "_",
+        permissions: "user"
+
+    },
     "команды": {
         description: "Показывает список команд",
-        action: "kmd.commandsList(message, message_text)",
+        action: "new kmd(message, client).commandsList()",
         usage: "команды",
         permissions: "user"
     },
