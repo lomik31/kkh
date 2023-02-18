@@ -118,10 +118,11 @@ function textReceiver(message, client) {
         let loxtext = message.text;
         message.text = message.text.replace(" \(\d+[\.\d]* КШ\)", "").slice(1);
         message_text = message.text.toLowerCase().split(" ");
-        let t = message_text[0];
+        let a = [];
         for (i in message_text) {
+            a.push(message_text[i]);
+            let t = a.join(" ");
             if (["сек", "клик", "скидка", "1% скидки", "бб", "баланс", "баланс/день", "буст баланса", "буст баланс", "1% баланса/день"].includes(t)) return new kmd(message, client, loxtext).buyBoost(t);
-            t += ` ${message_text[i+1]}`;
         }
         return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Неверный тип апгрейда"});
     }
@@ -699,9 +700,10 @@ class kmd {
         CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: others.leaderbord(top), parseMode: "HTML"});
     }
     buyBoost(boost) {
+        let id = this.message.from_user.id
         let a = boost.split(" ");
-        args = this.message_text.filter((i) => a.includes(i));
-        if (boost = "клик") boost = "click";
+        let args = a.filter((i) => !a.includes(i));
+        if (boost == "клик") boost = "click";
         else if (boost == "сек") boost = "sec";
         else if (["скидка", "1% скидки"].includes(boost)) boost = "sale";
         else if (["бб", "баланс", "баланс/день", "буст баланса", "буст баланс", "1% баланса/день"].includes(boost)) boost = "balanceBoost";
