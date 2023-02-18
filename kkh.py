@@ -3,7 +3,10 @@ import json as JSON
 from telebot import TeleBot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 from threading import Thread
-bot = TeleBot("1609358198:AAHs5roy9uMih-5fTlvzHKgLlfkdQXm-LPk")
+with open("config.json", encoding="utf-8") as config:
+    config = JSON.load(config)
+
+bot = TeleBot(config["tokens"]["telegram"])
 class CONNECTION:
     id = 0
     sendIds = {}
