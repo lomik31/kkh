@@ -802,7 +802,7 @@ class kmd:
     def sendUser(message, message_text):
         if (len(message_text) < 2) and (message_text[0] == "послать"): return bot.send_message(message.chat.id, "Послать пользователя (1.000.000 КШ): Послать <id юзера>");
         if (len(message_text) < 2) and (message_text[0] == "послатьанон"): return bot.send_message(message.chat.id, "Анонимно послать пользователя (3.000.000 КШ): Послатьанон <id юзера>");
-        try: id = getId(message_text[1]);
+        try: id = int(getId(message_text[1]));
         except: 
             if (message_text[1] == "_"):
                 if (message.reply_to_message != None): id = message.reply_to_message.from_user.id;
