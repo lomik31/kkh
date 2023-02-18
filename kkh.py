@@ -88,14 +88,6 @@ class kmd:
             connection.send({"action": {"function": "set.lastCommand", "args": [self.message.from_user.id, command]}}, chatId)
         connection.send({"action": {"function": "get.id", "args": self.message.from_user.id}}, self.message.chat.id, callback)
 
-    def balance(self):
-        user = self.message.from_user.id
-        if (len(self.message_text) > 1): 
-            if (self.message_text[1] == "_" and self.message.reply_to_message): user = self.message.reply_to_message.from_user.id
-            else: user = self.message_text[1]
-        def callback(chatId, message):
-            bot.send_message(chatId, message, parse_mode="MARKDOWN")
-        connection.send({"action": {"function": "kmd.balance", "args": user}}, self.message.chat.id, callback)
     def writeDB(self):
         def callback(chatId, msg):
             bot.send_message(chatId, msg)
