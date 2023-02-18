@@ -808,9 +808,7 @@ class kmd {
             this.message.text = "команда " + this.message.text;
             return new kmd(this.message, this.client).helpCommand();
         }
-        let t = new Date((get.time() + 10800) * 1000);
-        let td = t.toISOString();
-        let name = `backup-${td.slice(0, 4)}-${td.slice(5, 7)}-${td.slice(8, 10)}_${t.getUTCHours()}.${t.getUTCMinutes()}.${t.getUTCSeconds()}.json`;
+        let name = `backup-${dateFormat(get.time()*1000, "yyyy-mm-dd_HH.MM.ss")}.json`;
         fs.copyFileSync("usrs.json", `backups/${name}`);
         (async () => {
             try {
