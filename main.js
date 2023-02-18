@@ -730,7 +730,7 @@ class kmd {
 Баланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`, parseMode: "HTML"});
     }
     click() {
-        userId = this.message.from_user.id;
+        let userId = this.message.from_user.id;
         accrual.click(userId);
         CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Коллекция кристальных шаров пополнена!\nБаланс: ${obrabotka.chisla(get.get(userId, "balance"))} КШ`});
     }
@@ -826,6 +826,7 @@ class kmd {
             }
         })();
     }
+
     resetId(toReset, type, id = 0) {
         if (!get.id(toReset)) return {success: false, message: `Пользователя ${toReset} не существует`}
         if (type == 1) {}
