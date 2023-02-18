@@ -694,7 +694,7 @@ class kmd {
             else if (["д", "деньги", "money"].includes(this.message_text[1])) top.mode = "money";
             if (this.message_text.length >= 3) {
                 let a = Number(this.message_text[2]);
-                if (!isNan(a)) top.page = a;
+                if (!isNaN(a)) top.page = a;
             }
         }
         CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: others.leaderbord(top), parseMode: "HTML"});
@@ -739,7 +739,7 @@ class kmd {
     balance() {
         let userId;
         if (this.message_text.length > 1) {
-            if (message_text[1] == "_" && this.message.reply_to_message) userId = this.message.reply_to_message.from_user.id;
+            if (this.message_text[1] == "_" && this.message.reply_to_message) userId = this.message.reply_to_message.from_user.id;
             else {
                 userId = this.message_text[1];
                 if (!get.id(userId)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Id не найден"});
@@ -780,7 +780,8 @@ class kmd {
             new kmd(this.message, this.client).helpCommand();
         }
         let from = this.message.from_user.id;
-        if (message_text[1] == "_" && this.message.reply_to_message) to = this.message.reply_to_message.from_user.id;
+        let to;
+        if (this.message_text[1] == "_" && this.message.reply_to_message) to = this.message.reply_to_message.from_user.id;
         else {
             to = this.message_text[1];
             if (!get.id(to)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Id не найден"});
@@ -788,7 +789,7 @@ class kmd {
         let type;
         if (this.message_text[0] == "послать") type = "normal";
         else if (this.message_text[0] == "послатьанон") type = "anonymous";
-        cost = {
+        let cost = {
             normal: 1_000_000,
             anonymous: 3_000_000
         };
