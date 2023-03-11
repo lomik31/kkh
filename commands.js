@@ -244,5 +244,11 @@ exports.COMMANDS = {
         action: "kmd.promoList(message, message_text)",
         usage: "лпромо",
         permissions: "admin"
+    },
+    "set": {
+        description: "Установить значение пользователю",
+        action: "new kmd(message, client).set()",
+        usage: "set <id> <параметр> <значение>",
+        permissions: "admin"
     }
 }

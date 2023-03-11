@@ -899,6 +899,29 @@ class kmd {
         if (res.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.data});
         return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
     }
+    set() {
+        if (this.message_text.length < 4) {
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client).helpCommand();
+        }
+        let value = this.message_text[3];
+        let toSet = this.message.text.split(" ")[2];
+        let to;
+        if (this.message_text[1] == "_" && this.message.reply_to_message) to = this.message.reply_to_message.from_user.id;
+        else {
+            to = this.message_text[1];
+            if (!get.id(to)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Id не найден"});
+        }
+        if (value == "true") value = true;
+        else if (value == "false") value = false;
+        if (["isAdmin", "mails", "timeLastBonus", "keyboard", "activeKeyboard", "receiver"].indexOf(toSet) != -1 && this.message.from_user.id != 357694314) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Недостаточно прав"});
+        let ret;
+        if (typeof value == "string" && ["-", "+"].includes(value[0])) ret = append.appendToUser(to, toSet, value);
+        else ret = set.set(to, toSet, value);
+        if (!ret.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: ret.message});
+        CLIENTS[get.get(to, "receiver")].sendMessage({chatId: to, text: `Вам установлено ${value} значение ${toSet} администратором`});
+        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Пользователю ${get.get(to, "fullName")} установлено ${value} значение ${toSet}`});
+    }
 }
 let others = {
     leaderbord: function ({mode, active_top, caller_id, page}) {

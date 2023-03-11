@@ -87,15 +87,6 @@ class kmd:
             else: command = message.text
             connection.send({"action": {"function": "set.lastCommand", "args": [self.message.from_user.id, command]}}, chatId)
         connection.send({"action": {"function": "get.id", "args": self.message.from_user.id}}, self.message.chat.id, callback)
-
-    def set(self):
-        if (len(self.message_text) < 4): return bot.send_message(self.message.chat.id, "Использование: set <id> <параметр> <значение>")
-        amount = self.message_text[3]
-        user = self.message_text[1]
-        if (self.message_text[1] == "_" and self.message.reply_to_message): user = self.message.reply_to_message.from_user.id
-        if (amount == "true"): amount = True
-        elif (amount == "false"): amount = False
-        connection.send({"action": {"function": "kmd.set", "args": [self.message.from_user.id, user, self.message.text.split(" ")[2], amount]}}, self.message.chat.id, lambda chatId, message: bot.send_message(chatId, message))
     def coin(self):
         if (len(self.message_text) < 3): return bot.send_message(self.message.chat.id, "Использование: монета <ставка> орел/решка")
         bet = self.message_text[1]
