@@ -677,7 +677,7 @@ class kmd {
     }
     top() {
         let top = {mode: "balance", active_top: true, caller_id: this.message.from_user.id, page: 1};
-        if (this.message_text[0] == "всетоп") top.activeTop = false;
+        if (this.message_text[0] == "всетоп") top.active_top = false;
         if (this.message_text.length >= 2) {
             if (["клик", "к", "click"].includes(this.message_text[1])) top.mode = "click";
             else if (["сек", "с", "sec"].includes(this.message_text[1])) top.mode = "sec";
@@ -867,6 +867,23 @@ class kmd {
         delete data.users[toRemove];
         return {success: true}
     }
+    pay() {
+        if (this.message_text.length < 3) {
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client).helpCommand();
+        }
+        let from = this.message.from_user.id;
+        let to;
+        if (this.message_text[2] == "_" && this.message.reply_to_message) to = this.message.reply_to_message.from_user.id;
+        else {
+            to = this.message_text[2];
+            if (!get.id(to)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Id не найден"});
+        }
+        let comment;
+        if (this.message_text.length > 3) comment = this.message.text.split(" ").slice(3).join(" ");
+        let res = others.pay(from, to, this.message_text[1], comment);
+        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
+    }
 }
 let others = {
     leaderbord: function ({mode, active_top, caller_id, page}) {
@@ -1004,7 +1021,6 @@ let others = {
             to = keys[randomInt(0, keys.length)];
             delete keys;
         }
-        if (!get.id(to)) return {success: false, message: `Id ${to} не существует`}
         if (amount < 100) return {success: false, message: "Переводы меньше 100 КШ запрещены"}
         if (amount > get.get(from, "balance")) return {success: false, message: "Недостаточно средств"}
         append.appendToUser(from, "balance", -amount);
@@ -1012,12 +1028,12 @@ let others = {
         append.appendToUser(to, "balance", amount);
         data.users[to].receivedKkh += amount;
         if (comment) {
-            CLIENTS[get.get(to, "receiver")].send(JSON.stringify({action: "sendMessage", data: {chatId: to, text: `Получен перевод ${obrabotka.chisla(amount)} КШ от пользователя ${get.get(from, "fullName")} (${from})\nСообщение: ${comment}`}}));
-            return {success: true, data: `Перевод ${obrabotka.chisla(amount)} КШ пользователю ${get.get(to, "fullName")} (${to}) выполнен успешно!\nКомментарий к переводу: ${comment}`};
+            CLIENTS[get.get(to, "receiver")].sendMessage({chatId: to, text: `Получен перевод ${obrabotka.chisla(amount)} КШ от пользователя ${get.get(from, "fullName")} (${from})\nСообщение: ${comment}`});
+            return {success: true, message: `Перевод ${obrabotka.chisla(amount)} КШ пользователю ${get.get(to, "fullName")} (${to}) выполнен успешно!\nКомментарий к переводу: ${comment}`};
         }
         else {
-            CLIENTS[get.get(to, "receiver")].send(JSON.stringify({action: "sendMessage", data: {chatId: to, text: `Получен перевод ${obrabotka.chisla(amount)} КШ от пользователя ${get.get(from, "fullName")} (${from})`}}));
-            return {success: true, data: `Перевод ${obrabotka.chisla(amount)} КШ пользователю ${get.get(to, "fullName")} (${to}) выполнен успешно!`};
+            CLIENTS[get.get(to, "receiver")].sendMessage({chatId: to, text: `Получен перевод ${obrabotka.chisla(amount)} КШ от пользователя ${get.get(from, "fullName")} (${from})`});
+            return {success: true, message: `Перевод ${obrabotka.chisla(amount)} КШ пользователю ${get.get(to, "fullName")} (${to}) выполнен успешно!`};
         }
     },
     bankTransfer: function(id, action, value = -1) {

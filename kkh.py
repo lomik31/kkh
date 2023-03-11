@@ -133,20 +133,6 @@ class kmd:
                         connection.send({"action": {"function": "get.get", "args": [user, "fullName"]}}, self.message.chat.id, callback)
                     connection.send({"action": {"function": "resetId", "args": [user, 2]}}, self.message.chat.id, callback)
                 connection.send({"action": {"function": "get.get", "args": [self.message.from_user.id, "isAdmin"]}}, self.message.chat.id, callback)
-    def pay(self):
-        if (len(self.message_text) < 3): return bot.send_message(self.message.chat.id, "Использование: перевод <сумма> <id получателя> [комментарий]")
-        fr0m = self.message.from_user.id
-        to = self.message_text[2]
-        amount = self.message_text[1]
-        comment = ""
-        if (len(self.message_text) > 3):
-            for i in self.message.text.split(" ")[3:]:
-                comment += i
-        if (to == "_" and self.message.reply_to_message): to = self.message.reply_to_message.from_user.id
-        def callback(chatId, message):
-            bot.send_message(chatId, message)
-        if (comment): connection.send({"action": {"function": "kmd.pay", "args": [fr0m, to, amount, comment]}}, self.message.chat.id, callback)
-        else: connection.send({"action": {"function": "kmd.pay", "args": [fr0m, to, amount]}}, self.message.chat.id, callback)
     def upgrades(self):
         type = bot.get_chat(self.message.chat.id).type
         def callback(chatId, value):

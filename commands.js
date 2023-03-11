@@ -97,7 +97,7 @@ exports.COMMANDS = {
     },
     "перевод": {
         description: "Переводит деньги пользователю",
-        action: "kmd.pay(message, message_text)",
+        action: "new kmd(message, client).pay()",
         usage: "перевод <сумма> <id получателя> [комментарий]",
         permissions: "user"
     },
