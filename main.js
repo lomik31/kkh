@@ -884,6 +884,21 @@ class kmd {
         let res = others.pay(from, to, this.message_text[1], comment);
         return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
     }
+    price() {
+        if (this.message_text.length < 2) {
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client).helpCommand();
+        }
+        let upgrade = this.message.text.slice(5).replace("+", "");
+        if (upgrade == "клик") upgrade = "click";
+        else if (upgrade == "сек") upgrade = "sec";
+        else if (["скидка", "скидки"].includes(upgrade)) upgrade = "sale";
+        else if (["бб", "баланс", "баланса", "баланс/день"].includes(upgrade)) upgrade = "balanceBoost";
+        if (!["click", "sec", "sale", "balanceBoost"].includes(upgrade)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Неверный апгрейд"});
+        let res = calc.boost(this.message.from_user.id, upgrade);
+        if (res.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.data});
+        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
+    }
 }
 let others = {
     leaderbord: function ({mode, active_top, caller_id, page}) {

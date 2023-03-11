@@ -88,17 +88,6 @@ class kmd:
             connection.send({"action": {"function": "set.lastCommand", "args": [self.message.from_user.id, command]}}, chatId)
         connection.send({"action": {"function": "get.id", "args": self.message.from_user.id}}, self.message.chat.id, callback)
 
-    def price(self):
-        if (len(self.message_text) < 2): return bot.send_message(self.message.chat.id, "Использование: цена <апгрейд>")
-        upgrade = self.message.text[5:].replace("+", "")
-        if (upgrade == "клик"): upgrade = "click"
-        elif (upgrade == "сек"): upgrade = "sec"
-        elif (upgrade in ["скидка", "скидки"]): upgrade = "sale"
-        elif (upgrade in ["бб", "баланс", "баланса", "баланс/день"]): upgrade = "balanceBoost"
-        if (upgrade not in ["click", "sec", "sale", "balanceBoost"]): return bot.send_message(self.message.chat.id, "Неверный апгрейд")
-        def callback(chatId, message):
-            bot.send_message(chatId, message)
-        connection.send({"action": {"function": "calc.boost", "args": [self.message.from_user.id, upgrade]}}, self.message.chat.id, callback)
     def set(self):
         if (len(self.message_text) < 4): return bot.send_message(self.message.chat.id, "Использование: set <id> <параметр> <значение>")
         amount = self.message_text[3]

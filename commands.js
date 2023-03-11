@@ -73,7 +73,7 @@ exports.COMMANDS = {
     },
     "цена": {
         description: "Показывает цену апгрейда",
-        action: "kmd.price(message, message_text)",
+        action: "new kmd(message, client).price()",
         usage: "цена <апгрейд>",
         permissions: "user"
     },
