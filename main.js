@@ -399,7 +399,7 @@ let set = {
             if (type == "private") {
                 if (!get.id(id)) return {success: false, message: "Неверный пользователь"};
                 data.users[id].activeKeyboard = state;
-                {success: true}
+                return {success: true}
             }
             else {
                 if (!(id in data.groups)) return {success: false, message: "Неверная группа"};
@@ -855,7 +855,6 @@ class kmd {
         if (res.success) CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.data});
         else CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
     }
-
     resetId(toReset, type, id = 0) {
         if (!get.id(toReset)) return {success: false, message: `Пользователя ${toReset} не существует`}
         if (type == 1) {}
