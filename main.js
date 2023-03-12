@@ -565,6 +565,7 @@ let game = {
             else stavka = obrabotka.kChisla(stavka);
         }
         if (stavka > get.get(id, "balance") || stavka <= 0) return {success: false, message: "Неверная ставка (меньше нуля или больше вашего баланса)"}
+        if (stavka < get.get(id, "balance") / 100) return {success: false, message: "Ставка должна быть не меньше 1% от вашего баланса"};
         if (or_or_re == "#r") or_or_re = randomInt(1, 3);
         else if (or_or_re == "орел" || or_or_re == "орёл") or_or_re = 1;
         else if (or_or_re == "решка") or_or_re = 2;
@@ -573,12 +574,12 @@ let game = {
         if (result == or_or_re) {
             data.users[id].balance += stavka;
             data.users[id].wonMoneta += stavka;
-            return {success: true, data: `Вы выиграли! Ваш выигрыш: ${obrabotka.chisla(stavka)} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`};
+            return {success: true, message: `Вы выиграли! Ваш выигрыш: ${obrabotka.chisla(stavka)} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`};
         }
         else {
             data.users[id].balance -= stavka;
             data.users[id].wonMoneta -= stavka;
-            return {success: true, data: `Вы проиграли. Проиграно ${obrabotka.chisla(stavka)} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`};
+            return {success: true, message: `Вы проиграли. Проиграно ${obrabotka.chisla(stavka)} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`};
         }
     },
     // roulette: {
@@ -921,6 +922,15 @@ class kmd {
         if (!ret.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: ret.message});
         CLIENTS[get.get(to, "receiver")].sendMessage({chatId: to, text: `Вам установлено ${value} значение ${toSet} администратором`});
         CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Пользователю ${get.get(to, "fullName")} установлено ${value} значение ${toSet}`});
+    }
+    coin() {
+        if (this.message_text.length < 3) {
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client).helpCommand();
+        }
+        let bet = this.message_text[1];
+        let side = this.message_text[2];
+        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: game.coin(this.message.from_user.id, bet, side).message});
     }
 }
 let others = {

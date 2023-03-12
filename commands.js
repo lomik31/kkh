@@ -128,7 +128,7 @@ exports.COMMANDS = {
     },
     "монета": {
         description: "Играть в монету на деньги",
-        action: "kmd.moneta(message, message_text)",
+        action: "new kmd(message, client).coin()",
         usage: "монета <ставка> <орел/решка>",
         permissions: "user",
         links: ["монетка"]

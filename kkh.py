@@ -87,13 +87,6 @@ class kmd:
             else: command = message.text
             connection.send({"action": {"function": "set.lastCommand", "args": [self.message.from_user.id, command]}}, chatId)
         connection.send({"action": {"function": "get.id", "args": self.message.from_user.id}}, self.message.chat.id, callback)
-    def coin(self):
-        if (len(self.message_text) < 3): return bot.send_message(self.message.chat.id, "Использование: монета <ставка> орел/решка")
-        bet = self.message_text[1]
-        side = self.message_text[2]
-        def callback(chatId, message):
-            bot.send_message(chatId, message)
-        connection.send({"action": {"function": "game.coin", "args": [self.message.from_user.id, bet, side]}}, self.message.chat.id, callback)
     def reset(self):
         def callback(chatId, message):
             bot.send_message(chatId, message, parse_mode="MARKDOWN")
