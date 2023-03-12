@@ -115,24 +115,6 @@ class kmd:
                 bot.send_message(chatId, "Вы вышли из меню", reply_markup=Keyboards.mainMenu())
             else: bot.send_message(chatId, "Вы вышли из меню")
         connection.send({"action": {"function": "get.keyboard", "args": [self.message.chat.id, "activeKeyboard", type]}}, self.message.chat.id, callback)
-    def mailing(self):
-        if (len(self.message_text) < 2): return bot.send_message(self.message.chat.id, "Использование: рассылка <да/нет>")
-        state = None
-        if (self.message_text[1] == "да"): state = True
-        elif (self.message_text[1] == "нет"): state = False
-        if (state != None):
-            def callback(chatId):
-                if (state): bot.send_message(chatId, "Рассылка включена.\nДля отключения введите рассылка нет")
-                else: bot.send_message(chatId, "Рассылка отключена.\nДля включения введите рассылка да")
-            return connection.send({"action": {"function": "set.set", "args": [self.message.from_user.id, "mails", state]}}, self.message.chat.id, callback)
-        if (self.message_text[1] == "создать"):
-            def callback(chatId, value):
-                if (not value): return
-                if (len(self.message_text) < 3): return bot.send_message(chatId, "Использование: рассылка создать <текст>")
-                text = self.message.text.split(" ", 2)[-1]
-                connection.send({"action": {"function": "kmd.mailingSend", "args": text}}, self.message.chat.id)
-            return connection.send({"action": {"function": "get.get", "args": [self.message.from_user.id, "isAdmin"]}}, self.message.chat.id, callback)
-        bot.send_message(self.message.chat.id, "Использование: рассылка <да/нет>")
     def promoList(self):
         def callback(chatId, message):
             bot.send_message(chatId, message)

@@ -963,6 +963,31 @@ class kmd {
         if (this.message_text.length > 1) value = this.message_text[1];
         return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: others.bankTransfer(this.message.from_user.id, action, value).message});
     }
+    mailing() {
+        if (this.message_text.length < 2) {
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client).helpCommand();
+        }
+        let state;
+        if (this.message_text[1] == "да") state = true;
+        else if (this.message_text[1] == "нет") state = false;
+        if (state != undefined) {
+            let res = set.set(this.message.from_user.id, "mails", state);
+            if (!res.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
+            if (state) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Рассылка включена.\nДля отключения введите рассылка нет"});
+            return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Рассылка отключена.\nДля включения введите рассылка да"});
+        }
+        else if (this.message_text[1] == "создать") {
+            if (!get.get(this.message.from_user.id, "isAdmin")) return;
+            if (this.message_text.length < 3) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Использование: рассылка создать <текст>"});
+            let text = this.message.text.split(" ").slice(2).join(" ");
+            text += "\n\n____\nДля отключения рассылки введите рассылка нет";
+            for (let i of get.ids()) {
+                if (get.get(i, "mails") && i != "default") CLIENTS[get.get(i, "receiver")].sendMessage({chatId: i, text});
+            }
+            CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Рассылка отправлена"});
+        }
+    }
 }
 let others = {
     leaderbord: function ({mode, active_top, caller_id, page}) {
@@ -1156,15 +1181,6 @@ let others = {
     }
 }
 let kmd2 = {
-    mailingSend: function (text) {
-        text += "\n\n____\nДля отключения рассылки введите рассылка нет"
-        for (let i of get.ids()) {
-            if (get.get(i, "mails")) {
-                if (i != "default") CLIENTS[get.get(i, "receiver")].send(JSON.stringify({action: "sendMessage", data: {chatId: i, text}}));
-            }
-        }
-        return {success: true}
-    },
     set: function (caller, id, toSet, value) {
         if (!get.get(caller, "isAdmin")) return {success: false};
         if (!get.id(id)) return {success: false, message: "Пользователь не существует"};

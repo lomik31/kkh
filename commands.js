@@ -91,7 +91,7 @@ exports.COMMANDS = {
     },
     "рассылка": {
         description: "Включает/выключает получение рассылки",
-        action: "kmd.rassilka(message, message_text)",
+        action: "new kmd(message, client).mailing()",
         usage: "рассылка <да/нет>",
         permissions: "user"
     },
