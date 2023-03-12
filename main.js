@@ -856,12 +856,29 @@ class kmd {
         if (res.success) CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.data});
         else CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
     }
-    resetId(toReset, type, id = 0) {
-        if (!get.id(toReset)) return {success: false, message: `Пользователя ${toReset} не существует`}
-        if (type == 1) {}
-        else if (type == 2 && get.get(toReset, "isAdmin") && id != 357694314) return {success: false, message: "Невозможно сбросить прогресс этого пользователя"}
-        for (i in data.users[toReset]) if (data.doNotClear.indexOf(i) === -1) data.users[toReset][i] = data.users.default[i]; //ВНИМАНИЕ БЛЯТЬ удаляется default при сбросе пофиксить
-        return {success: true}
+    resetId() {
+        if (this.message_text.length == 1 || (this.message_text.length > 1 && this.message_text[1] == "справка")) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Обнуляет прогресс и вы начинаете игру заново.\nЧтобы сбросить прогресс, введите `сброс подтвердить`"});
+        let toReset = 0;
+        let type = 0;
+        if (this.message_text[1] == "подтвердить") {
+            toReset = this.message.from_user.id;
+            type = 0;
+        }
+        else {
+            if (!get.get(this.message.from_user.id, "isAdmin")) {
+                this.message.text = "команда " + this.message.text;
+                return new kmd(this.message, this.client).helpCommand();
+            }
+            toReset = this.message_text[1];
+            if (toReset == "_" && this.message.reply_to_message) toReset = this.message.reply_to_message.from_user.id;
+            if (!get.id(toReset)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Пользователя ${toReset} не существует`});
+            if (get.get(toReset, "isAdmin") && this.message.from_user.id != 357694314) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Невозможно сбросить прогресс этого пользователя"});
+            type = 1;
+        }
+        for (i in data.users[toReset]) if (!data.doNotClear.includes(i)) data.users[toReset][i] = structuredClone(data.users.default[i]); //ВНИМАНИЕ БЛЯТЬ удаляется default при сбросе пофиксить
+        if (type == 0) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Ваш прогресс сброшен!"});
+        CLIENTS[get.get(toReset, "receiver")].sendMessage({chatId: this.message.chat.id, text: "Ваш прогресс сброшен администратором!"});
+        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Прогресс пользователя ${get.get(toReset, "fullName")} (\`${toReset}\`) успешно сброшен!`})
     }
     removeId(toRemove) {
         if (!get.id(toRemove)) return {success: false, message: `Пользователя ${toRemove} не существует`}
@@ -1127,7 +1144,6 @@ let others = {
     }
 }
 let kmd2 = {
-    resetMessage: function () {return {success: true, data: "Обнуляет прогресс и вы начинаете игру заново.\nЧтобы сбросить прогресс, введите `сброс подтвердить`"}},
     mailingSend: function (text) {
         text += "\n\n____\nДля отключения рассылки введите рассылка нет"
         for (let i of get.ids()) {

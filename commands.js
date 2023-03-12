@@ -210,7 +210,7 @@ exports.COMMANDS = {
     },
     "сброс": {
         description: "Вы начинаете игру заново. Для дополнительной информации воспользуйтесь командой `сброс справка`",
-        action: "kmd.reset(message, message_text)",
+        action: "new kmd(message, client).resetId()",
         usage: "сброс [справка/подтвердить]",
         permissions: "user",
         parse: "Markdown"

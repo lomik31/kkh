@@ -87,25 +87,6 @@ class kmd:
             else: command = message.text
             connection.send({"action": {"function": "set.lastCommand", "args": [self.message.from_user.id, command]}}, chatId)
         connection.send({"action": {"function": "get.id", "args": self.message.from_user.id}}, self.message.chat.id, callback)
-    def reset(self):
-        def callback(chatId, message):
-            bot.send_message(chatId, message, parse_mode="MARKDOWN")
-        if (len(self.message_text) == 1): connection.send({"action": {"function": "kmd.resetMessage"}}, self.message.chat.id, callback)
-        elif (len(self.message_text) > 1):
-            if (self.message_text[1] == "справка"): connection.send({"action": {"function": "kmd.resetMessage"}}, self.message.chat.id, callback)
-            elif (self.message_text[1] == "подтвердить"): connection.send({"action": {"function": "resetId", "args": [self.message.from_user.id, 1]}}, self.message.chat.id, lambda chatId: bot.send_message(chatId, "Ваш прогресс сброшен!"))
-            else:
-                def callback(chatId, state):
-                    if (not state): return bot.send_message(chatId, "Использование: сброс <подтвердить/справка>")
-                    user = self.message_text[1]
-                    def callback(chatId):
-                        def callback(chatId, name):
-                            bot.send_message(chatId, f"Прогресс пользователя {name} (`{user}`) успешно сброшен!", parse_mode="MARKDOWN")
-                            try: bot.send_message(user, "Ваш прогресс сброшен администратором!")
-                            except: pass
-                        connection.send({"action": {"function": "get.get", "args": [user, "fullName"]}}, self.message.chat.id, callback)
-                    connection.send({"action": {"function": "resetId", "args": [user, 2]}}, self.message.chat.id, callback)
-                connection.send({"action": {"function": "get.get", "args": [self.message.from_user.id, "isAdmin"]}}, self.message.chat.id, callback)
     def upgrades(self):
         type = bot.get_chat(self.message.chat.id).type
         def callback(chatId, value):
