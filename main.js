@@ -951,6 +951,18 @@ class kmd {
         let side = this.message_text[2];
         CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: game.coin(this.message.from_user.id, bet, side).message});
     }
+    bankTransfer() {
+        let action;
+        let value = -1;
+        if (this.message_text[0] == "+банк") action = "put";
+        else if (this.message_text[0] == "-банк") action = "take";
+        else if (this.message_text[0] == "банк") {
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client).helpCommand();
+        }
+        if (this.message_text.length > 1) value = this.message_text[1];
+        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: others.bankTransfer(this.message.from_user.id, action, value).message});
+    }
 }
 let others = {
     leaderbord: function ({mode, active_top, caller_id, page}) {
@@ -1104,7 +1116,6 @@ let others = {
         }
     },
     bankTransfer: function(id, action, value = -1) {
-        console.log(value);
         let fee = 0.2//% (комиссия)
         if (value == "#r") value = randomInt(1, get.get(id, "balance"))
         else if (value == "все" || value == "всё" || value == -1) {
@@ -1120,7 +1131,6 @@ let others = {
             }
             else value = obrabotka.kChisla(value);
         }
-        console.log(value);
         if ((action == "put" && value > get.get(id, "balance")) || (action == "take" && value > get.get(id, "bank")) || value <= 0) return {success: false, message: "Неверное значение (меньше нуля или больше вашего баланса)"}
         
         let feeSum = Math.round(value*fee/100)
@@ -1129,13 +1139,13 @@ let others = {
             append.appendToUser(id, "bank", value-feeSum);
             append.appendToUser(id, "balance", -value);
             data.users[id].paidKkh += feeSum;
-            return {success: true, data: `Переведено ${obrabotka.chisla(value-feeSum)} КШ в банк\nКомиссия ${obrabotka.chisla(feeSum)} КШ (${fee}%)\nВ банке: ${obrabotka.chisla(get.get(id, "bank"))} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`};
+            return {success: true, message: `Переведено ${obrabotka.chisla(value-feeSum)} КШ в банк\nКомиссия ${obrabotka.chisla(feeSum)} КШ (${fee}%)\nВ банке: ${obrabotka.chisla(get.get(id, "bank"))} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`};
         }
         else if (action == "take") {
             append.appendToUser(id, "bank", -value);
             append.appendToUser(id, "balance", value-feeSum);
             data.users[id].paidKkh += feeSum;
-            return {success: true, data: `Выведено ${obrabotka.chisla(value-feeSum)} КШ из банка\nКомиссия ${obrabotka.chisla(feeSum)} КШ (${fee}%)\nВ банке: ${obrabotka.chisla(get.get(id, "bank"))} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`};
+            return {success: true, message: `Выведено ${obrabotka.chisla(value-feeSum)} КШ из банка\nКомиссия ${obrabotka.chisla(feeSum)} КШ (${fee}%)\nВ банке: ${obrabotka.chisla(get.get(id, "bank"))} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`};
 
         }
     },

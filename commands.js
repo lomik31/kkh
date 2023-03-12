@@ -179,21 +179,16 @@ exports.COMMANDS = {
     },
     "банк": {
         description: "Перевод КШ в банк/из банка",
-        action: "",
+        action: "new kmd(message, client).bankTransfer()",
         usage: "+банк [сумма] / -банк [сумма]",
-        permissions: "user"
+        permissions: "user",
+        links: ["+банк", "-банк"]
     },
     "+банк": {
-        description: "Перевод КШ в банк",
-        action: "kmd.bankPut(message, message_text)",
-        usage: "+банк [сумма]",
-        permissions: "user"
+        link: "банк"
     },
     "-банк": {
-        description: "Вывод КШ из банка",
-        action: "kmd.bankTake(message, message_text)",
-        usage: "-банк [сумма]",
-        permissions: "user"
+        link: "банк"
     },
     "назад": {
         description: "Выйти из меню",
