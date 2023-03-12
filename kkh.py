@@ -115,17 +115,6 @@ class kmd:
                 bot.send_message(chatId, "Вы вышли из меню", reply_markup=Keyboards.mainMenu())
             else: bot.send_message(chatId, "Вы вышли из меню")
         connection.send({"action": {"function": "get.keyboard", "args": [self.message.chat.id, "activeKeyboard", type]}}, self.message.chat.id, callback)
-   
-    def bankTransfer(self):
-        if (self.message_text[0] == "+банк"): action = "put"
-        elif (self.message_text[0] == "-банк"): action = "take"
-        elif (self.message_text[0] == "банк"): return bot.send_message(self.message.chat.id, "helpMessage")
-        def callback(chatId, message):
-            bot.send_message(chatId, message)
-        if (len(self.message_text) > 1):
-            value = self.message_text[1]
-            return connection.send({"action": {"function": "kmd.bankTransfer", "args": [self.message.from_user.id, action, value]}}, self.message.chat.id, callback)
-        connection.send({"action": {"function": "kmd.bankTransfer", "args": [self.message.from_user.id, action]}}, self.message.chat.id, callback)
     def mailing(self):
         if (len(self.message_text) < 2): return bot.send_message(self.message.chat.id, "Использование: рассылка <да/нет>")
         state = None
