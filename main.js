@@ -879,7 +879,7 @@ class kmd {
         }
         for (i in data.users[toReset]) if (!data.doNotClear.includes(i)) data.users[toReset][i] = structuredClone(data.users.default[i]); //ВНИМАНИЕ БЛЯТЬ удаляется default при сбросе пофиксить
         if (type == 0) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Ваш прогресс сброшен!"});
-        CLIENTS[get.get(toReset, "receiver")].sendMessage({chatId: this.message.chat.id, text: "Ваш прогресс сброшен администратором!"});
+        CLIENTS[get.get(toReset, "receiver")].sendMessage({chatId: toReset, text: "Ваш прогресс сброшен администратором!"});
         return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Прогресс пользователя ${get.get(toReset, "fullName")} (\`${toReset}\`) успешно сброшен!`})
     }
     removeId(toRemove) {
