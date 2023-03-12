@@ -240,6 +240,12 @@ exports.COMMANDS = {
         usage: "лпромо",
         permissions: "admin"
     },
+    "фипромо": {
+        description: "Показать полную информацию о промокоде",
+        action: "new kmd(message, client)",
+        usage: "фипромо <название>",
+        permissions: "admin"
+    },
     "set": {
         description: "Установить значение пользователю",
         action: "new kmd(message, client).set()",
