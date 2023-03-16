@@ -417,12 +417,12 @@ let promo = {
         let promos = require("./promos.json");
         msg = `Список промокодов: ${Object.keys(promos.allPromos).filter((f) => f != "default").join(", ")}`;
         promos = null;
-        return {success: true, data: msg};
+        return {success: true, message: msg};
     },
     fInfo: function (promo_okda) {
         let promos = require("./promos.json");
         if (!promo.check(promo_okda)) return {success: false, message: "Промокода не существует!"};
-        return {success: true, data: JSON.stringify(promos.allPromos[promo_okda], null, "    "), dta: promos.allPromos[promo_okda]};
+        return {success: true, message: JSON.stringify(promos.allPromos[promo_okda], null, "    "), data: promos.allPromos[promo_okda]};
     },
     delete: function (promo_okda) {
         let promos = require("./promos.json");
@@ -458,14 +458,18 @@ let promo = {
         }
         msg = msg.slice(0, msg.length - 2);
         if (msg == "") return {success: false, message: "Промокод не найден!"};
-        return {success: true, data: `Промокод даёт: ${msg}`};
+        return {success: true, message: `Промокод даёт: ${msg}`};
     },
     add: function (name, data, activationLimit, validity) {
         if (promo.check(name)) return {success: false, message: "Промокод уже существует"};
         delete data.validity;
         delete data.activationLimit;
         delete data.activatedTimes;
-        for (let i of Object.keys(data)) if (Object.keys(promo.fInfo("default").dta).indexOf(i) == -1) return {success: false, message: "Введено недопустимое значение! Операция отменена"}
+        for (let i of Object.keys(data)) {
+            if (Object.keys(promo.fInfo("default").data).indexOf(i) == -1) return {success: false, message: "Введено недопустимое значение! Операция отменена"}
+        }
+        activationLimit = Number(activationLimit);
+        if (isNaN(activationLimit)) return {success: false, message: "Неверный параметр кол-во активаций"};
         if (activationLimit < -1 || activationLimit == 0) activationLimit = -1;
         if (isNaN(Number(validity))) {
             let a;
@@ -507,8 +511,8 @@ let promo = {
         if (name == "default") return {success: false, message: "Ща твой прогресс по дефолту ёбну"};
         if (!promo.check(name)) return {success: false, message: "Промокода не существует!"};
         if (data.users[userId].activatedPromos.indexOf(name) != -1) return {success: false, message: "Промокод уже активирован"};
-        if (promo.fInfo(name).dta.validity < get.time() &&promo.fInfo(name).dta.validity != -1) return {success: false, message: "Истекло время активации промокода"};
-        if (promo.fInfo(name).dta.activatedTimes >= promo.fInfo(name).dta.activationLimit && promo.fInfo(name).dta.activationLimit != -1) return {success: false, message: "Превышено число активаций промокода"};
+        if (promo.fInfo(name).data.validity < get.time() &&promo.fInfo(name).data.validity != -1) return {success: false, message: "Истекло время активации промокода"};
+        if (promo.fInfo(name).data.activatedTimes >= promo.fInfo(name).data.activationLimit && promo.fInfo(name).data.activationLimit != -1) return {success: false, message: "Превышено число активаций промокода"};
         let promos = require("./promos.json");
         let message = "";
         let value;
@@ -551,7 +555,7 @@ let promo = {
         data.users[userId].activatedPromos.push(name);
         fs.writeFileSync("./promos.json", JSON.stringify(promos, null, "    "));
         file.write();
-        return {success: true, data: message};
+        return {success: true, message};
     }
 }
 let game = {
@@ -987,6 +991,58 @@ class kmd {
             }
             CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Рассылка отправлена"});
         }
+    }
+    promoList() {
+        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: promo.list().message});
+    }
+    promoInfo() {
+        if (this.message_text.length < 2) {
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client).helpCommand();
+        }
+        let promoName = this.message.text.split(" ").slice(1).join(" ");
+        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: promo.info(promoName).message});
+    }
+    promoFullInfo() {
+        if (this.message_text.length < 2) {
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client).helpCommand();
+        }
+        let promoName = this.message.text.split(" ").slice(1).join(" ");
+        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: promo.fInfo(promoName).message});
+    }
+    promoDelete() {
+        if (this.message_text.length < 2) {
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client).helpCommand();
+        }
+        let promoName = this.message.text.split(" ").slice(1).join(" ");
+        let res = promo.delete(promoName);
+        if (res.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Промокод удален"});
+        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
+    }
+    promoAdd() {
+        if (this.message_text.length < 5) {
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client).helpCommand();
+        }
+        let a = this.message.text.split("{", 2);
+        let b = a[1].split("}", 2);
+        let c = b[1].slice(1).split(" ");
+        let paramsObj;
+        try {paramsObj = JSON.parse(`{${b[0]}}`.replaceAll("'", '"'))}
+        catch (e) {return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text:`Произошла ошибка, попробуйте ещё раз!\n${e}`})}
+        let res = promo.add(this.message_text[1], paramsObj, c[0], c[1]);
+        if (res.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Промокод успешно добавлен"});
+        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
+    }
+    promoActivate() {
+        if (this.message_text.length < 2) {
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client).helpCommand();
+        }
+        let res = promo.activate(this.message.from_user.id, this.message.text.slice(this.message.text.indexOf(" ") + 1));
+        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
     }
 }
 let others = {

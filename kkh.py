@@ -115,48 +115,6 @@ class kmd:
                 bot.send_message(chatId, "Вы вышли из меню", reply_markup=Keyboards.mainMenu())
             else: bot.send_message(chatId, "Вы вышли из меню")
         connection.send({"action": {"function": "get.keyboard", "args": [self.message.chat.id, "activeKeyboard", type]}}, self.message.chat.id, callback)
-    def promoList(self):
-        def callback(chatId, message):
-            bot.send_message(chatId, message)
-        connection.send({"action": {"function": "promo.list"}}, self.message.chat.id, callback)
-    def promoInfo(self):
-        if (len(self.message_text) < 2): return bot.send_message(self.message.chat.id, "Использование: ипромо <название промокода>")
-        promo = self.message.text.split(" ", 1)[-1]
-        def callback(chatId, message):
-            bot.send_message(chatId, message)
-        connection.send({"action": {"function": "promo.info", "args": promo}}, self.message.chat.id, callback)
-    def promoFullInfo(self):
-        def callback(chatId, value):
-            if (not value): return
-            if (len(self.message_text) < 2): return bot.send_message(self.message.chat.id, "Использование: фипромо <название промокода>")
-            promo = self.message.text.split(" ", 1)[-1]
-            def callback(chatId, message):
-                bot.send_message(chatId, message)
-            connection.send({"action": {"function": "promo.fInfo", "args": promo}}, self.message.chat.id, callback)
-        connection.send({"action": {"function": "get.get", "args": [self.message.from_user.id, "isAdmin"]}}, self.message.chat.id, callback)
-    def promoDelete(self):
-        def callback(chatId, value):
-            if (not value): return
-            promo = self.message.text.split(" ", 1)[-1]
-            def callback(chatId):
-                bot.send_message(chatId, "Промокод удален")
-            connection.send({"action": {"function": "promo.delete", "args": promo}}, self.message.chat.id, callback)
-        connection.send({"action": {"function": "get.get", "args": [self.message.from_user.id, "isAdmin"]}}, self.message.chat.id, callback)
-    def promoAdd(self):
-        def callback(chatId, value):
-            if (not value): return
-            if (len(self.message_text) < 5): return bot.send_message(self.message.chat.id, "Использование: нпромо <название> <параметры({'balance':0, 'click':0, 'sec':0, 'sale':0, 'multiplier':0, 'balanceBoost':0})> <кол-во активаций> <время действия>")
-            a = self.message.text.partition('{')
-            b = a[2].partition('}')
-            c = b[2][1:]
-            paramsDictSTR = a[1] + b[0]+ b[1]
-            try: paramsDict = JSON.loads(paramsDictSTR.replace("'",'"'))
-            except Exception as e: return bot.send_message(self.message.chat.id, f"Произошла ошибка, попробуйте ещё раз!\n{e}")
-            connection.send({"action": {"function": "promo.add", "args": [self.message_text[1], paramsDict, int(c.split(" ")[0]), c.split(" ")[1]]}}, chatId, lambda chatId: bot.send_message(chatId, "Промокод успешно добавлен"))
-        connection.send({"action": {"function": "get.get", "args": [self.message.from_user.id, "isAdmin"]}}, self.message.chat.id, callback)
-    def promoActivate(self):
-        if len(self.message_text) < 2: return bot.send_message(self.message.chat.id, "Использование: промо <код>")
-        connection.send({"action": {"function": "promo.activate", "args": [connection.CLIENT, self.message.chat.id, self.message.from_user.id, self.message.text.split(" ", 1)[-1]]}}, self.message.chat.id, lambda chatId, message: bot.send_message(chatId, message))
     def getUserInfo(self):
         def callback(chatId, value):
             if (not value): return

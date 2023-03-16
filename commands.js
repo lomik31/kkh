@@ -85,7 +85,7 @@ exports.COMMANDS = {
     },
     "промо": {
         description: "Активирует промокод",
-        action: "kmd.activate_promo(message, message_text)",
+        action: "new kmd(message, client).promoActivate()",
         usage: "промо <промокод>",
         permissions: "user"
     },
@@ -218,31 +218,31 @@ exports.COMMANDS = {
     },
     "нпромо": {
         description: "Добавить новый промокод",
-        action: "kmd.addPromo(message, message_text)",
+        action: "new kmd(message, client).promoAdd()",
         usage: "нпромо <название> <params({'balance':0, 'click':0, 'sec':0, 'sale':0, 'multiplier':0, 'balanceBoost':0})> <кол-во активаций> <время действия>",
         permissions: "admin"
     },
     "дпромо": {
         description: "Удалить промокод",
-        action: "kmd.delPromo(message, message_text)",
+        action: "new kmd(message, client).promoDelete()",
         usage: "дпромо <название>",
         permissions: "admin"
     },
     "ипромо": {
         description: "Показать информацию по промокоду",
-        action: "kmd.promoInf(message, message_text)",
+        action: "new kmd(message, client).promoInfo()",
         usage: "ипромо <название>",
         permissions: "user"
     },
     "лпромо": {
         description: "Показать список промокодов",
-        action: "kmd.promoList(message, message_text)",
+        action: "new kmd(message, client).promoList()",
         usage: "лпромо",
         permissions: "admin"
     },
     "фипромо": {
         description: "Показать полную информацию о промокоде",
-        action: "new kmd(message, client)",
+        action: "new kmd(message, client).promoFullInfo()",
         usage: "фипромо <название>",
         permissions: "admin"
     },
