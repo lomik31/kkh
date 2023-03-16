@@ -296,6 +296,10 @@ let obrabotka = {
         let t_result = ""
         let result = ""
         chislo_okda = String(chislo_okda)
+        if (chislo_okda[0] == "-") {
+            result += "-";
+            chislo_okda = chislo_okda.slice(1);
+        }
         let counter=0
         for (let i = 1; i <= chislo_okda.length; i++) {
             if (counter % 3 == 0 && counter != 0) t_result += ".";
