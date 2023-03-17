@@ -251,5 +251,11 @@ exports.COMMANDS = {
         action: "new kmd(message, client).set()",
         usage: "set <id> <параметр> <значение>",
         permissions: "admin"
+    },
+    "dot": {
+        description: "Разделить число по разрядам",
+        action: "new kmd(message, client).dotValue()",
+        usage: "dot <число>",
+        permissions: "admin"
     }
 }

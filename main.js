@@ -1058,6 +1058,13 @@ class kmd {
         if (res.success == false) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
         return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: JSON.stringify(res, null, "    ")});
     }
+    dotValue() {
+        if (this.message_text.length < 2) {
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client).helpCommand();
+        }
+        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: obrabotka.chisla(this.message_text[1])});
+    }
 }
 let others = {
     leaderbord: function ({mode, active_top, caller_id, page}) {
