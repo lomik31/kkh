@@ -1083,6 +1083,14 @@ class kmd {
         delete data.users[userId];
         CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Пользователь успешно удален"});
     }
+    usersList() {
+        let text = "";
+        let ids = get.ids();
+        ids.forEach(i => {
+            text += `${get.get(i, "fullName")} (${i})\n`
+        });
+        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Вот список всех ${ids.length} пользователей:\n${text.slice(0, -1)}`});
+    }
 }
 let others = {
     leaderbord: function ({mode, active_top, caller_id, page}) {

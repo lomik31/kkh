@@ -115,10 +115,6 @@ class kmd:
                 bot.send_message(chatId, "Вы вышли из меню", reply_markup=Keyboards.mainMenu())
             else: bot.send_message(chatId, "Вы вышли из меню")
         connection.send({"action": {"function": "get.keyboard", "args": [self.message.chat.id, "activeKeyboard", type]}}, self.message.chat.id, callback)
-    def userslist(self):
-        def callback(chatId, text):
-            bot.send_message(chatId, text)
-        connection.send({"action": {"function": "kmd.getIds", "args": self.message.from_user.id}}, self.message.chat.id, callback)
     def btcBet(self):
         if (len(self.message_text) < 3): return bot.send_message(self.message.chat.id, "Использование: бит <ставка> вверх/вниз")
         amount = self.message_text[1]

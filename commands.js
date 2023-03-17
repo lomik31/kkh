@@ -135,7 +135,7 @@ exports.COMMANDS = {
     },
     "юзерслист": {
         description: "Передаёт id всех юзеров",
-        action: "kmd.userlist(message, message_text)",
+        action: "new kmd(message, client).usersList()",
         usage: "юзерслист",
         permissions: "admin"
     },
