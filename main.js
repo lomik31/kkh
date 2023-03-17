@@ -1065,6 +1065,11 @@ class kmd {
         }
         return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: obrabotka.chisla(this.message_text[1])});
     }
+    admin() {
+        let res = get.get(this.message.from_user.id, "isAdmin");
+        if (res) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Вы админ"});
+        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Вы не админ"});
+    }
 }
 let others = {
     leaderbord: function ({mode, active_top, caller_id, page}) {

@@ -212,7 +212,7 @@ exports.COMMANDS = {
     },
     "админ": {
         description: "проверка на админа",
-        action: "kmd.admin(message, message_text)",
+        action: "new kmd(message, client).admin()",
         usage: "админ",
         permissions: "user"
     },
