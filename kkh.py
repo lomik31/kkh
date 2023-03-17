@@ -115,16 +115,6 @@ class kmd:
                 bot.send_message(chatId, "Вы вышли из меню", reply_markup=Keyboards.mainMenu())
             else: bot.send_message(chatId, "Вы вышли из меню")
         connection.send({"action": {"function": "get.keyboard", "args": [self.message.chat.id, "activeKeyboard", type]}}, self.message.chat.id, callback)
-    def getUserInfo(self):
-        def callback(chatId, value):
-            if (not value): return
-            if (len(self.message_text) < 2): userId = self.message.from_user.id
-            elif (self.message_text[1] == "_" and self.message.reply_to_message): userId = self.message.reply_to_message.from_user.id
-            else: userId = self.message_text[1]
-            def callback(chatId, message):
-                bot.send_message(chatId, JSON.dumps(message, ensure_ascii=False, indent=4))
-            connection.send({"action": {"function": "get.data", "args": userId}}, self.message.chat.id, callback)
-        connection.send({"action": {"function": "get.get", "args": [self.message.from_user.id, "isAdmin"]}}, self.message.chat.id, callback)
     def admin(self):
         def callback(chatId, value):
             if (value): bot.send_message(chatId, "Вы админ")

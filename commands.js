@@ -103,7 +103,7 @@ exports.COMMANDS = {
     },
     "инфо": {
         description: "Выдает полную информацию о пользователе из бд",
-        action: "kmd.full_inf_user(message, message_text)",
+        action: "new kmd(message, client).getUserInfo()",
         usage: "инфо <id юзера>",
         permissions: "admin"
     },
