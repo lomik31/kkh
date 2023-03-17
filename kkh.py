@@ -115,17 +115,6 @@ class kmd:
                 bot.send_message(chatId, "Вы вышли из меню", reply_markup=Keyboards.mainMenu())
             else: bot.send_message(chatId, "Вы вышли из меню")
         connection.send({"action": {"function": "get.keyboard", "args": [self.message.chat.id, "activeKeyboard", type]}}, self.message.chat.id, callback)
-    def removeId(self):
-        def callback(chatId, value):
-            if (not value): return
-            if (len(self.message_text) < 2): return bot.send_message(chatId, "Использование: дюзер <id пользователя>")
-            if (self.message_text[1] == "_" and self.message.reply_to_message): user = self.message.reply_to_message.from_user.id
-            else: user = self.message_text[1]
-            def callback(chatId, value):
-                if (value): return bot.send_message(chatId, "Невозможно удалить администратора")
-                connection.send({"action": {"function": "removeId", "args": user}}, chatId, lambda chatId: bot.send_message(chatId, "Пользователь успешно удален"))
-            connection.send({"action": {"function": "get.get", "args": [user, "isAdmin"]}}, chatId, callback)
-        connection.send({"action": {"function": "get.get", "args": [self.message.from_user.id, "isAdmin"]}}, self.message.chat.id, callback)
     def userslist(self):
         def callback(chatId, text):
             bot.send_message(chatId, text)

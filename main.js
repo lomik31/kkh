@@ -1070,6 +1070,19 @@ class kmd {
         if (res) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Вы админ"});
         return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Вы не админ"});
     }
+    removeId() {
+        if (this.message_text.length < 2) {
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client).helpCommand();
+        }
+        let userId;
+        if (this.message_text[1] == "_" && this.message.reply_to_message) userId = this.message.reply_to_message.from_user.id;
+        else userId = this.message_text[1];
+        if (!get.id(userId)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Id ${userId} не найден`});
+        if (get.get(userId, "isAdmin")) CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Невозможно удалить администратора"});
+        delete data.users[userId];
+        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Пользователь успешно удален"});
+    }
 }
 let others = {
     leaderbord: function ({mode, active_top, caller_id, page}) {

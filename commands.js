@@ -109,7 +109,7 @@ exports.COMMANDS = {
     },
     "дюзер": {
         description: "Удаляет пользователя из бд",
-        action: "kmd.del_user(message, message_text)",
+        action: "new kmd(message, client).removeId()",
         usage: "дюзер <id пользователя>",
         permissions: "admin"
     },
