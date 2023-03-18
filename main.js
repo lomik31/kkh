@@ -1060,6 +1060,21 @@ class kmd {
         let res = promo.activate(this.message.from_user.id, this.message.text.slice(this.message.text.indexOf(" ") + 1));
         return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
     }
+    keyboardSet() {
+        if (this.message_text.length < 2 || !["да", "нет"].includes(this.message_text[1])) {
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client).helpCommand();
+        }
+        let state;
+        if (this.message_text[1] == "да") state = true;
+        else if (this.message_text[1] == "нет") state = false;
+        let type = this.message.chat.type;
+        let res = set.keyboard.passive(this.message.chat.id, type, state);
+        if (!res) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
+        if (state) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Клавиатура включена", keyboard: keyboard.mainMenu});
+        set.keyboard.active(this.message.chat.id, type, false);
+        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Клавиатура отключена", keyboard: -1});
+    }
     getUserInfo() {
         let userId;
         if (this.message_text.length < 2) userId = this.message.from_user.id;

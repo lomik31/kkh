@@ -98,17 +98,6 @@ class kmd:
                 bot.send_message(chatId, "Открыто меню апгрейдов", reply_markup=Keyboards.upgrade(sec, click, sale, balanceBoost), parse_mode="HTML")
             connection.send({"action": {"function": "get.keyboardCosts", "args": self.message.from_user.id}}, chatId, callback)
         connection.send({"action": {"function": "get.keyboard", "args": [self.message.chat.id, "keyboard", type]}}, self.message.chat.id, callback)
-    def keyboardSet(self):
-        if (len(self.message_text) < 2 or self.message_text[1] not in ["да", "нет"]): return bot.send_message(self.message.chat.id, "Использование: клавиатура <да/нет>")
-        if (self.message_text[1] == "да"): state = True
-        elif (self.message_text[1] == "нет"): state = False
-        type = bot.get_chat(self.message.chat.id).type
-        def callback(chatId):
-            if (state): bot.send_message(chatId, "Клавиатура включена", reply_markup=Keyboards.mainMenu())
-            else: 
-                connection.send({"action": {"function": "set.keyboard.active", "args": [self.message.chat.id, type, False]}}, self.message.chat.id)
-                bot.send_message(chatId, "Клавиатура отключена", reply_markup=ReplyKeyboardRemove())
-        connection.send({"action": {"function": "set.keyboard.passive", "args": [self.message.chat.id, type, state]}}, self.message.chat.id, callback)
     def backKeyboardMenu(self):
         type = bot.get_chat(self.message.chat.id).type
         def callback(chatId, value):
