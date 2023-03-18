@@ -48,7 +48,7 @@ exports.COMMANDS = {
     },
     "главное меню": {
         description: "Открывает главное меню",
-        action: "kmd.main_menu(message, message_text)",
+        action: "new kmd(message, client).backKeyboardMenu()",
         usage: "главное меню",
         permissions: "user"
     },
@@ -186,7 +186,7 @@ exports.COMMANDS = {
     },
     "назад": {
         description: "Выйти из меню",
-        action: "kmd.back(message, message_text)",
+        action: "new kmd(message, client).backKeyboardMenu()",
         usage: "назад",
         permissions: "user",
         links: ["выйти"]

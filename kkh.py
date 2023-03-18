@@ -79,25 +79,6 @@ def start_command(message):
 def text(message):
     connection.sendData({"event": "newMessage", "client": connection.CLIENT, "message": message})
 
-class kmd:
-    def __init__(self, message, message_text, customCommand = None):
-        self.message = message
-        self.message_text = message_text
-        def callback(chatId, value):
-            if (not value): return bot.send_message(chatId, "Для взаимодействия с ботом вам необходимо сначала активировать его. Напишите боту *в ЛС* команду /start!", parse_mode="MARKDOWN")
-            if (customCommand): command = customCommand
-            else: command = message.text
-            connection.send({"action": {"function": "set.lastCommand", "args": [self.message.from_user.id, command]}}, chatId)
-        connection.send({"action": {"function": "get.id", "args": self.message.from_user.id}}, self.message.chat.id, callback)
-    def backKeyboardMenu(self):
-        type = bot.get_chat(self.message.chat.id).type
-        def callback(chatId, value):
-            if (value):
-                connection.send({"action": {"function": "set.keyboard.active", "args": [chatId, type, False]}}, chatId)
-                bot.send_message(chatId, "Вы вышли из меню", reply_markup=Keyboards.mainMenu())
-            else: bot.send_message(chatId, "Вы вышли из меню")
-        connection.send({"action": {"function": "get.keyboard", "args": [self.message.chat.id, "activeKeyboard", type]}}, self.message.chat.id, callback)
-
 class Keyboards:
     def upgrade(sec, click, sale, balanceBoost):
         keyboard = ReplyKeyboardMarkup(True)

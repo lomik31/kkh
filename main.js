@@ -1139,6 +1139,14 @@ class kmd {
         set.keyboard.active(this.message.chat.id, type, true);
         CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Открыто меню апгрейдов", keyboard: keyboard.upgrade(this.message.from_user.id)});
     }
+    backKeyboardMenu() {
+        let type = this.message.chat.type;
+        if (get.keyboard(this.message.chat.id, "activeKeyboard", type)) {
+            set.keyboard.active(this.message.chat.id, type, false);
+            CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Вы вышли из меню", keyboard: keyboard.mainMenu});
+        }
+        else CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Вы вышли из меню"});
+    }
 }
 let others = {
     leaderbord: function ({mode, active_top, caller_id, page}) {
