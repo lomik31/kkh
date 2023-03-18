@@ -752,9 +752,15 @@ class kmd {
             cost = calc.boost(id, boost).cost;
         }
         if (i == 0) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Недостаточно средств. Для покупки ещё необходимо ${obrabotka.chisla(cost - balance)} КШ`});
-        else return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Успешно куплено Успешно куплено апгрейдов: ${i}\nid: <code>${id}</code>
+        else {
+            if (get.keyboard(this.message.chat.id, "activeKeyboard", this.message.chat.type)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Успешно куплено Успешно куплено апгрейдов: ${i}\nid: <code>${id}</code>
+Апгрейды: ${get.get(id, "sec")}/сек; ${get.get(id, "click")}/клик; ${get.get(id, "sale")}% скидки; ${get.get(id, "balanceBoost")}% баланса/день
+Баланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`, parseMode: "HTML", keyboard: keyboard.upgrade(this.message.from_user.id)});
+
+            return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Успешно куплено Успешно куплено апгрейдов: ${i}\nid: <code>${id}</code>
 Апгрейды: ${get.get(id, "sec")}/сек; ${get.get(id, "click")}/клик; ${get.get(id, "sale")}% скидки; ${get.get(id, "balanceBoost")}% баланса/день
 Баланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`, parseMode: "HTML"});
+        }
     }
     click() {
         let userId = this.message.from_user.id;
