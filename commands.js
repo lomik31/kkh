@@ -171,12 +171,6 @@ exports.COMMANDS = {
         usage: "бит <ставка> <вверх/вниз>",
         permissions: "user"
     },
-    "монетарозыгрыш": {
-        description: "Принудительно проводит еженедельный розыгрыш проигранных денег в монете",
-        action: "weeklyLotteryLostMoneyCoin()",
-        usage: "монетарозыгрыш",
-        permissions: "admin"
-    },
     "банк": {
         description: "Перевод КШ в банк/из банка",
         action: "new kmd(message, client).bankTransfer()",

@@ -888,11 +888,6 @@ class kmd {
         CLIENTS[get.get(toReset, "receiver")].sendMessage({chatId: toReset, text: "Ваш прогресс сброшен администратором!"});
         return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Прогресс пользователя ${get.get(toReset, "fullName")} (\`${toReset}\`) успешно сброшен!`})
     }
-    removeId(toRemove) {
-        if (!get.id(toRemove)) return {success: false, message: `Пользователя ${toRemove} не существует`}
-        delete data.users[toRemove];
-        return {success: true}
-    }
     pay() {
         if (this.message_text.length < 3) {
             this.message.text = "команда " + this.message.text;
@@ -1287,33 +1282,6 @@ let others = {
         let name = `backup-${dateFormat(get.time()*1000, "yyyy-mm-dd_HH.MM.ss")}.json`;
         fs.copyFileSync("usrs.json", `backups/${name}`);
         return {success: true, data: "БД записана"}
-    }
-}
-let kmd2 = {
-    set: function (caller, id, toSet, value) {
-        if (!get.get(caller, "isAdmin")) return {success: false};
-        if (!get.id(id)) return {success: false, message: "Пользователь не существует"};
-        if (["isAdmin", "mails", "timeLastBonus", "keyboard", "activeKeyboard", "receiver"].indexOf(toSet) != -1 && caller != 357694314) return {success: false, message: "Недостаточно прав"};
-        let ret;
-        if (typeof value == "string" && ["-", "+"].indexOf(value[0]) != -1) ret = append.appendToUser(id, toSet, value);
-        else ret = set.set(id, toSet, value);
-        if (!ret.success) return ret;
-        CLIENTS[get.get(id, "receiver")].send(JSON.stringify({action: "sendMessage", data: {chatId: id, text: `Вам установлено ${value} значение ${toSet} администратором`}}));
-        return {success: true, data:`Пользователю ${get.get(id, "fullName")} установлено ${value} значение ${toSet}`};
-    },
-    getIds: function (caller) {
-        if (!get.get(caller, "isAdmin")) return {success: false}
-        let text = "";
-        let ids = get.ids();
-        ids.forEach(i => {
-            text += `${get.get(i, "fullName")} (${i})\n`
-        });
-        return {success: true, data: `Вот список всех ${ids.length - 1} пользователей:\n${text.slice(0, -1)}`};
-    },
-    commandsList: function (id) {
-        if (!get.id(id)) return {success: false, message: "id не найден"}
-        if (get.get(id, "isAdmin")) return {success: true, data: config.messages.commandsList}
-        else return {success: true, data: config.messages.commandsListUser}
     }
 }
 

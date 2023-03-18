@@ -115,8 +115,6 @@ class kmd:
                 bot.send_message(chatId, "Вы вышли из меню", reply_markup=Keyboards.mainMenu())
             else: bot.send_message(chatId, "Вы вышли из меню")
         connection.send({"action": {"function": "get.keyboard", "args": [self.message.chat.id, "activeKeyboard", type]}}, self.message.chat.id, callback)
-    def commandsList(self):
-        connection.send({"action": {"function": "kmd.commandsList", "args": self.message.from_user.id}}, self.message.chat.id, lambda chatId, message: bot.send_message(chatId, message))
 
 class Keyboards:
     def upgrade(sec, click, sale, balanceBoost):
