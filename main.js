@@ -302,7 +302,13 @@ let calc = {
     }
 }
 let keyboard = {
-
+    upgrade: function(userId) {
+        if (!get.id(userId)) return {success: false, message: "Id не найден"};
+        let res = get.keyboardCosts(userId);
+        let keyboard = [[`+сек (${res.sec} КШ)`, `+клик (${res.click} КШ)`], [res.sale, res.balanceBoost], ["Назад"]];
+        return keyboard;
+    },
+    mainMenu: [["🔮"], ["Апгрейды", "Баланс"], ["Сброс"]]
 }
 let obrabotka = {
     chisla: function (chislo_okda) {
