@@ -167,7 +167,7 @@ exports.COMMANDS = {
     },
     "бит": {
         description: "Ставка на курс биткоина",
-        action: "kmd.btcBet(message, message_text)",
+        action: "new kmd(message, client).btcBet()",
         usage: "бит <ставка> <вверх/вниз>",
         permissions: "user"
     },

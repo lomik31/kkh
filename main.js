@@ -631,7 +631,6 @@ let game = {
     //     }
     // },
     btcBet: function (client, chatId, id, amount, bet) {
-        if (!get.id(id)) return {success: false, message: "Id не найден"};
         if (amount == "#r") amount = randomInt(1, get.get(id, "balance"));
         else if (amount == "все" || amount == "всё") amount = get.get(id, "balance");
         else {
@@ -645,36 +644,35 @@ let game = {
         };
         if (amount > get.get(id, "balance") || amount <= 0) return {success: false, message: "Неверная ставка (меньше нуля или больше вашего баланса)"};
         if (["вверх", "вниз"].indexOf(bet) == -1) return {success: false, message: "Использование: бит <ставка/всё> <вверх/вниз>"};
-        let error;
         append.appendToUser(id, "balance", -amount);
         CLIENTS[client].send(JSON.stringify({action: "sendMessage", data: {chatId, text: `Ваша ставка ${obrabotka.chisla(amount)} КШ, ждем минуту.`}}))
         request1("https://blockchain.info/ticker", function (err, res, body) {
-            if (err) return error = err;
+            if (err) {
+                append.appendToUser(id, "balance", amount);
+                return CLIENTS[client].sendMessage({chatId, text: "Произошла ошибка! Сообщите об этом разработчику!"});
+            }
             let startPrice = JSON.parse(body).RUB.sell;
-            CLIENTS[client].send(JSON.stringify({action: "sendMessage", data: {chatId, text: `Debug: startPrice = ${startPrice}`}}));
+            CLIENTS[client].sendMessage({chatId, text: `Debug: startPrice = ${startPrice}`});
             setTimeout(() => {
                 request1("https://blockchain.info/ticker", function (err, res, body) {
-                    if (err) return error = err;
+                    if (err) {
+                        append.appendToUser(id, "balance", amount);
+                        return CLIENTS[client].sendMessage({chatId, text: "Произошла ошибка! Сообщите об этом разработчику!"});
+                    }
                     let endPrice = JSON.parse(body).RUB.sell;
-                    CLIENTS[client].send(JSON.stringify({action: "sendMessage", data: {chatId, text: `Debug: endPrice = ${endPrice}`}}));
+                    CLIENTS[client].sendMessage({chatId, text: `Debug: endPrice = ${endPrice}`});
                     if ((startPrice < endPrice && bet == "вверх") || (startPrice > endPrice && bet == "вниз")) {
                         append.appendToUser(id, "balance", amount * 2);
                         data.users[id].wonBtcBets += amount;
-                        CLIENTS[client].send(JSON.stringify({action: "sendMessage", data: {chatId, text: `Вы выиграли!\nКурс BTC изменился на ${(endPrice - startPrice).toFixed(2)} RUB.\nВаш выигрыш: ${obrabotka.chisla(amount)} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`}}));
+                        CLIENTS[client].sendMessage({chatId, text: `Вы выиграли!\nКурс BTC изменился на ${(endPrice - startPrice).toFixed(2)} RUB.\nВаш выигрыш: ${obrabotka.chisla(amount)} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`});
                     }
                     else {
                         data.users[id].lostBtcBets += amount;
-                        CLIENTS[client].send(JSON.stringify({action: "sendMessage", data: {chatId, text: `Вы проиграли.\nКурс BTC изменился на ${(endPrice - startPrice).toFixed(2)} RUB.\nПроиграно ${obrabotka.chisla(amount)} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`}}));
+                        CLIENTS[client].sendMessage({chatId, text: `Вы проиграли.\nКурс BTC изменился на ${(endPrice - startPrice).toFixed(2)} RUB.\nПроиграно ${obrabotka.chisla(amount)} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`});
                     }
                 });
             }, 60000);
         });
-        // ВНИМАНИЕ БЛЯТЬ это не работает из-за того, что ошибка создается позже проверки на ошибку (в асинке)
-        if (error) {
-            append.appendToUser(id, "balance", amount);
-            return {success: false, message: "Произошла ошибка! Сообщите об этом разработчику!"};
-        }
-        return {success: true};
     }
 }
 
@@ -1090,6 +1088,14 @@ class kmd {
             text += `${get.get(i, "fullName")} (${i})\n`
         });
         return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Вот список всех ${ids.length} пользователей:\n${text.slice(0, -1)}`});
+    }
+    btcBet() {
+        if (this.message_text.length < 3) {
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client).helpCommand();
+        }
+        let res = game.btcBet(this.client, this.message.chat.id, this.message.from_user.id, this.message_text[1], this.message_text[2]);
+        if (!res.success) CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
     }
 }
 let others = {
