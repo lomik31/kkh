@@ -14,25 +14,6 @@ class CONNECTION:
     def receiver(self, ws, json):
         json = JSON.loads(json)
         self.json = json
-        # if (json.get("id")):
-        #     cdata = self.sendIds.get(json["id"])
-        #     if (cdata == None): raise KeyError("Пришедший id не является верным")
-        #     if (not json.get("success")):
-        #         msg = json.get("message")
-        #         if (msg): bot.send_message(cdata["chatId"], msg)
-        #         del self.sendIds[json["id"]]
-        #         return
-        #     f = self.sendIds.get(json["id"])["callback"]
-        #     if (f):
-        #         data = []
-        #         if (json.get("data") != None):
-        #             if (type(json["data"]) == list):
-        #                 data += json["data"]
-        #             else: data.append(json["data"])
-        #         if (cdata.get("buffer")): data += cdata["buffer"]
-        #         if data != []: f(cdata["chatId"], *data)
-        #         else: f(cdata["chatId"])
-        #     del self.sendIds[json["id"]]
         if (json.get("event") == "sendMessage" and json.get("message")):
             chatId = json["message"].get("chatId")
             text = json["message"].get("text")
@@ -78,29 +59,6 @@ def start_command(message):
 @bot.message_handler(content_types=["text"])
 def text(message):
     connection.sendData({"event": "newMessage", "client": connection.CLIENT, "message": message})
-
-class Keyboards:
-    def upgrade(sec, click, sale, balanceBoost):
-        keyboard = ReplyKeyboardMarkup(True)
-        button_sec = KeyboardButton(f"+сек ({sec} КШ)")
-        button_click = KeyboardButton(f"+клик ({click} КШ)")
-        button_sale = KeyboardButton(sale)
-        button_balanceBoost = KeyboardButton(balanceBoost)
-        button_back = KeyboardButton("Назад")
-        keyboard.add(button_sec, button_click)
-        keyboard.add(button_sale, button_balanceBoost)
-        keyboard.add(button_back)
-        return keyboard
-    def mainMenu():
-        keyboard = ReplyKeyboardMarkup()
-        button_click = KeyboardButton("🔮")
-        button_upgrades = KeyboardButton("Апгрейды")
-        button_balance = KeyboardButton("Баланс")
-        button_reset = KeyboardButton("Сброс")
-        keyboard.add(button_click)
-        keyboard.add(button_upgrades, button_balance)
-        keyboard.add(button_reset)
-        return keyboard
 
 if __name__ == "__main__":
     ws = websocket.WebSocketApp("ws://127.0.0.1:3200/?client={}".format(connection.CLIENT),
