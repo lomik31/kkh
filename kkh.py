@@ -37,9 +37,20 @@ class CONNECTION:
             chatId = json["message"].get("chatId")
             text = json["message"].get("text")
             parseMode = json["message"].get("parseMode")
+            keyboard = json["message"].get("keyboard")
             if (chatId and text):
                 data = [chatId, text]
                 if (parseMode): data.append(parseMode)
+                if (keyboard):
+                    if (keyboard == -1):
+                        resK = ReplyKeyboardRemove()
+                    else:
+                        resK = ReplyKeyboardMarkup()
+                        for i in keyboard:
+                            resK.add(*i)
+                    try: bot.send_message(*data, reply_markup=resK)
+                    except Exception as e: print(e)
+                    return
                 try: bot.send_message(*data)
                 except Exception as e: print(e)
         else: pass
