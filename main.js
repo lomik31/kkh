@@ -47,7 +47,8 @@ webSocketServer.on('connection', (ws, req) => {
 });
 const dispatchEvent = (message, ws) => {
     const json = JSON.parse(message);
-    if (json.event == "newMessage") textReceiver(json.message, json.client)
+    if (json.event == "newMessage") textReceiver(json.message, json.client);
+    if (json.event == "newCommand") commandReceiver(json.message, json.client);
     // else if (json.action && json.id && json.action.function) {
     //     let data;
     //     console.log(json);
@@ -64,6 +65,18 @@ const dispatchEvent = (message, ws) => {
 }
 server.listen(3200, () => console.log("Server started"))
 
+function commandReceiver(message, client) {
+    if (message.text == "/start") {
+        if (get.id(message.from_user.id)) {
+            if (message.chat.type == "private") CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Привет. Это бот-кликер.\nСделали: [@lomik31](tg://user?id=357694314), [@Discord Nitra MV](tg://user?id=1160222752).\nЕсли ты Игорькартошка или Денисизюм, то тебе [сюда](https://docs.google.com/document/d/15a6S5F26kxRn103Yboknpogu-tJtIoxin2G9tBjY65A).\nПо вопросам обращаться к ним.\n[Планы на будущее и то, что в разработке](https://trello.com/b/kfVkY65h/%D0%BA%D0%BA%D1%88)\nНаш канал с новостями: [@kkh_news] (t.me/kkh_news)\nДля списка всех команд введите `команды`.\nЕсли у вас есть промо-код, можете ввести его при помощи `промо <код>`\nНаша беседа: [тык](t.me/+_VgA7r0PfWZiMGFi)\n\n*По вопросам пишите* [@lomik31](tg://user?id=357694314)", parseMode: "MARKDOWN"});
+            else CLIENTS[client].sendMessage({chatId: message.chat.id, text:  "Эту команду можно использовать только в личных сообщениях с ботом!"});
+            return;
+        }
+        if (message.chat.type == "private") append.appendId("private", message.chat.id, message.chat.first_name, message.chat.last_name);
+        else append.appendId(message.chat.type, message.chat.id);
+        CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Привет. Это бот-кликер.\nСделали: [@lomik31](tg://user?id=357694314), [@Discord Nitra MV](tg://user?id=1160222752).\nЕсли ты Игорькартошка или Денисизюм, то тебе [сюда](https://docs.google.com/document/d/15a6S5F26kxRn103Yboknpogu-tJtIoxin2G9tBjY65A).\nПо вопросам обращаться к ним.\n[Планы на будущее и то, что в разработке](https://trello.com/b/kfVkY65h/%D0%BA%D0%BA%D1%88)\nНаш канал с новостями: [@kkh_news] (t.me/kkh_news)\nДля списка всех команд введите `команды`.\nЕсли у вас есть промо-код, можете ввести его при помощи `промо <код>`\nНаша беседа: [тык](t.me/+_VgA7r0PfWZiMGFi)\n\n*По вопросам пишите* [@lomik31](tg://user?id=357694314)", parseMode: "MARKDOWN"});
+    }
+}
 function textReceiver(message, client) {
     if (!get.id(message.from_user.id)) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Для взаимодействия с ботом вам необходимо сначала активировать его. Напишите боту *в ЛС* команду /start!", parseMode: "MARKDOWN"})
     let message_text = message.text.toLowerCase().split(" ");

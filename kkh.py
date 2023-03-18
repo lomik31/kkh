@@ -62,16 +62,7 @@ connection = CONNECTION()
 
 @bot.message_handler(commands=["start"])
 def start_command(message):
-    chatData = bot.get_chat(message.chat.id)
-    def callback(chatId, value):
-        if (value):
-            if (chatData.type == "private"): bot.send_message(chatId, "Привет. Это бот-кликер.\nСделали: [@lomik31](tg://user?id=357694314), [@Discord Nitra MV](tg://user?id=1160222752).\nЕсли ты Игорькартошка или Денисизюм, то тебе [сюда](https://docs.google.com/document/d/15a6S5F26kxRn103Yboknpogu-tJtIoxin2G9tBjY65A).\nПо вопросам обращаться к ним.\n[Планы на будущее и то, что в разработке](https://trello.com/b/kfVkY65h/%D0%BA%D0%BA%D1%88)\nНаш канал с новостями: [@kkh_news] (t.me/kkh_news)\nДля списка всех команд введите `команды`.\nЕсли у вас есть промо-код, можете ввести его при помощи `промо <код>`\nНаша беседа: [тык](t.me/+_VgA7r0PfWZiMGFi)\n\n*По вопросам пишите* [@lomik31](tg://user?id=357694314)", "MARKDOWN")
-            else: bot.send_message(chatId, "Эту команду можно использовать только в личных сообщениях с ботом!")
-            return
-        if (chatData.type == "private"): connection.send({"action": {"function": "append.appendId", "args": [chatData.type, message.chat.id, chatData.first_name, chatData.last_name]}}, chatId)
-        else: connection.send({"action": {"function": "append.appendId", "args": [chatData.type, message.chat.id]}}, chatId)
-        bot.send_message(chatId, "Привет. Это бот-кликер.\nСделали: [@lomik31](tg://user?id=357694314), [@Discord Nitra MV](tg://user?id=1160222752).\nЕсли ты Игорькартошка или Денисизюм, то тебе [сюда](https://docs.google.com/document/d/15a6S5F26kxRn103Yboknpogu-tJtIoxin2G9tBjY65A).\nПо вопросам обращаться к ним.\n[Планы на будущее и то, что в разработке](https://trello.com/b/kfVkY65h/%D0%BA%D0%BA%D1%88)\nНаш канал с новостями: [@kkh_news] (t.me/kkh_news)\nДля списка всех команд введите `команды`.\nЕсли у вас есть промо-код, можете ввести его при помощи `промо <код>`\nНаша беседа: [тык](t.me/+_VgA7r0PfWZiMGFi)\n\n*По вопросам пишите* [@lomik31](tg://user?id=357694314)", "MARKDOWN", reply_markup=Keyboards.mainMenu(), disable_web_page_preview=True)
-    connection.send({"action": {"function": "get.id", "args": [message.chat.id, chatData.type]}}, message.chat.id, callback)
+    connection.sendData({"event": "newCommand", "client": connection.CLIENT, "message": message})
 
 @bot.message_handler(content_types=["text"])
 def text(message):
