@@ -1126,6 +1126,13 @@ class kmd {
         let res = game.btcBet(this.client, this.message.chat.id, this.message.from_user.id, this.message_text[1], this.message_text[2]);
         if (!res.success) CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
     }
+    upgrades() {
+        let type = this.message.chat.type;
+        let keyboardState = get.keyboard(this.message.chat.id, "keyboard", type);
+        if (!keyboardState) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Открыто меню апгрейдов"});
+        set.keyboard.active(this.message.chat.id, type, true);
+        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Открыто меню апгрейдов", keyboard: keyboard.upgrade(this.message.from_user.id)});
+    }
 }
 let others = {
     leaderbord: function ({mode, active_top, caller_id, page}) {

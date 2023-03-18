@@ -89,15 +89,6 @@ class kmd:
             else: command = message.text
             connection.send({"action": {"function": "set.lastCommand", "args": [self.message.from_user.id, command]}}, chatId)
         connection.send({"action": {"function": "get.id", "args": self.message.from_user.id}}, self.message.chat.id, callback)
-    def upgrades(self):
-        type = bot.get_chat(self.message.chat.id).type
-        def callback(chatId, value):
-            if (not value): return bot.send_message(chatId, "Открыто меню апгрейдов")
-            def callback(chatId, sec, click, sale, balanceBoost):
-                connection.send({"action": {"function": "set.keyboard.active", "args": [self.message.chat.id, type, True]}}, self.message.chat.id)
-                bot.send_message(chatId, "Открыто меню апгрейдов", reply_markup=Keyboards.upgrade(sec, click, sale, balanceBoost), parse_mode="HTML")
-            connection.send({"action": {"function": "get.keyboardCosts", "args": self.message.from_user.id}}, chatId, callback)
-        connection.send({"action": {"function": "get.keyboard", "args": [self.message.chat.id, "keyboard", type]}}, self.message.chat.id, callback)
     def backKeyboardMenu(self):
         type = bot.get_chat(self.message.chat.id).type
         def callback(chatId, value):

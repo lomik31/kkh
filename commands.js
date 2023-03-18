@@ -54,7 +54,7 @@ exports.COMMANDS = {
     },
     "апгрейды": {
         description: "Открывает меню апгрейдов",
-        action: "kmd.upgrades(message, message_text)",
+        action: "new kmd(message, client).upgrades()",
         usage: "апгрейды",
         permissions: "user"
     },
