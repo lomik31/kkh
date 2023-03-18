@@ -130,7 +130,7 @@ function textReceiver(message, client) {
     else if (message_text[0][0] == "+" && message_text[0].slice(1) != "банк") {
         let loxtext = message.text;
         let r = new RegExp(/ \(\d+[\.\d]* КШ\)/);
-        if (r.test(message.text)) message.text = message.text.replace(" \(\d+[\.\d]* КШ\)", "");
+        if (r.test(message.text)) message.text = message.text.replace(r, "");
         message.text = message.text.slice(1);
         message_text = message.text.toLowerCase().split(" ");
         let a = [];
