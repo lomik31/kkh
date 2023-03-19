@@ -49,18 +49,6 @@ const dispatchEvent = (message, ws) => {
     const json = JSON.parse(message);
     if (json.event == "newMessage") textReceiver(json.message, json.client);
     if (json.event == "newCommand") commandReceiver(json.message, json.client);
-    // else if (json.action && json.id && json.action.function) {
-    //     let data;
-    //     console.log(json);
-    //     if (json.action.args) {
-    //         if (typeof json.action.args == "object") data = eval(json.action.function)(...json.action.args)
-    //         else data = eval(json.action.function)(json.action.args)
-    //     }
-    //     else if (json.action.function == "backup") return eval(json.action.function)(ws, json.id)
-    //     else data = eval(json.action.function)()
-    //     data.id = json.id;
-    //     ws.send(JSON.stringify(data))
-    // }
     else console.log(json);
 }
 server.listen(3200, () => console.log("Server started"))
@@ -858,8 +846,8 @@ class kmd {
         })();
     }
     dbWrite() {
-        let res = others.dbWrite();
-        if (res.success) CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.data});
+        fs.copyFileSync("usrs.json", `backups/${`backup-${dateFormat(get.time()*1000, "yyyy-mm-dd_HH.MM.ss")}.json`}`);
+        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "БД записана"});
     }
     commandsList() {
         let userId = this.message.from_user.id;
@@ -1332,11 +1320,6 @@ let others = {
             return {success: true, message: `Выведено ${obrabotka.chisla(value-feeSum)} КШ из банка\nКомиссия ${obrabotka.chisla(feeSum)} КШ (${fee}%)\nВ банке: ${obrabotka.chisla(get.get(id, "bank"))} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`};
 
         }
-    },
-    dbWrite: function () {
-        let name = `backup-${dateFormat(get.time()*1000, "yyyy-mm-dd_HH.MM.ss")}.json`;
-        fs.copyFileSync("usrs.json", `backups/${name}`);
-        return {success: true, data: "БД записана"}
     }
 }
 
