@@ -49,7 +49,6 @@ const dispatchEvent = (message, ws) => {
     const json = JSON.parse(message);
     if (json.event == "newMessage") textReceiver(json.message, json.client);
     if (json.event == "newCommand") commandReceiver(json.message, json.client);
-    else console.log(json);
 }
 server.listen(3200, () => console.log("Server started"))
 
@@ -178,7 +177,6 @@ let append = {
         if (appendType === "private") {
             if (get.id(appendId)) return {success: false, message: `Пользователь ${appendId} уже существует`} 
             data.users[appendId] = data.users.default;
-            console.log(data.users[appendId]);
             data.users[appendId].firstName = firstName;
             data.users[appendId].registerTime = get.time();
             if (lastName != null) data.users[appendId].lastName = lastName;
@@ -509,7 +507,6 @@ let promo = {
         }
         let promos = require("./promos.json");
         promos.allPromos[name] = structuredClone(promos.allPromos.default);
-        console.log(promos.allPromos[name]);
         Object.keys(data).forEach(i => promos.allPromos[name][i] = data[i]);
         promos.allPromos[name]["activationLimit"] = activationLimit;
         promos.allPromos[name]["validity"] = validity;
