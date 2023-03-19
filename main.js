@@ -176,14 +176,14 @@ let append = {
     appendId: function (appendType, appendId, firstName = null, lastName = null) {
         if (appendType === "private") {
             if (get.id(appendId)) return {success: false, message: `Пользователь ${appendId} уже существует`} 
-            data.users[appendId] = data.users.default;
+            data.users[appendId] = structuredClone(data.users.default);
             data.users[appendId].firstName = firstName;
             data.users[appendId].registerTime = get.time();
             if (lastName != null) data.users[appendId].lastName = lastName;
             return {success: true}
         }
         else if (appendId in data.groups) return {success: false, message: `Группа ${appendId} уже существует`} 
-        data.groups[appendId] = data.groups.default;
+        data.groups[appendId] = structuredClone(data.groups.default);
         return {success: true}
     },
     appendToUser: function (userId, toAppend, appendAmount) {
