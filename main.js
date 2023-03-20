@@ -195,7 +195,6 @@ let append = {
             data.users[userId][toAppend] = appendAmount;
             data.users[userId]["timeLastCommand"] = get.time();
         }
-        else if (toAppend == "sale") data.users[userId][toAppend] -= appendAmount
         else data.users[userId][toAppend] += appendAmount;
         return {success: true}
     }
@@ -211,7 +210,6 @@ let get = {
             if (data.users[id]["lastName"] !== null) name += ` ${data.users[id]["lastName"]}`;
             return name;
         }
-        else if (toGet == "sale") return 100 - data.users[id][toGet];
         if (getValues.indexOf(toGet) == -1) return {success: false, message: "Данный параметр не найден"};
         let toReturn = data.users[id][toGet];
         return toReturn;
@@ -277,14 +275,12 @@ let calc = {
             limit = 10;
         }
         else return {success: false, message: "Неверный параметр boost"}
-        let boost_level = data.users[id][boost];
-        if (boost != "sale" && boost_level >= limit && limit != -1) return {success: false, message: `Достигнут максимум апгрейдов этого типа`}
-        else if (boost == "sale" && 100 - boost_level >= limit) return {success: false, message: `Достигнут максимум апгрейдов этого типа`}
-        let skidka = data.users[id].sale;
-        if (boost == "sale") boost_level = 100 - boost_level
+        let boost_level = get.get(id, boost);
+        if (boost_level >= limit && limit != -1) return {success: false, message: `Достигнут максимум апгрейдов этого типа`}
+        let skidka = get.get(id, "sale");
         for (let i = 0; i < boost_level; i++) nac_cena = Math.floor(nac_cena * (100 + procent) / 100);
-        nac_cena = Math.floor(nac_cena * skidka / 100);
-        return {success: true, cost: nac_cena, data: `Цена за ${boost_level + 1} апгрейд со скидкой ${100 - skidka}%: ${obrabotka.chisla(nac_cena)} КШ`};
+        nac_cena = Math.floor(nac_cena * (100 - skidka) / 100);
+        return {success: true, cost: nac_cena, data: `Цена за ${boost_level + 1} апгрейд со скидкой ${skidka}%: ${obrabotka.chisla(nac_cena)} КШ`};
 
     }
 }
@@ -391,8 +387,7 @@ let set = {
         if (setValues.indexOf(toSet) == -1) return {success: false, message: `Невозможно изменить значение ${toSet}`};
         if (["string", "number"].indexOf(typeof value) != -1) value = obrabotka.kChisla(value)
         if (typeof data.users[id][toSet] != typeof value || isNaN(value)) return {success: false, message: "Ошибка типа"};
-        if (toSet == "sale") data.users[id][toSet] = 100 - value;
-        else data.users[id][toSet] = value;
+        data.users[id][toSet] = value;
         return {success: true};
     },
     keyboard: {
@@ -527,8 +522,7 @@ let promo = {
         let value;
         for (let i of Object.keys(promos.allPromos[name])) {
             if (["activationLimit", "activatedTimes", "validity"].indexOf(i) != -1) continue;
-            if (i != "sale") data.users[userId][i] += promos.allPromos[name][i];
-            else if (data.users[userId][i] < 100) data.users[userId][i] -= promos.allPromos[name][i];
+            if (i != "sale" || (i == "sale" && data.users[userId][i] < 100)) data.users[userId][i] += promos.allPromos[name][i];
             if (promos.allPromos[name][i] != 0) {
                 if (promos.allPromos[name][i] < 0) value = promos.allPromos[name][i];
                 else value = `+${promos.allPromos[name][i]}`;
