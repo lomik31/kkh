@@ -23,9 +23,9 @@ class CONNECTION:
                 if (parseMode): data.append(parseMode)
                 if (keyboard):
                     if (keyboard == -1):
-                        resK = ReplyKeyboardRemove()
+                        resK = ReplyKeyboardRemove(True)
                     else:
-                        resK = ReplyKeyboardMarkup()
+                        resK = ReplyKeyboardMarkup(True)
                         for i in keyboard:
                             resK.add(*i)
                     try: bot.send_message(*data, reply_markup=resK)
