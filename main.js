@@ -255,25 +255,26 @@ let get = {
 }
 let calc = {
     boost: function (id, boost) {
+        let nac_cena, procent, limit;
         if (boost == "click") {
-            var nac_cena = 100; //изначальная цена
-            var procent = 15; //процент стоимости следующего буста
-            var limit = -1;
+            nac_cena = 100; //изначальная цена
+            procent = 15; //процент стоимости следующего буста
+            limit = -1;
         }
         else if (boost == "sec") {
-            var nac_cena = 300; //изначальная цена
-            var procent = 15; //процент стоимости следующего буста
-            var limit = -1;
+            nac_cena = 300; //изначальная цена
+            procent = 15; //процент стоимости следующего буста
+            limit = -1;
         }
         else if (boost == "sale") {
-            var nac_cena = 7500; //изначальная цена
-            var procent = 15; //процент стоимости следующего буста
-            var limit = 45;
+            nac_cena = 7500; //изначальная цена
+            procent = 15; //процент стоимости следующего буста
+            limit = 45;
         }
         else if (boost == "balanceBoost") {
-            var nac_cena = 13000000; //изначальная цена
-            var procent = 35; //процент стоимости следующего буста
-            var limit = 10;
+            nac_cena = 13000000; //изначальная цена
+            procent = 35; //процент стоимости следующего буста
+            limit = 10;
         }
         else return {success: false, message: "Неверный параметр boost"}
         let boost_level = data.users[id][boost];
