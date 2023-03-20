@@ -3,13 +3,12 @@ import json as JSON
 from telebot import TeleBot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 from threading import Thread
+from time import sleep
 with open("config.json", encoding="utf-8") as config:
     config = JSON.load(config)
 
 bot = TeleBot(config["tokens"]["telegram"])
 class CONNECTION:
-    id = 0
-    sendIds = {}
     CLIENT = "telegram"
     def receiver(self, ws, json):
         json = JSON.loads(json)
@@ -50,6 +49,12 @@ class CONNECTION:
     def sendData(self, data):
         if (isinstance(data, object)): ws.send(JSON.dumps(data, default=lambda x: x.__dict__))
         else: ws.send(JSON.dumps(data))
+    def reconnect():
+        while True:
+            if (not ws.keep_running):
+                a = Thread(target=ws.run_forever).start()
+                sleep(15)
+            sleep(10)
 connection = CONNECTION()
 
 @bot.message_handler(commands=["start"])
@@ -66,5 +71,7 @@ if __name__ == "__main__":
                 on_message=connection.receiver,
                 on_error=connection.on_error,
                 on_close=connection.on_close)
-    Thread(target=ws.run_forever).start()
-    bot.polling(True, interval=0.5, timeout=123, long_polling_timeout=123)
+    a = Thread(target=ws.run_forever).start()
+    Thread(target=CONNECTION.reconnect).start()
+    
+    bot.infinity_polling(timeout=123, long_polling_timeout=123, skip_pending=True)
