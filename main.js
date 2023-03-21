@@ -278,7 +278,7 @@ let calc = {
         let boost_level = get.get(id, boost);
         if (boost_level >= limit && limit != -1) return {success: false, message: `Достигнут максимум апгрейдов этого типа`}
         let skidka = get.get(id, "sale");
-        for (let i = 0; i < boost_level; i++) nac_cena = Math.floor(nac_cena * (100 + procent) / 100);
+        for (let i = 0; i < boost_level; i++) nac_cena = nac_cena * (100 + procent) / 100;
         nac_cena = Math.floor(nac_cena * (100 - skidka) / 100);
         return {success: true, cost: nac_cena, data: `Цена за ${boost_level + 1} апгрейд со скидкой ${skidka}%: ${obrabotka.chisla(nac_cena)} КШ`};
 
