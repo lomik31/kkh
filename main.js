@@ -678,11 +678,6 @@ class kmd {
         if (this.message_text.length >= 2) {
             if (["клик", "к", "click"].includes(this.message_text[1])) top.mode = "click";
             else if (["сек", "с", "sec"].includes(this.message_text[1])) top.mode = "sec";
-            else if (["бб", "бустбаланса", "bb", "balanceboost", "балансбуст", "balanceBoost"].includes(this.message_text[1])) top.mode = "balanceBoost";
-            else if (this.message_text[1] == "буст" && this.message_text.length >= 3 && ["баланс", "баланса"].includes(this.message_text[2])) {
-            top.mode = "balanceBoost";
-            this.message_text.splice(2, 1);
-            }
             else if (["регистрация", "р", "рег", "register", "registerTime"].includes(this.message_text[1])) top.mode = "registerTime";
             else if (["банк", "bank"].includes(this.message_text[1])) top.mode = "bank";
             else if (["д", "деньги", "money"].includes(this.message_text[1])) top.mode = "money";
@@ -1170,8 +1165,8 @@ let others = {
         if (active_top) msg += "Топ активных пользователей (для общего топа есть команда \"всетоп\")\n"
         else msg += "Топ всех пользователей (для топа активных есть команда \"топ\")\n"
         //стандартное расположение значений топа
-        let order = ["balance", "sec", "click", "balanceBoost"] 
-        let order_words = [" КШ", "/сек", "/клик", "% баланса/день"]
+        let order = ["balance", "sec", "click"] 
+        let order_words = [" КШ", "/сек", "/клик"]
         if (page != 2281337) {
             start_user = (page - 1) * 10
             end_user = page * 10
@@ -1183,8 +1178,8 @@ let others = {
             order = ["", "balance", "bank"]
             order_words = [" всего", " КШ", " КШ в банке"]
         } else if (mode == "bank") { //в банке знаешь типо
-            order = ["bank", "balance", "sec", "click", "balanceBoost"]
-            order_words = [" КШ в банке", " КШ", "/сек", "/клик", "% баланса/день"]
+            order = ["bank", "balance", "sec", "click"]
+            order_words = [" КШ в банке", " КШ", "/сек", "/клик"]
         } else if (mode == "registerTime") {
             order = ["registerTime", "balance"]
             order_words = ["", " КШ"]
@@ -1197,8 +1192,8 @@ let others = {
             order_words.unshift(w)
         }
         //пошёл нахуй Баланс | Клик | Сек | Буст баланса | Регистрация | Банк | Деньги
-        let highlights_names = ["Баланс", "Клик", "Сек", "Буст баланса", "Регистрация", "Банк", "Деньги"]
-        let highlights_pos = {"balance": 0, "click": 1, "sec": 2, "balanceBoost": 3, "registerTime": 4, "bank": 5, "money": 6}
+        let highlights_names = ["Баланс", "Клик", "Сек", "Регистрация", "Банк", "Деньги"]
+        let highlights_pos = {"balance": 0, "click": 1, "sec": 2, "registerTime": 3, "bank": 4, "money": 5}
         msg += "|"
         let highlight_pos = highlights_pos[mode]
         for (i = 0; i < highlights_names.length; i++) {
@@ -1210,28 +1205,28 @@ let others = {
         }
         msg += "\n\n"
         if (mode == "money") {
-            for (let user = start_user; user < end_user; user++) msg += `#${top[user][0]}: <a href='tg://user?id=${top[user][1]}'>${top[user][2]}</a>: ${top[user][2]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[user][1]][order[2]])}${order_words[2]}\n`
+            for (let user = start_user; user < end_user; user++) msg += `#${top[user][0]}: <a href='tg://user?id=${top[user][1]}'>${top[user][2]}</a>: ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[user][1]][order[2]])}/${obrabotka.chisla(data.users[top[user][1]]["bankMax"])}${order_words[2]}\n`
             msg += "__________\n"
-            msg += `Вы: #${top[caller_place][0]}: ${top[caller_place][2]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[2]])}${order_words[2]}\n`
+            msg += `Вы: #${top[caller_place][0]}: ${top[caller_place][2]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[2]])}/${obrabotka.chisla(data.users[top[caller_place][1]]["bankMax"])}${order_words[2]}\n`
         
         }
         else if (mode == "bank") {
-            for (let user = start_user; user < end_user; user++) msg += `#${top[user][0]}: <a href='tg://user?id=${top[user][1]}'>${top[user][2]}</a>: ${obrabotka.chisla(data.users[top[user][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}, ${data.users[top[user][1]][order[2]]}${order_words[2]}, ${data.users[top[user][1]][order[3]]}${order_words[3]}, ${data.users[top[user][1]][order[4]]}${order_words[4]}\n`
+            for (let user = start_user; user < end_user; user++) msg += `#${top[user][0]}: <a href='tg://user?id=${top[user][1]}'>${top[user][2]}</a>: ${obrabotka.chisla(data.users[top[user][1]][order[0]])}/${obrabotka.chisla(data.users[top[user][1]]["bankMax"])}${order_words[0]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}, ${data.users[top[user][1]][order[2]]}${order_words[2]}, ${data.users[top[user][1]][order[3]]}${order_words[3]}\n`
             msg += "__________\n"
-            msg += `Вы: #${top[caller_place][0]}: ${data.users[top[caller_place][1]][order[0]]}${order_words[0]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[2]])}${order_words[2]}, ${data.users[top[caller_place][1]][order[3]]}${order_words[3]}, ${data.users[top[caller_place][1]][order[4]]}${order_words[4]}\n`
+            msg += `Вы: #${top[caller_place][0]}: ${data.users[top[caller_place][1]][order[0]]}/${obrabotka.chisla(data.users[top[caller_place][1]]["bankMax"])}${order_words[0]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[2]])}${order_words[2]}, ${data.users[top[caller_place][1]][order[3]]}${order_words[3]}\n`
         }
         else if (mode == "registerTime") {
-            for (let user = start_user; user < end_user; user++) msg += `#${top[user][0]}: <a href='tg://user?id=${top[user][1]}'>${top[user][2]}</a>: ${data.users[top[user][1]][order[0]]}${order_words[0]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}\n`
+            for (let user = start_user; user < end_user; user++) msg += `#${top[user][0]}: <a href='tg://user?id=${top[user][1]}'>${top[user][2]}</a>: ${obrabotka.vremeni(data.users[top[user][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}\n`
             msg += "__________\n"
-            msg += `Вы: #${top[caller_place][0]}: ${data.users[top[caller_place][1]][order[0]]}${order_words[0]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[1]])}${order_words[1]}\n`
+            msg += `Вы: #${top[caller_place][0]}: ${obrabotka.vremeni(data.users[top[caller_place][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[1]])}${order_words[1]}\n`
     
         }
         else {
             for (let user = start_user; user < end_user; user++) {
-                msg += `#${top[user][0]}: <a href='tg://user?id=${top[user][1]}'>${top[user][2]}</a>: ${obrabotka.chisla(data.users[top[user][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[user][1]][order[2]])}${order_words[2]}, ${obrabotka.chisla(data.users[top[user][1]][order[3]])}${order_words[3]}\n`
+                msg += `#${top[user][0]}: <a href='tg://user?id=${top[user][1]}'>${top[user][2]}</a>: ${obrabotka.chisla(data.users[top[user][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[user][1]][order[2]])}${order_words[2]}\n`
             }
             msg += "__________\n"
-            msg += `Вы: #${top[caller_place][0]}: ${obrabotka.chisla(data.users[top[caller_place][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[2]])}${order_words[2]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[3]])}${order_words[3]}\n`
+            msg += `Вы: #${top[caller_place][0]}: ${obrabotka.chisla(data.users[top[caller_place][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[2]])}${order_words[2]}\n`
         }
         msg += `\nСтраница ${page} из ${Math.ceil(top.length / 10)}`
         return msg
