@@ -67,7 +67,7 @@ function commandReceiver(message, client) {
 function textReceiver(message, client) {
     if (!get.id(message.from_user.id)) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Для взаимодействия с ботом вам необходимо сначала активировать его. Напишите боту *в ЛС* команду /start!", parseMode: "MARKDOWN"})
     let message_text = message.text.toLowerCase().split(" ");
-    if (!(["кмд", "_"].includes(message_text[0]) || (message_text[0][0] == "+" && message_text[0].slice(1) != "банк"))) {
+    if (!(["кмд", "_"].includes(message_text[0]) || (message_text[0][0] == "+"))) {
         let i = 0;
         let checkCommand = message_text[0];
         while (true) {
@@ -106,6 +106,7 @@ function textReceiver(message, client) {
             if (b == 0) message.text += i;
             else message.text += `${i} `;
         }
+        message.text = message.text.slice(0, -1);
         textReceiver(message, client);
     }
     else if (message_text[0] == "_") {
@@ -114,7 +115,7 @@ function textReceiver(message, client) {
         message.text = command;
         textReceiver(message, client);
     }
-    else if (message_text[0][0] == "+" && message_text[0].slice(1) != "банк") {
+    else if (message_text[0][0] == "+") {
         let loxtext = message.text;
         let r = new RegExp(/ \(\d+[\.\d]* КШ\)/);
         if (r.test(message.text)) message.text = message.text.replace(r, "");
@@ -125,7 +126,7 @@ function textReceiver(message, client) {
         for (let i of message_text) {
             a.push(i);
             t = a.join(" ");
-            if (["сек", "клик", "скидка", "1% скидки", "бб", "баланс", "баланс/день", "буст баланса", "буст баланс", "1% баланса/день"].includes(t)) return new kmd(message, client, loxtext).buyBoost(t);
+            if (["сек", "клик", "скидка", "1% скидки", "банк"].includes(t)) return new kmd(message, client, loxtext).buyBoost(t);
         }
         return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Неверный тип апгрейда"});
     }
@@ -136,32 +137,22 @@ function choose(choices) {
 
 let accrual = {
     sec: function () {
-        for(i in data.users) {
-            data.users[i].balance += data.users[i].sec;
-            data.users[i].earnedKkh += data.users[i].sec;
+        for (let i in data.users) {
+            if (data.users[i].bank + data.users[i].sec < data.users[i].bankMax) {
+                data.users[i].bank += data.users[i].sec;
+                data.users[i].earnedKkh += data.users[i].sec;
+            }
+            else if (data.users[i].bank < data.users[i].bankMax) {
+                data.users[i].earnedKkh += data.users[i].bankMax - data.users[i].bank;
+                data.users[i].bank = data.users[i].bankMax;
+                
+            }
         };
         file.write();
     },
     click: function (userId) {
         data.users[userId].balance += data.users[userId].click;
         data.users[userId].earnedKkh += data.users[userId].click;
-    },
-    balanceBoost: function () {
-        for(i in data.users) {
-            data.users[i].balance += Math.round(data.users[i].balance * (data.users[i].balanceBoost / 100));
-            data.users[i].earnedKkh += Math.round(data.users[i].balance * (data.users[i].balanceBoost / 100));
-        }
-    },
-    bank: function() {
-        let getRandomFloat = function (min, max) {
-            const str = (Math.random() * (max - min) + min);
-            return parseFloat(str);
-        }
-        for (let i of Object.keys(data.users)) {
-            let add = Math.round(data.users[i].bank * getRandomFloat(0.0002, 0.001466666666666667));
-            data.users[i].bank += add;
-            data.users[i].earnedKkh += add;
-        }
     }
 }
 let file = {
@@ -187,7 +178,7 @@ let append = {
         return {success: true}
     },
     appendToUser: function (userId, toAppend, appendAmount) {
-        let appendVariables = ["balance", "click", "sec", "sale", "balanceBoost", "lastCommand", "bank"];
+        let appendVariables = ["balance", "click", "sec", "sale", "bankMax", "lastCommand", "bank"];
         if (appendVariables.indexOf(toAppend) === -1) return {success: false, message: `Параметр ${toAppend} не найден`};
         appendAmount = obrabotka.kChisla(appendAmount);
         if (typeof data.users[userId][toAppend] != typeof appendAmount || isNaN(appendAmount)) return {success: false, message: "Ошибка типа"};
@@ -201,9 +192,9 @@ let append = {
 }
 let get = {
     get: function (id, toGet) {
-        let getValues = ["balance", "click", "sec", "balanceBoost", "keyboard", "sale", "isAdmin",
+        let getValues = ["balance", "click", "sec", "keyboard", "sale", "isAdmin",
         "activeKeyboard", "mails", "timeLastBonus", "timeLastSecondBonus", "lastCommand", "bank",
-        "multiplier", "receiver"]
+        "multiplier", "receiver", "bankMax"]
         if (toGet == "all") return data.users[id]
         else if (toGet == "fullName") {
             let name = data.users[id]["firstName"];
@@ -236,12 +227,8 @@ let get = {
             if (a.success) return `+1% скидки (${obrabotka.chisla(a.cost)} КШ)`
             else return a.message
         }();
-        let balanceBoost = function() {
-            let a = calc.boost(id, "balanceBoost");
-            if (a.success) return `+1% баланса/день (${obrabotka.chisla(a.cost)} КШ)`
-            else return a.message
-        }();
-        return {sec, click, sale, balanceBoost}
+        let bankMax = obrabotka.chisla(calc.boost(id, "bankMax").cost);
+        return {sec, click, sale, bankMax};
     },
     keyboard: function (id, keyboardType, chatType = "private") {
         if (chatType == "private") {
@@ -269,13 +256,14 @@ let calc = {
             procent = 15; //процент стоимости следующего буста
             limit = 45;
         }
-        else if (boost == "balanceBoost") {
-            nac_cena = 13000000; //изначальная цена
-            procent = 35; //процент стоимости следующего буста
-            limit = 10;
+        else if (boost == "bankMax") {
+            nac_cena = 3498; //изначальная цена
+            procent = 0.06; //процент стоимости следующего буста
+            limit = 5_000_000;
         }
         else return {success: false, message: "Неверный параметр boost"}
         let boost_level = get.get(id, boost);
+        if (boost == "bankMax") boost_level = Math.floor(boost_level/1000)
         if (boost_level >= limit && limit != -1) return {success: false, message: `Достигнут максимум апгрейдов этого типа`}
         let skidka = get.get(id, "sale");
         for (let i = 0; i < boost_level; i++) nac_cena = nac_cena * (100 + procent) / 100;
@@ -288,7 +276,7 @@ let keyboard = {
     upgrade: function(userId) {
         if (!get.id(userId)) return {success: false, message: "Id не найден"};
         let res = get.keyboardCosts(userId);
-        let keyboard = [[`+сек (${res.sec} КШ)`, `+клик (${res.click} КШ)`], [res.sale, res.balanceBoost], ["Назад"]];
+        let keyboard = [[`+сек (${res.sec} КШ)`, `+клик (${res.click} КШ)`], [res.sale, `+банк (${res.bankMax} КШ)`], ["Назад"]];
         return keyboard;
     },
     mainMenu: [["🔮"], ["Апгрейды", "Баланс"], ["Сброс"]]
@@ -353,7 +341,7 @@ let give = {
             t = i;
             mnoz2++;
         }
-        let bonus = Math.round(get.get(id, "sec") * 4000 + get.get(id, "click") * 6500 + get.get(id, "balanceBoost") * 500000 + 1.135**get.get(id, "sec") + 1.145**get.get(id, "click") + 1.22**get.get(id, "balanceBoost") + 1.14**get.get(id, "sale")) * (mnoz + mnoz2);
+        let bonus = Math.round(get.get(id, "sec") * 4000 + get.get(id, "click") * 6500 + 1.135**get.get(id, "sec") + 1.145**get.get(id, "click") + 1.14**get.get(id, "sale")) * (mnoz + mnoz2);
         append.appendToUser(id, "balance", bonus);
         data.users[id].othersProceeds += bonus;
         data.users[id].timeLastBonus = get.time();
@@ -368,7 +356,7 @@ let give = {
     },
     bonus2: function (id) {
         if (get.time() - get.get(id, "timeLastSecondBonus") < 28800) return {success: false, message: `Бонус2 можно получать каждые 8 часов\nДо следующего бонуса2: ${obrabotka.vremeniBonusa(get.get(id, "timeLastSecondBonus") + 28800 - get.time() - 10800)}`}
-        let bonus = randomInt(10000, (get.get(id, "sec") * 3600 + get.get(id, "click") * 5400 + get.get(id, "balanceBoost") * 500000) + 10000);
+        let bonus = randomInt(10000, (get.get(id, "sec") * 3600 + get.get(id, "click") * 5400) + 10000);
         append.appendToUser(id, "balance", bonus);
         data.users[id].othersProceeds += bonus;
         data.users[id].timeLastSecondBonus = get.time();
@@ -383,7 +371,7 @@ let set = {
         return {success: true};
     },
     set: function (id, toSet, value) {
-        let setValues = ["isAdmin", "multiplier", "mails", "balance", "click", "sec", "sale", "balanceBoost", "bank", "timeLastBonus", "keyboard", "activeKeyboard"];
+        let setValues = ["isAdmin", "multiplier", "mails", "balance", "click", "sec", "sale", "bankMax", "bank", "timeLastBonus", "keyboard", "activeKeyboard"];
         if (setValues.indexOf(toSet) == -1) return {success: false, message: `Невозможно изменить значение ${toSet}`};
         if (["string", "number"].indexOf(typeof value) != -1) value = obrabotka.kChisla(value)
         if (typeof data.users[id][toSet] != typeof value || isNaN(value)) return {success: false, message: "Ошибка типа"};
@@ -711,7 +699,7 @@ class kmd {
         if (boost == "клик") boost = "click";
         else if (boost == "сек") boost = "sec";
         else if (["скидка", "1% скидки"].includes(boost)) boost = "sale";
-        else if (["бб", "баланс", "баланс/день", "буст баланса", "буст баланс", "1% баланса/день"].includes(boost)) boost = "balanceBoost";
+        else if (boost == "банк") boost = "bankMax";
         else return CLIENTS[this.client]
         let amount = 1;
         if (args.length > 0) {
@@ -726,7 +714,8 @@ class kmd {
         let balance = get.get(id, "balance");
         let i;
         for (i = 0; (i < amount || amount == -1) && balance >= cost && cost != undefined; i++) {
-            append.appendToUser(id, boost, 1);
+            if (boost == "bankMax") append.appendToUser(id, boost, 1000);
+            else append.appendToUser(id, boost, 1);
             append.appendToUser(id, "balance", -cost);
             balance = get.get(id, "balance");
             cost = calc.boost(id, boost).cost;
@@ -734,12 +723,14 @@ class kmd {
         if (i == 0) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Недостаточно средств. Для покупки ещё необходимо ${obrabotka.chisla(cost - balance)} КШ`});
         else {
             if (get.keyboard(this.message.chat.id, "activeKeyboard", this.message.chat.type)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Успешно куплено Успешно куплено апгрейдов: ${i}\nid: <code>${id}</code>
-Апгрейды: ${get.get(id, "sec")}/сек; ${get.get(id, "click")}/клик; ${get.get(id, "sale")}% скидки; ${get.get(id, "balanceBoost")}% баланса/день
-Баланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`, parseMode: "HTML", keyboard: keyboard.upgrade(this.message.from_user.id)});
+Апгрейды: ${get.get(id, "sec")}/сек; ${get.get(id, "click")}/клик; ${get.get(id, "sale")}% скидки
+Баланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ
+В банке: ${obrabotka.chisla(get.get(id, "bank"))}/ ${obrabotka.chisla(get.get(id, "bankMax"))} КШ`, parseMode: "HTML", keyboard: keyboard.upgrade(this.message.from_user.id)});
 
             return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Успешно куплено Успешно куплено апгрейдов: ${i}\nid: <code>${id}</code>
-Апгрейды: ${get.get(id, "sec")}/сек; ${get.get(id, "click")}/клик; ${get.get(id, "sale")}% скидки; ${get.get(id, "balanceBoost")}% баланса/день
-Баланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`, parseMode: "HTML"});
+Апгрейды: ${get.get(id, "sec")}/сек; ${get.get(id, "click")}/клик; ${get.get(id, "sale")}% скидки
+Баланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ
+В банке: ${obrabotka.chisla(get.get(id, "bank"))}/ ${obrabotka.chisla(get.get(id, "bankMax"))} КШ`, parseMode: "HTML"});
         }
     }
     click() {
@@ -757,7 +748,7 @@ class kmd {
             }
         }
         else userId = this.message.from_user.id;
-        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Имя: ${get.get(userId, "fullName")}\nid: \`${userId}\`\nАпгрейды: ${get.get(userId, "sec")}/сек; ${get.get(userId, "click")}/клик; ${get.get(userId, "sale")}% скидки; ${get.get(userId, "balanceBoost")}% баланса/день\nБаланс: ${obrabotka.chisla(get.get(userId, "balance"))} КШ\nВ банке: ${obrabotka.chisla(get.get(userId, "bank"))} КШ`, parseMode: "MARKDOWN"})
+        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Имя: ${get.get(userId, "fullName")}\nid: \`${userId}\`\nАпгрейды: ${get.get(userId, "sec")}/сек; ${get.get(userId, "click")}/клик; ${get.get(userId, "sale")}% скидки\nБаланс: ${obrabotka.chisla(get.get(userId, "balance"))} КШ\nВ банке: ${obrabotka.chisla(get.get(userId, "bank"))}/${obrabotka.chisla(get.get(userId, "bankMax"))} КШ`, parseMode: "MARKDOWN"})
     }
     helpCommand() {
         if (this.message_text.length < 2) {
@@ -919,8 +910,8 @@ class kmd {
         if (upgrade == "клик") upgrade = "click";
         else if (upgrade == "сек") upgrade = "sec";
         else if (["скидка", "скидки"].includes(upgrade)) upgrade = "sale";
-        else if (["бб", "баланс", "баланса", "баланс/день"].includes(upgrade)) upgrade = "balanceBoost";
-        if (!["click", "sec", "sale", "balanceBoost"].includes(upgrade)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Неверный апгрейд"});
+        else if (["банк", "+банк"].includes(upgrade)) upgrade = "bankMax";
+        if (!["click", "sec", "sale", "bankMax"].includes(upgrade)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Неверный апгрейд"});
         let res = calc.boost(this.message.from_user.id, upgrade);
         if (res.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.data});
         return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
@@ -960,8 +951,7 @@ class kmd {
     bankTransfer() {
         let action;
         let value = -1;
-        if (this.message_text[0] == "+банк") action = "put";
-        else if (this.message_text[0] == "-банк") action = "take";
+        if (this.message_text[0] == "-банк") action = "take";
         else if (this.message_text[0] == "банк") {
             this.message.text = "команда " + this.message.text;
             return new kmd(this.message, this.client).helpCommand();
@@ -1283,11 +1273,10 @@ let others = {
         let fee = 0.2//% (комиссия)
         if (value == "#r") value = randomInt(1, get.get(id, "balance"))
         else if (value == "все" || value == "всё" || value == -1) {
-            if (action == "put") value = get.get(id, "balance")
-            else if (action == "take") value = get.get(id, "bank")
+            if (action == "take") value = get.get(id, "bank")
         }
         else {
-            if (isNaN(parseInt(value))) return {success: false, message: "Неверный параметр суммы\nИспользование: +банк/-банк [сумма]"};
+            if (isNaN(parseInt(value))) return {success: false, message: "Неверный параметр суммы\nИспользование: -банк [сумма]"};
             if (value.slice(-1) == "%") {
                 value = value.slice(0, -1);
                 if (value > 100 || value < 1) return {success: false, message: "Неверное использование процентного числа. Процентное число должно быть не менее 1 и не более 100% от вашего баланса!"}
@@ -1295,21 +1284,15 @@ let others = {
             }
             else value = obrabotka.kChisla(value);
         }
-        if ((action == "put" && value > get.get(id, "balance")) || (action == "take" && value > get.get(id, "bank")) || value <= 0) return {success: false, message: "Неверное значение (меньше нуля или больше вашего баланса)"}
+        if ((action == "take" && value > get.get(id, "bank")) || value <= 0) return {success: false, message: "Неверное значение (меньше нуля или больше баланса в банке)"}
         
         let feeSum = Math.round(value*fee/100)
         if (!get.get(id)) return {success: false, message: "Id не найден"}
-        if (action == "put") {
-            append.appendToUser(id, "bank", value-feeSum);
-            append.appendToUser(id, "balance", -value);
-            data.users[id].paidKkh += feeSum;
-            return {success: true, message: `Переведено ${obrabotka.chisla(value-feeSum)} КШ в банк\nКомиссия ${obrabotka.chisla(feeSum)} КШ (${fee}%)\nВ банке: ${obrabotka.chisla(get.get(id, "bank"))} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`};
-        }
-        else if (action == "take") {
+        if (action == "take") {
             append.appendToUser(id, "bank", -value);
             append.appendToUser(id, "balance", value-feeSum);
             data.users[id].paidKkh += feeSum;
-            return {success: true, message: `Выведено ${obrabotka.chisla(value-feeSum)} КШ из банка\nКомиссия ${obrabotka.chisla(feeSum)} КШ (${fee}%)\nВ банке: ${obrabotka.chisla(get.get(id, "bank"))} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`};
+            return {success: true, message: `Выведено ${obrabotka.chisla(value-feeSum)} КШ из банка\nКомиссия ${obrabotka.chisla(feeSum)} КШ (${fee}%)\nВ банке: ${obrabotka.chisla(get.get(id, "bank"))}/ ${obrabotka.chisla(get.get(id, "bankMax"))} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`};
 
         }
     }
@@ -1363,7 +1346,5 @@ const jobs = [
             }
         })();
     }, 1000 * 60 * 60 * 2),
-    schedule.scheduleJob("*/1 * * * * *", () => accrual.sec()),
-    schedule.scheduleJob({minute: 0}, () => accrual.bank()),
-    schedule.scheduleJob({hour: 0, minute: 0}, () => accrual.balanceBoost())
+    schedule.scheduleJob("*/1 * * * * *", () => accrual.sec())
 ]
