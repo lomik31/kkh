@@ -49,19 +49,6 @@ const dispatchEvent = (message, ws) => {
     const json = JSON.parse(message);
     if (json.event == "newMessage") textReceiver(json.message, json.client);
     if (json.event == "newCommand") commandReceiver(json.message, json.client);
-    // else if (json.action && json.id && json.action.function) {
-    //     let data;
-    //     console.log(json);
-    //     if (json.action.args) {
-    //         if (typeof json.action.args == "object") data = eval(json.action.function)(...json.action.args)
-    //         else data = eval(json.action.function)(json.action.args)
-    //     }
-    //     else if (json.action.function == "backup") return eval(json.action.function)(ws, json.id)
-    //     else data = eval(json.action.function)()
-    //     data.id = json.id;
-    //     ws.send(JSON.stringify(data))
-    // }
-    else console.log(json);
 }
 server.listen(3200, () => console.log("Server started"))
 
@@ -189,15 +176,14 @@ let append = {
     appendId: function (appendType, appendId, firstName = null, lastName = null) {
         if (appendType === "private") {
             if (get.id(appendId)) return {success: false, message: `Пользователь ${appendId} уже существует`} 
-            data.users[appendId] = data.users.default;
-            console.log(data.users[appendId]);
+            data.users[appendId] = structuredClone(data.users.default);
             data.users[appendId].firstName = firstName;
             data.users[appendId].registerTime = get.time();
             if (lastName != null) data.users[appendId].lastName = lastName;
             return {success: true}
         }
         else if (appendId in data.groups) return {success: false, message: `Группа ${appendId} уже существует`} 
-        data.groups[appendId] = data.groups.default;
+        data.groups[appendId] = structuredClone(data.groups.default);
         return {success: true}
     },
     appendToUser: function (userId, toAppend, appendAmount) {
@@ -209,7 +195,6 @@ let append = {
             data.users[userId][toAppend] = appendAmount;
             data.users[userId]["timeLastCommand"] = get.time();
         }
-        else if (toAppend == "sale") data.users[userId][toAppend] -= appendAmount
         else data.users[userId][toAppend] += appendAmount;
         return {success: true}
     }
@@ -225,7 +210,6 @@ let get = {
             if (data.users[id]["lastName"] !== null) name += ` ${data.users[id]["lastName"]}`;
             return name;
         }
-        else if (toGet == "sale") return 100 - data.users[id][toGet];
         if (getValues.indexOf(toGet) == -1) return {success: false, message: "Данный параметр не найден"};
         let toReturn = data.users[id][toGet];
         return toReturn;
@@ -269,35 +253,34 @@ let get = {
 }
 let calc = {
     boost: function (id, boost) {
+        let nac_cena, procent, limit;
         if (boost == "click") {
-            var nac_cena = 100; //изначальная цена
-            var procent = 15; //процент стоимости следующего буста
-            var limit = -1;
+            nac_cena = 100; //изначальная цена
+            procent = 15; //процент стоимости следующего буста
+            limit = -1;
         }
         else if (boost == "sec") {
-            var nac_cena = 300; //изначальная цена
-            var procent = 15; //процент стоимости следующего буста
-            var limit = -1;
+            nac_cena = 300; //изначальная цена
+            procent = 15; //процент стоимости следующего буста
+            limit = -1;
         }
         else if (boost == "sale") {
-            var nac_cena = 7500; //изначальная цена
-            var procent = 15; //процент стоимости следующего буста
-            var limit = 45;
+            nac_cena = 7500; //изначальная цена
+            procent = 15; //процент стоимости следующего буста
+            limit = 45;
         }
         else if (boost == "balanceBoost") {
-            var nac_cena = 13000000; //изначальная цена
-            var procent = 35; //процент стоимости следующего буста
-            var limit = 10;
+            nac_cena = 13000000; //изначальная цена
+            procent = 35; //процент стоимости следующего буста
+            limit = 10;
         }
         else return {success: false, message: "Неверный параметр boost"}
-        let boost_level = data.users[id][boost];
-        if (boost != "sale" && boost_level >= limit && limit != -1) return {success: false, message: `Достигнут максимум апгрейдов этого типа`}
-        else if (boost == "sale" && 100 - boost_level >= limit) return {success: false, message: `Достигнут максимум апгрейдов этого типа`}
-        let skidka = data.users[id].sale;
-        if (boost == "sale") boost_level = 100 - boost_level
-        for (let i = 0; i < boost_level; i++) nac_cena = Math.floor(nac_cena * (100 + procent) / 100);
-        nac_cena = Math.floor(nac_cena * skidka / 100);
-        return {success: true, cost: nac_cena, data: `Цена за ${boost_level + 1} апгрейд со скидкой ${100 - skidka}%: ${obrabotka.chisla(nac_cena)} КШ`};
+        let boost_level = get.get(id, boost);
+        if (boost_level >= limit && limit != -1) return {success: false, message: `Достигнут максимум апгрейдов этого типа`}
+        let skidka = get.get(id, "sale");
+        for (let i = 0; i < boost_level; i++) nac_cena = nac_cena * (100 + procent) / 100;
+        nac_cena = Math.floor(nac_cena * (100 - skidka) / 100);
+        return {success: true, cost: nac_cena, data: `Цена за ${boost_level + 1} апгрейд со скидкой ${skidka}%: ${obrabotka.chisla(nac_cena)} КШ`};
 
     }
 }
@@ -404,8 +387,7 @@ let set = {
         if (setValues.indexOf(toSet) == -1) return {success: false, message: `Невозможно изменить значение ${toSet}`};
         if (["string", "number"].indexOf(typeof value) != -1) value = obrabotka.kChisla(value)
         if (typeof data.users[id][toSet] != typeof value || isNaN(value)) return {success: false, message: "Ошибка типа"};
-        if (toSet == "sale") data.users[id][toSet] = 100 - value;
-        else data.users[id][toSet] = value;
+        data.users[id][toSet] = value;
         return {success: true};
     },
     keyboard: {
@@ -521,7 +503,6 @@ let promo = {
         }
         let promos = require("./promos.json");
         promos.allPromos[name] = structuredClone(promos.allPromos.default);
-        console.log(promos.allPromos[name]);
         Object.keys(data).forEach(i => promos.allPromos[name][i] = data[i]);
         promos.allPromos[name]["activationLimit"] = activationLimit;
         promos.allPromos[name]["validity"] = validity;
@@ -541,8 +522,7 @@ let promo = {
         let value;
         for (let i of Object.keys(promos.allPromos[name])) {
             if (["activationLimit", "activatedTimes", "validity"].indexOf(i) != -1) continue;
-            if (i != "sale") data.users[userId][i] += promos.allPromos[name][i];
-            else if (data.users[userId][i] < 100) data.users[userId][i] -= promos.allPromos[name][i];
+            if (i != "sale" || (i == "sale" && data.users[userId][i] < 100)) data.users[userId][i] += promos.allPromos[name][i];
             if (promos.allPromos[name][i] != 0) {
                 if (promos.allPromos[name][i] < 0) value = promos.allPromos[name][i];
                 else value = `+${promos.allPromos[name][i]}`;
@@ -858,8 +838,8 @@ class kmd {
         })();
     }
     dbWrite() {
-        let res = others.dbWrite();
-        if (res.success) CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.data});
+        fs.copyFileSync("usrs.json", `backups/${`backup-${dateFormat(get.time()*1000, "yyyy-mm-dd_HH.MM.ss")}.json`}`);
+        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "БД записана"});
     }
     commandsList() {
         let userId = this.message.from_user.id;
@@ -908,7 +888,7 @@ class kmd {
             if (get.get(toReset, "isAdmin") && this.message.from_user.id != 357694314) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Невозможно сбросить прогресс этого пользователя"});
             type = 1;
         }
-        for (i in data.users[toReset]) if (!data.doNotClear.includes(i)) data.users[toReset][i] = structuredClone(data.users.default[i]); //ВНИМАНИЕ БЛЯТЬ удаляется default при сбросе пофиксить
+        for (let i in data.users[toReset]) if (!data.doNotClear.includes(i)) data.users[toReset][i] = structuredClone(data.users.default[i]); //ВНИМАНИЕ БЛЯТЬ удаляется default при сбросе пофиксить
         if (type == 0) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Ваш прогресс сброшен!"});
         CLIENTS[get.get(toReset, "receiver")].sendMessage({chatId: toReset, text: "Ваш прогресс сброшен администратором!"});
         return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Прогресс пользователя ${get.get(toReset, "fullName")} (\`${toReset}\`) успешно сброшен!`})
@@ -1332,11 +1312,6 @@ let others = {
             return {success: true, message: `Выведено ${obrabotka.chisla(value-feeSum)} КШ из банка\nКомиссия ${obrabotka.chisla(feeSum)} КШ (${fee}%)\nВ банке: ${obrabotka.chisla(get.get(id, "bank"))} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`};
 
         }
-    },
-    dbWrite: function () {
-        let name = `backup-${dateFormat(get.time()*1000, "yyyy-mm-dd_HH.MM.ss")}.json`;
-        fs.copyFileSync("usrs.json", `backups/${name}`);
-        return {success: true, data: "БД записана"}
     }
 }
 
