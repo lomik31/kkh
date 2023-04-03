@@ -662,6 +662,34 @@ let game = {
         });
     }
 }
+let reward = {
+    read: function() {
+        return require("./rewards.json");
+    },
+    write: function(data) {
+        fs.writeFile("rewards.json", JSON.stringify(data, null, "    "), (err) => {if (err) console.error(err)});
+    },
+    check: function(reward) {
+        return reward in this.read()
+    },
+    info: function(reward) {
+        let rewards = this.read();
+        if (!this.check(reward)) return {success: false, message: "Такой награды не существует"};
+        return `${reward}\n${rewards[reward].name}\n${rewards[reward].description}\nЕсть у ${(rewards[reward] / get.ids().length).toFixed(2)}% пользователей`;
+    },
+    give: function(id, reward) {
+        if (!this.check(reward)) return {success: false, message: "Такой награды не существует"};
+        if (reward in get.get(id, "rewards")) return {success: false, message: `Награда уже была выдана ${obrabotka.vremeni(get.get(id, "rewards")[reward])}`}
+        data.users[id].rewards[reward] = get.time();
+        return {success: true};
+    },
+    revoke: function(id, reward) {
+        if (!this.check(reward)) return {success: false, message: "Такой награды не существует"};
+        if (reward in get.get(id, "rewards")) return {success: false, message: "Такая награда отсутствует у пользователя"}
+        delete data.users[id].rewards[reward];
+        return {success: true};
+    },
+}
 
 class kmd {
     constructor(message, client, customCommand = undefined) {
