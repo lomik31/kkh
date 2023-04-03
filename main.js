@@ -927,12 +927,21 @@ class kmd {
         if (value == "true") value = true;
         else if (value == "false") value = false;
         if (["isAdmin", "mails", "timeLastBonus", "keyboard", "activeKeyboard", "receiver"].indexOf(toSet) != -1 && this.message.from_user.id != 357694314) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Недостаточно прав"});
-        let ret;
-        if (typeof value == "string" && ["-", "+"].includes(value[0])) ret = append.appendToUser(to, toSet, value);
-        else ret = set.set(to, toSet, value);
-        if (!ret.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: ret.message});
-        CLIENTS[get.get(to, "receiver")].sendMessage({chatId: to, text: `Вам установлено ${value} значение ${toSet} администратором`});
-        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Пользователю ${get.get(to, "fullName")} установлено ${value} значение ${toSet}`});
+        let ret, msg1, msg2;
+        if (value == "reward" && ["-", "+"].includes(value[0])) {
+            // TODO
+        }
+        else {
+            if (typeof value == "string" && ["-", "+"].includes(value[0])) ret = append.appendToUser(to, toSet, value);
+            else ret = set.set(to, toSet, value);
+            if (!ret.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: ret.message});
+            msg1 = `Вам установлено ${value} значение ${toSet} администратором`;
+            msg2 = `Пользователю ${get.get(to, "fullName")} установлено ${value} значение ${toSet}`;
+        }
+        if (msg1 && msg2) {
+            CLIENTS[get.get(to, "receiver")].sendMessage({chatId: to, text: msg1});
+            CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: msg2});
+        }
     }
     coin() {
         if (this.message_text.length < 3) {
