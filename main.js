@@ -871,8 +871,9 @@ class kmd {
     }
     backup() {
         if (this.message_text.length < 2 || this.message_text[1] != "создать") {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let name = `backup-${dateFormat(get.time()*1000, "yyyy-mm-dd_HH.MM.ss")}.json`;
         fs.copyFileSync("usrs.json", `backups/${name}`);
@@ -948,8 +949,9 @@ class kmd {
     }
     pay() {
         if (this.message_text.length < 3) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let from = this.message.from_user.id;
         let to;
@@ -965,8 +967,9 @@ class kmd {
     }
     price() {
         if (this.message_text.length < 2) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let upgrade = this.message.text.slice(5).replace("+", "");
         if (upgrade == "клик") upgrade = "click";
@@ -980,8 +983,9 @@ class kmd {
     }
     set() {
         if (this.message_text.length < 4) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let value = this.message_text[3];
         let toSet = this.message.text.split(" ")[2];
@@ -1012,8 +1016,9 @@ class kmd {
     }
     coin() {
         if (this.message_text.length < 3) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let bet = this.message_text[1];
         let side = this.message_text[2];
@@ -1024,16 +1029,18 @@ class kmd {
         let value = -1;
         if (this.message_text[0] == "-банк") action = "take";
         else if (this.message_text[0] == "банк") {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         if (this.message_text.length > 1) value = this.message_text[1];
         return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: others.bankTransfer(this.message.from_user.id, action, value).message});
     }
     mailing() {
         if (this.message_text.length < 2) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let state;
         if (this.message_text[1] == "да") state = true;
@@ -1060,24 +1067,27 @@ class kmd {
     }
     promoInfo() {
         if (this.message_text.length < 2) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let promoName = this.message.text.split(" ").slice(1).join(" ");
         CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: promo.info(promoName).message});
     }
     promoFullInfo() {
         if (this.message_text.length < 2) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let promoName = this.message.text.split(" ").slice(1).join(" ");
         CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: promo.fInfo(promoName).message});
     }
     promoDelete() {
         if (this.message_text.length < 2) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let promoName = this.message.text.split(" ").slice(1).join(" ");
         let res = promo.delete(promoName);
@@ -1086,8 +1096,9 @@ class kmd {
     }
     promoAdd() {
         if (this.message_text.length < 5) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let a = this.message.text.split("{", 2);
         let b = a[1].split("}", 2);
@@ -1101,16 +1112,18 @@ class kmd {
     }
     promoActivate() {
         if (this.message_text.length < 2) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let res = promo.activate(this.message.from_user.id, this.message.text.slice(this.message.text.indexOf(" ") + 1));
         return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
     }
     keyboardSet() {
         if (this.message_text.length < 2 || !["да", "нет"].includes(this.message_text[1])) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let state;
         if (this.message_text[1] == "да") state = true;
@@ -1134,8 +1147,9 @@ class kmd {
     }
     dotValue() {
         if (this.message_text.length < 2) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: obrabotka.chisla(this.message_text[1])});
     }
@@ -1146,8 +1160,9 @@ class kmd {
     }
     removeId() {
         if (this.message_text.length < 2) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let userId;
         if (this.message_text[1] == "_" && this.message.reply_to_message) userId = this.message.reply_to_message.from_user.id;
@@ -1167,8 +1182,9 @@ class kmd {
     }
     btcBet() {
         if (this.message_text.length < 3) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let res = game.btcBet(this.client, this.message.chat.id, this.message.from_user.id, this.message_text[1], this.message_text[2]);
         if (!res.success) CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
@@ -1190,22 +1206,25 @@ class kmd {
     }
     rewardAdd() {
         if (this.message_text.length < 5 || !this.message_text.includes(" || ")) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let emoji = this.message_text[1];
         let a = this.message_text.split(" || ");
         if (a.length > 2) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let name = a[0].slice(2);
         let description = a[1];
         let res;
         if (emoji && name && description) res = reward.add(emoji, name, description);
         else {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         if (!res.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
         CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Награда успешно добавлена"});
