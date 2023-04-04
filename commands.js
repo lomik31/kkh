@@ -263,5 +263,11 @@ exports.COMMANDS = {
         action: "new kmd(message, client).rewardRemove()",
         usage: "древард <смайлик награды>",
         permissions: "admin"
+    },
+    "награды": {
+        description: "Показать награды пользователя",
+        action: "new kmd(message, client).rewardsUserList()",
+        usage: "награды [id пользователя]",
+        permissions: "user"
     }
 }

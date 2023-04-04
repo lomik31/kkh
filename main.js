@@ -1244,6 +1244,16 @@ class kmd {
         if (!res.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
         CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Награда успешно удалена"});
     }
+    rewardsUserList() {
+        let user;
+        if (this.message_text.length < 2) user = this.message.from_user.id;
+        else if (this.message_text[1] == "_" && this.message.reply_to_message) user = this.message.reply_to_message.from_user.id;
+        else user = this.message_text[1];
+        if (!get.id(user)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Пользователь ${user} не найден`});
+        let rewardsList = reward.infoList(reward.list(), true, false);
+        if (rewardsList == "") return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "У пользователя нет наград"});
+        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Ваши награды:\n${rewardsList}`});
+    }
 }
 let others = {
     leaderbord: function ({mode, active_top, caller_id, page}) {
