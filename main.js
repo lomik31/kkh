@@ -677,7 +677,7 @@ let reward = {
     info: function(reward) {
         let rewards = this.read();
         if (!this.check(reward)) return {success: false, message: "Такой награды не существует"};
-        return `${reward}\n${rewards[reward].name}\n${rewards[reward].description}\nЕсть у ${(rewards[reward] / get.ids().length).toFixed(2)}% пользователей`;
+        return `${reward}\n${rewards[reward].name}\n${rewards[reward].description}`;
     },
     give: function(id, reward) {
         if (!this.check(reward)) return {success: false, message: "Такой награды не существует"};
@@ -691,6 +691,20 @@ let reward = {
         delete data.users[id].rewards[reward];
         return {success: true};
     },
+    infoList: function(rewards, peopleCountPercent, peopleCount) {
+        if (rewards.length == 0) return "";
+        data = this.read();
+        res = "";
+        rewards.forEach(i => {
+            res += this.info(i);
+            if (peopleCountPercent) {
+                res += `\nЕсть у ${(data[reward].count / get.ids().length).toFixed(2)}%`;
+                if (peopleCount) res += ` (${data[reward].count}) пользователей\n`;
+                else res += " пользователей\n\n"
+            }
+        });
+        return res.slice(0, -2);
+    }
 }
 
 class kmd {
