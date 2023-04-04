@@ -687,12 +687,16 @@ let reward = {
         if (!this.check(reward)) return {success: false, message: "Такой награды не существует"};
         if (reward in get.get(id, "rewards")) return {success: false, message: `Награда уже была выдана ${obrabotka.vremeni(get.get(id, "rewards")[reward])}`}
         data.users[id].rewards[reward] = get.time();
+        let rewards = this.read();
+        rewards[reward].count += 1;
         return {success: true};
     },
     revoke: function(id, reward) {
         if (!this.check(reward)) return {success: false, message: "Такой награды не существует"};
         if (reward in get.get(id, "rewards")) return {success: false, message: "Такая награда отсутствует у пользователя"}
         delete data.users[id].rewards[reward];
+        let rewards = this.read();
+        rewards[reward].count -= 1;
         return {success: true};
     },
     add: function(reward, name, description) {
