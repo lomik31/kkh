@@ -194,13 +194,14 @@ let get = {
     get: function (id, toGet) {
         let getValues = ["balance", "click", "sec", "keyboard", "sale", "isAdmin",
         "activeKeyboard", "mails", "timeLastBonus", "timeLastSecondBonus", "lastCommand", "bank",
-        "multiplier", "receiver", "bankMax"]
+        "multiplier", "receiver", "bankMax", "rewards"]
         if (toGet == "all") return data.users[id]
         else if (toGet == "fullName") {
             let name = data.users[id]["firstName"];
             if (data.users[id]["lastName"] !== null) name += ` ${data.users[id]["lastName"]}`;
             return name;
         }
+        else if (toGet == "rewards") return Object.keys(data.users[id].rewards);
         if (getValues.indexOf(toGet) == -1) return {success: false, message: "Данный параметр не найден"};
         let toReturn = data.users[id][toGet];
         return toReturn;
