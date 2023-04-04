@@ -1188,6 +1188,28 @@ class kmd {
         }
         else CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Вы вышли из меню"});
     }
+    rewardAdd() {
+        if (this.message_text.length < 5 || !this.message_text.includes(" || ")) {
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client).helpCommand();
+        }
+        let emoji = this.message_text[1];
+        let a = this.message_text.split(" || ");
+        if (a.length > 2) {
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client).helpCommand();
+        }
+        let name = a[0].slice(2);
+        let description = a[1];
+        let res;
+        if (emoji && name && description) res = reward.add(emoji, name, description);
+        else {
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client).helpCommand();
+        }
+        if (!res.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
+        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Награда успешно добавлена"});
+    }
 }
 let others = {
     leaderbord: function ({mode, active_top, caller_id, page}) {

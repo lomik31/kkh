@@ -251,5 +251,11 @@ exports.COMMANDS = {
         action: "new kmd(message, client).dotValue()",
         usage: "dot <число>",
         permissions: "admin"
+    },
+    "нревард": {
+        description: "Добавить новую награду",
+        action: "new kmd(message, client).rewardAdd()",
+        usage: "нревард <смайлик награды> <название...> || <описание...>",
+        permissions: "admin"
     }
 }
