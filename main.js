@@ -720,17 +720,18 @@ let reward = {
     },
     infoList: function(rewards, peopleCountPercent, peopleCount) {
         if (rewards.length == 0) return "";
-        data = this.read();
-        res = "";
+        let data = this.read();
+        let res = "";
         rewards.forEach(i => {
             res += this.info(i);
             if (peopleCountPercent) {
-                res += `\nЕсть у ${(data[reward].count / get.ids().length).toFixed(2)}%`;
-                if (peopleCount) res += ` (${data[reward].count}) пользователей\n`;
+                res += `\nЕсть у ${(data[i].count / get.ids().length * 100).toFixed(2)}%`;
+                if (peopleCount) res += ` (${data[i].count}) пользователей\n\n`;
                 else res += " пользователей\n\n"
             }
         });
-        return res.slice(0, -2);
+        if (peopleCountPercent) return res.slice(0, -2);
+        return res;
     }
 }
 
