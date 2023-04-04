@@ -702,6 +702,7 @@ let reward = {
         rewards[rewards].name = name;
         rewards[rewards].description = description;
         this.write(rewards);
+        return {success: true};
     },
     remove: function(reward) {
         if (!this.check(reward)) return {success: false, message: "Такой награды не существует"};
@@ -711,6 +712,7 @@ let reward = {
         let rewards = this.read();
         delete rewards[reward];
         this.write(rewards);
+        return {success: true};
     },
     infoList: function(rewards, peopleCountPercent, peopleCount) {
         if (rewards.length == 0) return "";
