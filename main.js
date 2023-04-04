@@ -1233,6 +1233,16 @@ class kmd {
         if (!res.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
         CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Награда успешно добавлена"});
     }
+    rewardRemove() {
+        if (this.message_text.length < 2) {
+            let text = this.message.text;
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client, text).helpCommand();
+        }
+        let res = reward.remove(this.message_text[1]);
+        if (!res.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
+        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Награда успешно удалена"});
+    }
 }
 let others = {
     leaderbord: function ({mode, active_top, caller_id, page}) {

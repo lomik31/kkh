@@ -257,5 +257,11 @@ exports.COMMANDS = {
         action: "new kmd(message, client).rewardAdd()",
         usage: "нревард <смайлик награды> <название...> || <описание...>",
         permissions: "admin"
+    },
+    "древард": {
+        description: "Удалить существующую награду\n(удаляет также эту награду у всех пользователей)",
+        action: "new kmd(message, client).rewardRemove()",
+        usage: "древард <смайлик награды>",
+        permissions: "admin"
     }
 }
