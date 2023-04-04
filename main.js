@@ -699,8 +699,8 @@ let reward = {
         if (this.check(reward)) return {success: false, message: "Такая награда уже существует"};
         let rewards = this.read();
         rewards[reward] = structuredClone(rewards.default);
-        rewards[rewards].name = name;
-        rewards[rewards].description = description;
+        rewards[reward].name = name;
+        rewards[reward].description = description;
         this.write(rewards);
         return {success: true};
     },
