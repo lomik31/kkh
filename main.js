@@ -703,6 +703,15 @@ let reward = {
         rewards[rewards].description = description;
         this.write(rewards);
     },
+    remove: function(reward) {
+        if (!this.check(reward)) return {success: false, message: "Такой награды не существует"};
+        Object.keys(data.users).forEach(i => {
+            if (reward in data.users[i].rewards) delete data.users[i].rewards[reward];
+        })
+        let rewards = this.read();
+        delete rewards[reward];
+        this.write(rewards);
+    },
     infoList: function(rewards, peopleCountPercent, peopleCount) {
         if (rewards.length == 0) return "";
         data = this.read();
