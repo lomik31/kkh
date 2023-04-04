@@ -681,7 +681,7 @@ let reward = {
     info: function(reward) {
         let rewards = this.read();
         if (!this.check(reward)) return {success: false, message: "Такой награды не существует"};
-        return `${reward}\n${rewards[reward].name}\n${rewards[reward].description}`;
+        return `${reward}\n${rewards[reward].name}\n\n${rewards[reward].description}`;
     },
     give: function(id, reward) {
         if (!this.check(reward)) return {success: false, message: "Такой награды не существует"};
@@ -726,8 +726,8 @@ let reward = {
             res += this.info(i);
             if (peopleCountPercent) {
                 res += `\nЕсть у ${(data[i].count / get.ids().length * 100).toFixed(2)}%`;
-                if (peopleCount) res += ` (${data[i].count}) пользователей\n\n`;
-                else res += " пользователей\n\n"
+                if (peopleCount) res += ` (${data[i].count}) пользователей\n\n\n`;
+                else res += " пользователей\n\n\n"
             }
         });
         if (peopleCountPercent) return res.slice(0, -2);
