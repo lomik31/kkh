@@ -701,6 +701,7 @@ let reward = {
         rewards[reward] = structuredClone(rewards.default);
         rewards[rewards].name = name;
         rewards[rewards].description = description;
+        this.write(rewards);
     },
     infoList: function(rewards, peopleCountPercent, peopleCount) {
         if (rewards.length == 0) return "";
