@@ -692,6 +692,12 @@ let reward = {
         delete data.users[id].rewards[reward];
         return {success: true};
     },
+    add: function(reward, name, description) {
+        let rewards = this.read();
+        rewards[reward] = structuredClone(rewards.default);
+        rewards[rewards].name = name;
+        rewards[rewards].description = description;
+    },
     infoList: function(rewards, peopleCountPercent, peopleCount) {
         if (rewards.length == 0) return "";
         data = this.read();
