@@ -670,7 +670,9 @@ let reward = {
         fs.writeFile("rewards.json", JSON.stringify(data, null, "    "), (err) => {if (err) console.error(err)});
     },
     check: function(reward) {
-        return reward in this.read()
+        let rewards = this.read();
+        delete reward.default;
+        return reward in reward;
     },
     info: function(reward) {
         let rewards = this.read();
