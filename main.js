@@ -672,8 +672,8 @@ let reward = {
     },
     check: function(reward) {
         let rewards = this.read();
-        delete reward.default;
-        return reward in reward;
+        delete rewards.default;
+        return reward in rewards;
     },
     list: function() {
         return Object.keys(this.read()).filter(i => i != "default");
