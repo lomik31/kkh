@@ -665,7 +665,7 @@ let game = {
 }
 let reward = {
     read: function() {
-        return require("./rewards.json");
+        return structuredClone(require("./rewards.json"));
     },
     write: function(data) {
         fs.writeFile("rewards.json", JSON.stringify(data, null, "    "), (err) => {if (err) console.error(err)});
@@ -1205,19 +1205,19 @@ class kmd {
         else CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Вы вышли из меню"});
     }
     rewardAdd() {
-        if (this.message_text.length < 5 || !this.message_text.includes(" || ")) {
+        if (this.message_text.length < 5 || !this.message_text.includes("||")) {
             let text = this.message.text;
             this.message.text = "команда " + this.message.text;
             return new kmd(this.message, this.client, text).helpCommand();
         }
         let emoji = this.message_text[1];
-        let a = this.message_text.split(" || ");
+        let a = this.message.text.split(" || ");
         if (a.length > 2) {
             let text = this.message.text;
             this.message.text = "команда " + this.message.text;
             return new kmd(this.message, this.client, text).helpCommand();
         }
-        let name = a[0].slice(2);
+        let name = a[0].split(" ").slice(2).join(" ");
         let description = a[1];
         let res;
         if (emoji && name && description) res = reward.add(emoji, name, description);
