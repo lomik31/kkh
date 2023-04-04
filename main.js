@@ -675,6 +675,9 @@ let reward = {
         delete reward.default;
         return reward in reward;
     },
+    list: function() {
+        return Object.keys(this.read()).filter(i => i != "default");
+    },
     info: function(reward) {
         let rewards = this.read();
         if (!this.check(reward)) return {success: false, message: "Такой награды не существует"};
