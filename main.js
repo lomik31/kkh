@@ -698,6 +698,7 @@ let reward = {
         delete data.users[id].rewards[reward];
         let rewards = this.read();
         rewards[reward].count -= 1;
+        this.write(rewards);
         return {success: true};
     },
     add: function(reward, name, description) {
