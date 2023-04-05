@@ -685,10 +685,11 @@ let reward = {
     },
     give: function(id, reward) {
         if (!this.check(reward)) return {success: false, message: "Такой награды не существует"};
-        if (reward in get.get(id, "rewards")) return {success: false, message: `Награда уже была выдана ${obrabotka.vremeni(get.get(id, "rewards")[reward])}`}
+        if (get.get(id, "rewards").includes(reward)) return {success: false, message: `Награда уже была выдана ${obrabotka.vremeni(get.get(id, "rewards")[reward])}`}
         data.users[id].rewards[reward] = get.time();
         let rewards = this.read();
         rewards[reward].count += 1;
+        this.write(rewards);
         return {success: true};
     },
     revoke: function(id, reward) {
