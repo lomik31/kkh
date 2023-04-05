@@ -1013,8 +1013,20 @@ ${(() => {
         else if (value == "false") value = false;
         if (["isAdmin", "mails", "timeLastBonus", "keyboard", "activeKeyboard", "receiver"].indexOf(toSet) != -1 && this.message.from_user.id != 357694314) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Недостаточно прав"});
         let ret, msg1, msg2;
-        if (value == "reward" && ["-", "+"].includes(value[0])) {
-            // TODO
+        if (toSet == "reward" && ["-", "+"].includes(value[0])) {
+            let emoji = value.slice(1);
+            let ret;
+            if (value[0] == "+") {
+                ret = reward.give(to, emoji);
+                msg1 = `Вам вручили награду ${emoji}\nПосмотреть свои награды: \'награды\'`;
+                msg2 = `Пользователю ${to} вручена награда ${emoji}`;
+            }
+            else if (value == "-") {
+                ret = reward.revoke(to, emoji);
+                msg1 = `У вас конфисковали награду \'${emoji}\'`;
+                msg2 = `У пользователя ${to} конфискована награда \'${emoji}\'`;
+            }
+            if (!ret.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: ret.message});
         }
         else {
             if (typeof value == "string" && ["-", "+"].includes(value[0])) ret = append.appendToUser(to, toSet, value);
