@@ -408,18 +408,18 @@ let set = {
 }
 let promo = {
     list: function () {
-        let promos = require("./promos.json");
+        let promos = JSON.parse(fs.readFileSync("./promos.json", {encoding:"utf-8"}));
         msg = `Список промокодов: ${Object.keys(promos.allPromos).filter((f) => f != "default").join(", ")}`;
         promos = null;
         return {success: true, message: msg};
     },
     fInfo: function (promo_okda) {
-        let promos = require("./promos.json");
+        let promos = JSON.parse(fs.readFileSync("./promos.json", {encoding:"utf-8"}));
         if (!promo.check(promo_okda)) return {success: false, message: "Промокода не существует!"};
         return {success: true, message: JSON.stringify(promos.allPromos[promo_okda], null, "    "), data: promos.allPromos[promo_okda]};
     },
     delete: function (promo_okda) {
-        let promos = require("./promos.json");
+        let promos = JSON.parse(fs.readFileSync("./promos.json", {encoding:"utf-8"}));
         if (!promo.check(promo_okda)) return {success: false, message: "Промокода не существует!"};
         delete promos.allPromos[promo_okda];
         promo.writeFile(promos);
@@ -429,16 +429,16 @@ let promo = {
         return {success: true};
     },
     writeFile: function (promoFile) {
-        fs.writeFile("promos.json", JSON.stringify(promoFile, null, "    "), (err) => {if (err) console.error(err)});
+        fs.writeFileSync("promos.json", JSON.stringify(promoFile, null, "    "));
     },
     check: function (promo_okda) {
-        let promos = require("./promos.json");
+        let promos = JSON.parse(fs.readFileSync("./promos.json", {encoding:"utf-8"}));
         if (promos.allPromos[promo_okda] == undefined) return false;
         return true;
     },
     info: function (promo_okda) {
         if (!promo.check(promo_okda)) return {success: false, message: "Промокод не найден!"};
-        let promos = require("./promos.json");
+        let promos = JSON.parse(fs.readFileSync("./promos.json", {encoding:"utf-8"}));
         let ebp = Object.keys(promos.allPromos[promo_okda]).filter((i) => !(i in ["activationLimit", "activatedTimes", "validity"]));
         msg = "";
         for (let i of ebp) {
@@ -490,7 +490,7 @@ let promo = {
             validity = Number(validity);
             if (validity < (get.time() - 5)) validity = -1;
         }
-        let promos = require("./promos.json");
+        let promos = JSON.parse(fs.readFileSync("./promos.json", {encoding:"utf-8"}));
         promos.allPromos[name] = structuredClone(promos.allPromos.default);
         Object.keys(data).forEach(i => promos.allPromos[name][i] = data[i]);
         promos.allPromos[name]["activationLimit"] = activationLimit;
@@ -506,7 +506,7 @@ let promo = {
         if (data.users[userId].activatedPromos.indexOf(name) != -1) return {success: false, message: "Промокод уже активирован"};
         if (promo.fInfo(name).data.validity < get.time() &&promo.fInfo(name).data.validity != -1) return {success: false, message: "Истекло время активации промокода"};
         if (promo.fInfo(name).data.activatedTimes >= promo.fInfo(name).data.activationLimit && promo.fInfo(name).data.activationLimit != -1) return {success: false, message: "Превышено число активаций промокода"};
-        let promos = require("./promos.json");
+        let promos = JSON.parse(fs.readFileSync("./promos.json", {encoding:"utf-8"}));
         let message = "";
         let value;
         for (let i of Object.keys(promos.allPromos[name])) {
@@ -665,7 +665,7 @@ let game = {
 }
 let reward = {
     read: function() {
-        return structuredClone(require("./rewards.json"));
+        return JSON.parse(fs.readFileSync("./rewards.json", {encoding:"utf-8"}));
     },
     write: function(data) {
         fs.writeFile("rewards.json", JSON.stringify(data, null, "    "), (err) => {if (err) console.error(err)});
