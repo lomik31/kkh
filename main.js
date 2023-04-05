@@ -1275,6 +1275,9 @@ ${(() => {
         if (rewardsList == "") return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "У пользователя нет наград"});
         CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Ваши награды:\n${rewardsList}`});
     }
+    rewardsAllList() {
+        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Список всех наград:\n${reward.infoList(reward.list(), true, true)}`});
+    }
 }
 let others = {
     leaderbord: function ({mode, active_top, caller_id, page}) {
