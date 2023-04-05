@@ -1,7 +1,7 @@
 const { randomInt } = require('crypto');
 const fs = require('fs');
 const schedule = require('node-schedule');
-const data = require('./usrs.json');
+const data = JSON.parse(fs.readFileSync('./usrs.json', {encoding:"utf-8"}));
 const config = require("./config.json");
 const http = require("http");
 const { request } = require('https');
@@ -67,7 +67,7 @@ function commandReceiver(message, client) {
 function textReceiver(message, client) {
     if (!get.id(message.from_user.id)) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Для взаимодействия с ботом вам необходимо сначала активировать его. Напишите боту *в ЛС* команду /start!", parseMode: "MARKDOWN"})
     let message_text = message.text.toLowerCase().split(" ");
-    if (!(["кмд", "_"].includes(message_text[0]) || (message_text[0][0] == "+" && message_text[0].slice(1) != "банк"))) {
+    if (!(["кмд", "_"].includes(message_text[0]) || (message_text[0][0] == "+"))) {
         let i = 0;
         let checkCommand = message_text[0];
         while (true) {
@@ -106,6 +106,7 @@ function textReceiver(message, client) {
             if (b == 0) message.text += i;
             else message.text += `${i} `;
         }
+        message.text = message.text.slice(0, -1);
         textReceiver(message, client);
     }
     else if (message_text[0] == "_") {
@@ -114,7 +115,7 @@ function textReceiver(message, client) {
         message.text = command;
         textReceiver(message, client);
     }
-    else if (message_text[0][0] == "+" && message_text[0].slice(1) != "банк") {
+    else if (message_text[0][0] == "+") {
         let loxtext = message.text;
         let r = new RegExp(/ \(\d+[\.\d]* КШ\)/);
         if (r.test(message.text)) message.text = message.text.replace(r, "");
@@ -125,7 +126,7 @@ function textReceiver(message, client) {
         for (let i of message_text) {
             a.push(i);
             t = a.join(" ");
-            if (["сек", "клик", "скидка", "1% скидки", "бб", "баланс", "баланс/день", "буст баланса", "буст баланс", "1% баланса/день"].includes(t)) return new kmd(message, client, loxtext).buyBoost(t);
+            if (["сек", "клик", "скидка", "1% скидки", "банк"].includes(t)) return new kmd(message, client, loxtext).buyBoost(t);
         }
         return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Неверный тип апгрейда"});
     }
@@ -136,32 +137,22 @@ function choose(choices) {
 
 let accrual = {
     sec: function () {
-        for(i in data.users) {
-            data.users[i].balance += data.users[i].sec;
-            data.users[i].earnedKkh += data.users[i].sec;
+        for (let i in data.users) {
+            if (data.users[i].bank + data.users[i].sec < data.users[i].bankMax) {
+                data.users[i].bank += data.users[i].sec;
+                data.users[i].earnedKkh += data.users[i].sec;
+            }
+            else if (data.users[i].bank < data.users[i].bankMax) {
+                data.users[i].earnedKkh += data.users[i].bankMax - data.users[i].bank;
+                data.users[i].bank = data.users[i].bankMax;
+                
+            }
         };
         file.write();
     },
     click: function (userId) {
         data.users[userId].balance += data.users[userId].click;
         data.users[userId].earnedKkh += data.users[userId].click;
-    },
-    balanceBoost: function () {
-        for(i in data.users) {
-            data.users[i].balance += Math.round(data.users[i].balance * (data.users[i].balanceBoost / 100));
-            data.users[i].earnedKkh += Math.round(data.users[i].balance * (data.users[i].balanceBoost / 100));
-        }
-    },
-    bank: function() {
-        let getRandomFloat = function (min, max) {
-            const str = (Math.random() * (max - min) + min);
-            return parseFloat(str);
-        }
-        for (let i of Object.keys(data.users)) {
-            let add = Math.round(data.users[i].bank * getRandomFloat(0.0002, 0.001466666666666667));
-            data.users[i].bank += add;
-            data.users[i].earnedKkh += add;
-        }
     }
 }
 let file = {
@@ -187,7 +178,7 @@ let append = {
         return {success: true}
     },
     appendToUser: function (userId, toAppend, appendAmount) {
-        let appendVariables = ["balance", "click", "sec", "sale", "balanceBoost", "lastCommand", "bank"];
+        let appendVariables = ["balance", "click", "sec", "sale", "bankMax", "lastCommand", "bank"];
         if (appendVariables.indexOf(toAppend) === -1) return {success: false, message: `Параметр ${toAppend} не найден`};
         appendAmount = obrabotka.kChisla(appendAmount);
         if (typeof data.users[userId][toAppend] != typeof appendAmount || isNaN(appendAmount)) return {success: false, message: "Ошибка типа"};
@@ -201,15 +192,16 @@ let append = {
 }
 let get = {
     get: function (id, toGet) {
-        let getValues = ["balance", "click", "sec", "balanceBoost", "keyboard", "sale", "isAdmin",
+        let getValues = ["balance", "click", "sec", "keyboard", "sale", "isAdmin",
         "activeKeyboard", "mails", "timeLastBonus", "timeLastSecondBonus", "lastCommand", "bank",
-        "multiplier", "receiver"]
+        "multiplier", "receiver", "bankMax", "rewards"]
         if (toGet == "all") return data.users[id]
         else if (toGet == "fullName") {
             let name = data.users[id]["firstName"];
             if (data.users[id]["lastName"] !== null) name += ` ${data.users[id]["lastName"]}`;
             return name;
         }
+        else if (toGet == "rewards") return Object.keys(data.users[id].rewards);
         if (getValues.indexOf(toGet) == -1) return {success: false, message: "Данный параметр не найден"};
         let toReturn = data.users[id][toGet];
         return toReturn;
@@ -236,12 +228,8 @@ let get = {
             if (a.success) return `+1% скидки (${obrabotka.chisla(a.cost)} КШ)`
             else return a.message
         }();
-        let balanceBoost = function() {
-            let a = calc.boost(id, "balanceBoost");
-            if (a.success) return `+1% баланса/день (${obrabotka.chisla(a.cost)} КШ)`
-            else return a.message
-        }();
-        return {sec, click, sale, balanceBoost}
+        let bankMax = obrabotka.chisla(calc.boost(id, "bankMax").cost);
+        return {sec, click, sale, bankMax};
     },
     keyboard: function (id, keyboardType, chatType = "private") {
         if (chatType == "private") {
@@ -269,13 +257,14 @@ let calc = {
             procent = 15; //процент стоимости следующего буста
             limit = 45;
         }
-        else if (boost == "balanceBoost") {
-            nac_cena = 13000000; //изначальная цена
-            procent = 35; //процент стоимости следующего буста
-            limit = 10;
+        else if (boost == "bankMax") {
+            nac_cena = 3498; //изначальная цена
+            procent = 0.06; //процент стоимости следующего буста
+            limit = 5_000_000;
         }
         else return {success: false, message: "Неверный параметр boost"}
         let boost_level = get.get(id, boost);
+        if (boost == "bankMax") boost_level = Math.floor(boost_level/1000)
         if (boost_level >= limit && limit != -1) return {success: false, message: `Достигнут максимум апгрейдов этого типа`}
         let skidka = get.get(id, "sale");
         for (let i = 0; i < boost_level; i++) nac_cena = nac_cena * (100 + procent) / 100;
@@ -288,7 +277,7 @@ let keyboard = {
     upgrade: function(userId) {
         if (!get.id(userId)) return {success: false, message: "Id не найден"};
         let res = get.keyboardCosts(userId);
-        let keyboard = [[`+сек (${res.sec} КШ)`, `+клик (${res.click} КШ)`], [res.sale, res.balanceBoost], ["Назад"]];
+        let keyboard = [[`+сек (${res.sec} КШ)`, `+клик (${res.click} КШ)`], [res.sale, `+банк (${res.bankMax} КШ)`], ["Назад"]];
         return keyboard;
     },
     mainMenu: [["🔮"], ["Апгрейды", "Баланс"], ["Сброс"]]
@@ -353,7 +342,7 @@ let give = {
             t = i;
             mnoz2++;
         }
-        let bonus = Math.round(get.get(id, "sec") * 4000 + get.get(id, "click") * 6500 + get.get(id, "balanceBoost") * 500000 + 1.135**get.get(id, "sec") + 1.145**get.get(id, "click") + 1.22**get.get(id, "balanceBoost") + 1.14**get.get(id, "sale")) * (mnoz + mnoz2);
+        let bonus = Math.round(get.get(id, "sec") * 4000 + get.get(id, "click") * 6500 + 1.135**get.get(id, "sec") + 1.145**get.get(id, "click") + 1.14**get.get(id, "sale")) * (mnoz + mnoz2);
         append.appendToUser(id, "balance", bonus);
         data.users[id].othersProceeds += bonus;
         data.users[id].timeLastBonus = get.time();
@@ -368,7 +357,7 @@ let give = {
     },
     bonus2: function (id) {
         if (get.time() - get.get(id, "timeLastSecondBonus") < 28800) return {success: false, message: `Бонус2 можно получать каждые 8 часов\nДо следующего бонуса2: ${obrabotka.vremeniBonusa(get.get(id, "timeLastSecondBonus") + 28800 - get.time() - 10800)}`}
-        let bonus = randomInt(10000, (get.get(id, "sec") * 3600 + get.get(id, "click") * 5400 + get.get(id, "balanceBoost") * 500000) + 10000);
+        let bonus = randomInt(10000, (get.get(id, "sec") * 3600 + get.get(id, "click") * 5400) + 10000);
         append.appendToUser(id, "balance", bonus);
         data.users[id].othersProceeds += bonus;
         data.users[id].timeLastSecondBonus = get.time();
@@ -383,7 +372,7 @@ let set = {
         return {success: true};
     },
     set: function (id, toSet, value) {
-        let setValues = ["isAdmin", "multiplier", "mails", "balance", "click", "sec", "sale", "balanceBoost", "bank", "timeLastBonus", "keyboard", "activeKeyboard"];
+        let setValues = ["isAdmin", "multiplier", "mails", "balance", "click", "sec", "sale", "bankMax", "bank", "timeLastBonus", "keyboard", "activeKeyboard"];
         if (setValues.indexOf(toSet) == -1) return {success: false, message: `Невозможно изменить значение ${toSet}`};
         if (["string", "number"].indexOf(typeof value) != -1) value = obrabotka.kChisla(value)
         if (typeof data.users[id][toSet] != typeof value || isNaN(value)) return {success: false, message: "Ошибка типа"};
@@ -419,18 +408,18 @@ let set = {
 }
 let promo = {
     list: function () {
-        let promos = require("./promos.json");
+        let promos = JSON.parse(fs.readFileSync("./promos.json", {encoding:"utf-8"}));
         msg = `Список промокодов: ${Object.keys(promos.allPromos).filter((f) => f != "default").join(", ")}`;
         promos = null;
         return {success: true, message: msg};
     },
     fInfo: function (promo_okda) {
-        let promos = require("./promos.json");
+        let promos = JSON.parse(fs.readFileSync("./promos.json", {encoding:"utf-8"}));
         if (!promo.check(promo_okda)) return {success: false, message: "Промокода не существует!"};
         return {success: true, message: JSON.stringify(promos.allPromos[promo_okda], null, "    "), data: promos.allPromos[promo_okda]};
     },
     delete: function (promo_okda) {
-        let promos = require("./promos.json");
+        let promos = JSON.parse(fs.readFileSync("./promos.json", {encoding:"utf-8"}));
         if (!promo.check(promo_okda)) return {success: false, message: "Промокода не существует!"};
         delete promos.allPromos[promo_okda];
         promo.writeFile(promos);
@@ -440,16 +429,16 @@ let promo = {
         return {success: true};
     },
     writeFile: function (promoFile) {
-        fs.writeFile("promos.json", JSON.stringify(promoFile, null, "    "), (err) => {if (err) console.error(err)});
+        fs.writeFileSync("promos.json", JSON.stringify(promoFile, null, "    "));
     },
     check: function (promo_okda) {
-        let promos = require("./promos.json");
+        let promos = JSON.parse(fs.readFileSync("./promos.json", {encoding:"utf-8"}));
         if (promos.allPromos[promo_okda] == undefined) return false;
         return true;
     },
     info: function (promo_okda) {
         if (!promo.check(promo_okda)) return {success: false, message: "Промокод не найден!"};
-        let promos = require("./promos.json");
+        let promos = JSON.parse(fs.readFileSync("./promos.json", {encoding:"utf-8"}));
         let ebp = Object.keys(promos.allPromos[promo_okda]).filter((i) => !(i in ["activationLimit", "activatedTimes", "validity"]));
         msg = "";
         for (let i of ebp) {
@@ -501,7 +490,7 @@ let promo = {
             validity = Number(validity);
             if (validity < (get.time() - 5)) validity = -1;
         }
-        let promos = require("./promos.json");
+        let promos = JSON.parse(fs.readFileSync("./promos.json", {encoding:"utf-8"}));
         promos.allPromos[name] = structuredClone(promos.allPromos.default);
         Object.keys(data).forEach(i => promos.allPromos[name][i] = data[i]);
         promos.allPromos[name]["activationLimit"] = activationLimit;
@@ -517,7 +506,7 @@ let promo = {
         if (data.users[userId].activatedPromos.indexOf(name) != -1) return {success: false, message: "Промокод уже активирован"};
         if (promo.fInfo(name).data.validity < get.time() &&promo.fInfo(name).data.validity != -1) return {success: false, message: "Истекло время активации промокода"};
         if (promo.fInfo(name).data.activatedTimes >= promo.fInfo(name).data.activationLimit && promo.fInfo(name).data.activationLimit != -1) return {success: false, message: "Превышено число активаций промокода"};
-        let promos = require("./promos.json");
+        let promos = JSON.parse(fs.readFileSync("./promos.json", {encoding:"utf-8"}));
         let message = "";
         let value;
         for (let i of Object.keys(promos.allPromos[name])) {
@@ -674,6 +663,79 @@ let game = {
         });
     }
 }
+let reward = {
+    read: function() {
+        return JSON.parse(fs.readFileSync("./rewards.json", {encoding:"utf-8"}));
+    },
+    write: function(data) {
+        fs.writeFile("rewards.json", JSON.stringify(data, null, "    "), (err) => {if (err) console.error(err)});
+    },
+    check: function(reward) {
+        let rewards = this.read();
+        delete rewards.default;
+        return reward in rewards;
+    },
+    list: function() {
+        return Object.keys(this.read()).filter(i => i != "default");
+    },
+    info: function(reward) {
+        let rewards = this.read();
+        if (!this.check(reward)) return {success: false, message: "Такой награды не существует"};
+        return `${reward}:\n${rewards[reward].name}\n${rewards[reward].description}`;
+    },
+    give: function(id, reward) {
+        if (!this.check(reward)) return {success: false, message: "Такой награды не существует"};
+        if (get.get(id, "rewards").includes(reward)) return {success: false, message: `Награда уже была выдана ${obrabotka.vremeni(get.get(id, "rewards")[reward])}`}
+        data.users[id].rewards[reward] = get.time();
+        let rewards = this.read();
+        rewards[reward].count += 1;
+        this.write(rewards);
+        return {success: true};
+    },
+    revoke: function(id, reward) {
+        if (!this.check(reward)) return {success: false, message: "Такой награды не существует"};
+        if (reward in get.get(id, "rewards")) return {success: false, message: "Такая награда отсутствует у пользователя"}
+        delete data.users[id].rewards[reward];
+        let rewards = this.read();
+        rewards[reward].count -= 1;
+        this.write(rewards);
+        return {success: true};
+    },
+    add: function(reward, name, description) {
+        if (this.check(reward)) return {success: false, message: "Такая награда уже существует"};
+        let rewards = this.read();
+        rewards[reward] = structuredClone(rewards.default);
+        rewards[reward].name = name;
+        rewards[reward].description = description;
+        this.write(rewards);
+        return {success: true};
+    },
+    remove: function(reward) {
+        if (!this.check(reward)) return {success: false, message: "Такой награды не существует"};
+        Object.keys(data.users).forEach(i => {
+            if (reward in data.users[i].rewards) delete data.users[i].rewards[reward];
+        })
+        let rewards = this.read();
+        delete rewards[reward];
+        this.write(rewards);
+        return {success: true};
+    },
+    infoList: function(rewards, peopleCountPercent, peopleCount) {
+        if (rewards.length == 0) return "";
+        let data = this.read();
+        let res = "";
+        rewards.forEach(i => {
+            res += this.info(i);
+            if (peopleCountPercent) {
+                res += `\nЕсть у ${(data[i].count / get.ids().length * 100).toFixed(2)}%`;
+                if (peopleCount) res += ` (${data[i].count}) пользователей\n\n`;
+                else res += " пользователей\n\n"
+            }
+        });
+        if (peopleCountPercent) return res.slice(0, -2);
+        return res;
+    }
+}
 
 class kmd {
     constructor(message, client, customCommand = undefined) {
@@ -690,11 +752,6 @@ class kmd {
         if (this.message_text.length >= 2) {
             if (["клик", "к", "click"].includes(this.message_text[1])) top.mode = "click";
             else if (["сек", "с", "sec"].includes(this.message_text[1])) top.mode = "sec";
-            else if (["бб", "бустбаланса", "bb", "balanceboost", "балансбуст", "balanceBoost"].includes(this.message_text[1])) top.mode = "balanceBoost";
-            else if (this.message_text[1] == "буст" && this.message_text.length >= 3 && ["баланс", "баланса"].includes(this.message_text[2])) {
-            top.mode = "balanceBoost";
-            this.message_text.splice(2, 1);
-            }
             else if (["регистрация", "р", "рег", "register", "registerTime"].includes(this.message_text[1])) top.mode = "registerTime";
             else if (["банк", "bank"].includes(this.message_text[1])) top.mode = "bank";
             else if (["д", "деньги", "money"].includes(this.message_text[1])) top.mode = "money";
@@ -711,7 +768,7 @@ class kmd {
         if (boost == "клик") boost = "click";
         else if (boost == "сек") boost = "sec";
         else if (["скидка", "1% скидки"].includes(boost)) boost = "sale";
-        else if (["бб", "баланс", "баланс/день", "буст баланса", "буст баланс", "1% баланса/день"].includes(boost)) boost = "balanceBoost";
+        else if (boost == "банк") boost = "bankMax";
         else return CLIENTS[this.client]
         let amount = 1;
         if (args.length > 0) {
@@ -726,7 +783,8 @@ class kmd {
         let balance = get.get(id, "balance");
         let i;
         for (i = 0; (i < amount || amount == -1) && balance >= cost && cost != undefined; i++) {
-            append.appendToUser(id, boost, 1);
+            if (boost == "bankMax") append.appendToUser(id, boost, 1000);
+            else append.appendToUser(id, boost, 1);
             append.appendToUser(id, "balance", -cost);
             balance = get.get(id, "balance");
             cost = calc.boost(id, boost).cost;
@@ -734,12 +792,14 @@ class kmd {
         if (i == 0) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Недостаточно средств. Для покупки ещё необходимо ${obrabotka.chisla(cost - balance)} КШ`});
         else {
             if (get.keyboard(this.message.chat.id, "activeKeyboard", this.message.chat.type)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Успешно куплено Успешно куплено апгрейдов: ${i}\nid: <code>${id}</code>
-Апгрейды: ${get.get(id, "sec")}/сек; ${get.get(id, "click")}/клик; ${get.get(id, "sale")}% скидки; ${get.get(id, "balanceBoost")}% баланса/день
-Баланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`, parseMode: "HTML", keyboard: keyboard.upgrade(this.message.from_user.id)});
+Апгрейды: ${get.get(id, "sec")}/сек; ${get.get(id, "click")}/клик; ${get.get(id, "sale")}% скидки
+Баланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ
+В банке: ${obrabotka.chisla(get.get(id, "bank"))}/ ${obrabotka.chisla(get.get(id, "bankMax"))} КШ`, parseMode: "HTML", keyboard: keyboard.upgrade(this.message.from_user.id)});
 
             return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Успешно куплено Успешно куплено апгрейдов: ${i}\nid: <code>${id}</code>
-Апгрейды: ${get.get(id, "sec")}/сек; ${get.get(id, "click")}/клик; ${get.get(id, "sale")}% скидки; ${get.get(id, "balanceBoost")}% баланса/день
-Баланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`, parseMode: "HTML"});
+Апгрейды: ${get.get(id, "sec")}/сек; ${get.get(id, "click")}/клик; ${get.get(id, "sale")}% скидки
+Баланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ
+В банке: ${obrabotka.chisla(get.get(id, "bank"))}/ ${obrabotka.chisla(get.get(id, "bankMax"))} КШ`, parseMode: "HTML"});
         }
     }
     click() {
@@ -757,7 +817,15 @@ class kmd {
             }
         }
         else userId = this.message.from_user.id;
-        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Имя: ${get.get(userId, "fullName")}\nid: \`${userId}\`\nАпгрейды: ${get.get(userId, "sec")}/сек; ${get.get(userId, "click")}/клик; ${get.get(userId, "sale")}% скидки; ${get.get(userId, "balanceBoost")}% баланса/день\nБаланс: ${obrabotka.chisla(get.get(userId, "balance"))} КШ\nВ банке: ${obrabotka.chisla(get.get(userId, "bank"))} КШ`, parseMode: "MARKDOWN"})
+        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text:
+`Имя: ${get.get(userId, "fullName")}\nid: \`${userId}\`
+Апгрейды: ${get.get(userId, "sec")}/сек; ${get.get(userId, "click")}/клик; ${get.get(userId, "sale")}% скидки
+${(() => {
+    let rewards = get.get(userId, "rewards");
+    if (rewards.length == 0) return ""
+    else return `Награды: ${rewards.join(", ")};\n`
+})()}Баланс: ${obrabotka.chisla(get.get(userId, "balance"))} КШ
+В банке: ${obrabotka.chisla(get.get(userId, "bank"))}/${obrabotka.chisla(get.get(userId, "bankMax"))} КШ`,parseMode: "MARKDOWN"})
     }
     helpCommand() {
         if (this.message_text.length < 2) {
@@ -818,8 +886,9 @@ class kmd {
     }
     backup() {
         if (this.message_text.length < 2 || this.message_text[1] != "создать") {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let name = `backup-${dateFormat(get.time()*1000, "yyyy-mm-dd_HH.MM.ss")}.json`;
         fs.copyFileSync("usrs.json", `backups/${name}`);
@@ -895,8 +964,9 @@ class kmd {
     }
     pay() {
         if (this.message_text.length < 3) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let from = this.message.from_user.id;
         let to;
@@ -912,23 +982,25 @@ class kmd {
     }
     price() {
         if (this.message_text.length < 2) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let upgrade = this.message.text.slice(5).replace("+", "");
         if (upgrade == "клик") upgrade = "click";
         else if (upgrade == "сек") upgrade = "sec";
         else if (["скидка", "скидки"].includes(upgrade)) upgrade = "sale";
-        else if (["бб", "баланс", "баланса", "баланс/день"].includes(upgrade)) upgrade = "balanceBoost";
-        if (!["click", "sec", "sale", "balanceBoost"].includes(upgrade)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Неверный апгрейд"});
+        else if (["банк", "+банк"].includes(upgrade)) upgrade = "bankMax";
+        if (!["click", "sec", "sale", "bankMax"].includes(upgrade)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Неверный апгрейд"});
         let res = calc.boost(this.message.from_user.id, upgrade);
         if (res.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.data});
         return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
     }
     set() {
         if (this.message_text.length < 4) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let value = this.message_text[3];
         let toSet = this.message.text.split(" ")[2];
@@ -941,17 +1013,38 @@ class kmd {
         if (value == "true") value = true;
         else if (value == "false") value = false;
         if (["isAdmin", "mails", "timeLastBonus", "keyboard", "activeKeyboard", "receiver"].indexOf(toSet) != -1 && this.message.from_user.id != 357694314) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Недостаточно прав"});
-        let ret;
-        if (typeof value == "string" && ["-", "+"].includes(value[0])) ret = append.appendToUser(to, toSet, value);
-        else ret = set.set(to, toSet, value);
-        if (!ret.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: ret.message});
-        CLIENTS[get.get(to, "receiver")].sendMessage({chatId: to, text: `Вам установлено ${value} значение ${toSet} администратором`});
-        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Пользователю ${get.get(to, "fullName")} установлено ${value} значение ${toSet}`});
+        let ret, msg1, msg2;
+        if (toSet == "reward" && ["-", "+"].includes(value[0])) {
+            let emoji = value.slice(1);
+            if (value[0] == "+") {
+                ret = reward.give(to, emoji);
+                msg1 = `Вам вручили награду ${emoji}\nПосмотреть свои награды: \'награды\'`;
+                msg2 = `Пользователю ${to} вручена награда ${emoji}`;
+            }
+            else if (value[0] == "-") {
+                ret = reward.revoke(to, emoji);
+                msg1 = `У вас конфисковали награду \'${emoji}\'`;
+                msg2 = `У пользователя ${to} конфискована награда \'${emoji}\'`;
+            }
+            if (!ret.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: ret.message});
+        }
+        else {
+            if (typeof value == "string" && ["-", "+"].includes(value[0])) ret = append.appendToUser(to, toSet, value);
+            else ret = set.set(to, toSet, value);
+            if (!ret.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: ret.message});
+            msg1 = `Вам установлено ${value} значение ${toSet} администратором`;
+            msg2 = `Пользователю ${get.get(to, "fullName")} установлено ${value} значение ${toSet}`;
+        }
+        if (msg1 && msg2) {
+            CLIENTS[get.get(to, "receiver")].sendMessage({chatId: to, text: msg1});
+            CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: msg2});
+        }
     }
     coin() {
         if (this.message_text.length < 3) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let bet = this.message_text[1];
         let side = this.message_text[2];
@@ -960,19 +1053,20 @@ class kmd {
     bankTransfer() {
         let action;
         let value = -1;
-        if (this.message_text[0] == "+банк") action = "put";
-        else if (this.message_text[0] == "-банк") action = "take";
+        if (this.message_text[0] == "-банк") action = "take";
         else if (this.message_text[0] == "банк") {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         if (this.message_text.length > 1) value = this.message_text[1];
         return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: others.bankTransfer(this.message.from_user.id, action, value).message});
     }
     mailing() {
         if (this.message_text.length < 2) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let state;
         if (this.message_text[1] == "да") state = true;
@@ -999,24 +1093,27 @@ class kmd {
     }
     promoInfo() {
         if (this.message_text.length < 2) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let promoName = this.message.text.split(" ").slice(1).join(" ");
         CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: promo.info(promoName).message});
     }
     promoFullInfo() {
         if (this.message_text.length < 2) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let promoName = this.message.text.split(" ").slice(1).join(" ");
         CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: promo.fInfo(promoName).message});
     }
     promoDelete() {
         if (this.message_text.length < 2) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let promoName = this.message.text.split(" ").slice(1).join(" ");
         let res = promo.delete(promoName);
@@ -1025,8 +1122,9 @@ class kmd {
     }
     promoAdd() {
         if (this.message_text.length < 5) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let a = this.message.text.split("{", 2);
         let b = a[1].split("}", 2);
@@ -1040,16 +1138,18 @@ class kmd {
     }
     promoActivate() {
         if (this.message_text.length < 2) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let res = promo.activate(this.message.from_user.id, this.message.text.slice(this.message.text.indexOf(" ") + 1));
         return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
     }
     keyboardSet() {
         if (this.message_text.length < 2 || !["да", "нет"].includes(this.message_text[1])) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let state;
         if (this.message_text[1] == "да") state = true;
@@ -1073,8 +1173,9 @@ class kmd {
     }
     dotValue() {
         if (this.message_text.length < 2) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: obrabotka.chisla(this.message_text[1])});
     }
@@ -1085,8 +1186,9 @@ class kmd {
     }
     removeId() {
         if (this.message_text.length < 2) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let userId;
         if (this.message_text[1] == "_" && this.message.reply_to_message) userId = this.message.reply_to_message.from_user.id;
@@ -1106,8 +1208,9 @@ class kmd {
     }
     btcBet() {
         if (this.message_text.length < 3) {
+            let text = this.message.text;
             this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client, text).helpCommand();
         }
         let res = game.btcBet(this.client, this.message.chat.id, this.message.from_user.id, this.message_text[1], this.message_text[2]);
         if (!res.success) CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
@@ -1126,6 +1229,54 @@ class kmd {
             CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Вы вышли из меню", keyboard: keyboard.mainMenu});
         }
         else CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Вы вышли из меню"});
+    }
+    rewardAdd() {
+        if (this.message_text.length < 5 || !this.message_text.includes("||")) {
+            let text = this.message.text;
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client, text).helpCommand();
+        }
+        let emoji = this.message_text[1];
+        let a = this.message.text.split(" || ");
+        if (a.length > 2) {
+            let text = this.message.text;
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client, text).helpCommand();
+        }
+        let name = a[0].split(" ").slice(2).join(" ");
+        let description = a[1];
+        let res;
+        if (emoji && name && description) res = reward.add(emoji, name, description);
+        else {
+            let text = this.message.text;
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client, text).helpCommand();
+        }
+        if (!res.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
+        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Награда успешно добавлена"});
+    }
+    rewardRemove() {
+        if (this.message_text.length < 2) {
+            let text = this.message.text;
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client, text).helpCommand();
+        }
+        let res = reward.remove(this.message_text[1]);
+        if (!res.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
+        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Награда успешно удалена"});
+    }
+    rewardsUserList() {
+        let user;
+        if (this.message_text.length < 2) user = this.message.from_user.id;
+        else if (this.message_text[1] == "_" && this.message.reply_to_message) user = this.message.reply_to_message.from_user.id;
+        else user = this.message_text[1];
+        if (!get.id(user)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Пользователь ${user} не найден`});
+        let rewardsList = reward.infoList(get.get(user, "rewards"), true, false);
+        if (rewardsList == "") return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "У пользователя нет наград"});
+        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Ваши награды:\n${rewardsList}`});
+    }
+    rewardsAllList() {
+        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Список всех наград:\n${reward.infoList(reward.list(), true, true)}`});
     }
 }
 let others = {
@@ -1180,8 +1331,8 @@ let others = {
         if (active_top) msg += "Топ активных пользователей (для общего топа есть команда \"всетоп\")\n"
         else msg += "Топ всех пользователей (для топа активных есть команда \"топ\")\n"
         //стандартное расположение значений топа
-        let order = ["balance", "sec", "click", "balanceBoost"] 
-        let order_words = [" КШ", "/сек", "/клик", "% баланса/день"]
+        let order = ["balance", "sec", "click"] 
+        let order_words = [" КШ", "/сек", "/клик"]
         if (page != 2281337) {
             start_user = (page - 1) * 10
             end_user = page * 10
@@ -1193,8 +1344,8 @@ let others = {
             order = ["", "balance", "bank"]
             order_words = [" всего", " КШ", " КШ в банке"]
         } else if (mode == "bank") { //в банке знаешь типо
-            order = ["bank", "balance", "sec", "click", "balanceBoost"]
-            order_words = [" КШ в банке", " КШ", "/сек", "/клик", "% баланса/день"]
+            order = ["bank", "balance", "sec", "click"]
+            order_words = [" КШ в банке", " КШ", "/сек", "/клик"]
         } else if (mode == "registerTime") {
             order = ["registerTime", "balance"]
             order_words = ["", " КШ"]
@@ -1207,8 +1358,8 @@ let others = {
             order_words.unshift(w)
         }
         //пошёл нахуй Баланс | Клик | Сек | Буст баланса | Регистрация | Банк | Деньги
-        let highlights_names = ["Баланс", "Клик", "Сек", "Буст баланса", "Регистрация", "Банк", "Деньги"]
-        let highlights_pos = {"balance": 0, "click": 1, "sec": 2, "balanceBoost": 3, "registerTime": 4, "bank": 5, "money": 6}
+        let highlights_names = ["Баланс", "Клик", "Сек", "Регистрация", "Банк", "Деньги"]
+        let highlights_pos = {"balance": 0, "click": 1, "sec": 2, "registerTime": 3, "bank": 4, "money": 5}
         msg += "|"
         let highlight_pos = highlights_pos[mode]
         for (i = 0; i < highlights_names.length; i++) {
@@ -1220,28 +1371,28 @@ let others = {
         }
         msg += "\n\n"
         if (mode == "money") {
-            for (let user = start_user; user < end_user; user++) msg += `#${top[user][0]}: <a href='tg://user?id=${top[user][1]}'>${top[user][2]}</a>: ${top[user][2]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[user][1]][order[2]])}${order_words[2]}\n`
+            for (let user = start_user; user < end_user; user++) msg += `#${top[user][0]}: <a href='tg://user?id=${top[user][1]}'>${top[user][2]}</a>: ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[user][1]][order[2]])}/${obrabotka.chisla(data.users[top[user][1]]["bankMax"])}${order_words[2]}\n`
             msg += "__________\n"
-            msg += `Вы: #${top[caller_place][0]}: ${top[caller_place][2]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[2]])}${order_words[2]}\n`
+            msg += `Вы: #${top[caller_place][0]}: ${top[caller_place][2]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[2]])}/${obrabotka.chisla(data.users[top[caller_place][1]]["bankMax"])}${order_words[2]}\n`
         
         }
         else if (mode == "bank") {
-            for (let user = start_user; user < end_user; user++) msg += `#${top[user][0]}: <a href='tg://user?id=${top[user][1]}'>${top[user][2]}</a>: ${obrabotka.chisla(data.users[top[user][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}, ${data.users[top[user][1]][order[2]]}${order_words[2]}, ${data.users[top[user][1]][order[3]]}${order_words[3]}, ${data.users[top[user][1]][order[4]]}${order_words[4]}\n`
+            for (let user = start_user; user < end_user; user++) msg += `#${top[user][0]}: <a href='tg://user?id=${top[user][1]}'>${top[user][2]}</a>: ${obrabotka.chisla(data.users[top[user][1]][order[0]])}/${obrabotka.chisla(data.users[top[user][1]]["bankMax"])}${order_words[0]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}, ${data.users[top[user][1]][order[2]]}${order_words[2]}, ${data.users[top[user][1]][order[3]]}${order_words[3]}\n`
             msg += "__________\n"
-            msg += `Вы: #${top[caller_place][0]}: ${data.users[top[caller_place][1]][order[0]]}${order_words[0]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[2]])}${order_words[2]}, ${data.users[top[caller_place][1]][order[3]]}${order_words[3]}, ${data.users[top[caller_place][1]][order[4]]}${order_words[4]}\n`
+            msg += `Вы: #${top[caller_place][0]}: ${data.users[top[caller_place][1]][order[0]]}/${obrabotka.chisla(data.users[top[caller_place][1]]["bankMax"])}${order_words[0]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[2]])}${order_words[2]}, ${data.users[top[caller_place][1]][order[3]]}${order_words[3]}\n`
         }
         else if (mode == "registerTime") {
-            for (let user = start_user; user < end_user; user++) msg += `#${top[user][0]}: <a href='tg://user?id=${top[user][1]}'>${top[user][2]}</a>: ${data.users[top[user][1]][order[0]]}${order_words[0]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}\n`
+            for (let user = start_user; user < end_user; user++) msg += `#${top[user][0]}: <a href='tg://user?id=${top[user][1]}'>${top[user][2]}</a>: ${obrabotka.vremeni(data.users[top[user][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}\n`
             msg += "__________\n"
-            msg += `Вы: #${top[caller_place][0]}: ${data.users[top[caller_place][1]][order[0]]}${order_words[0]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[1]])}${order_words[1]}\n`
+            msg += `Вы: #${top[caller_place][0]}: ${obrabotka.vremeni(data.users[top[caller_place][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[1]])}${order_words[1]}\n`
     
         }
         else {
             for (let user = start_user; user < end_user; user++) {
-                msg += `#${top[user][0]}: <a href='tg://user?id=${top[user][1]}'>${top[user][2]}</a>: ${obrabotka.chisla(data.users[top[user][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[user][1]][order[2]])}${order_words[2]}, ${obrabotka.chisla(data.users[top[user][1]][order[3]])}${order_words[3]}\n`
+                msg += `#${top[user][0]}: <a href='tg://user?id=${top[user][1]}'>${top[user][2]}</a>: ${obrabotka.chisla(data.users[top[user][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[user][1]][order[2]])}${order_words[2]}\n`
             }
             msg += "__________\n"
-            msg += `Вы: #${top[caller_place][0]}: ${obrabotka.chisla(data.users[top[caller_place][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[2]])}${order_words[2]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[3]])}${order_words[3]}\n`
+            msg += `Вы: #${top[caller_place][0]}: ${obrabotka.chisla(data.users[top[caller_place][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[2]])}${order_words[2]}\n`
         }
         msg += `\nСтраница ${page} из ${Math.ceil(top.length / 10)}`
         return msg
@@ -1283,11 +1434,10 @@ let others = {
         let fee = 0.2//% (комиссия)
         if (value == "#r") value = randomInt(1, get.get(id, "balance"))
         else if (value == "все" || value == "всё" || value == -1) {
-            if (action == "put") value = get.get(id, "balance")
-            else if (action == "take") value = get.get(id, "bank")
+            if (action == "take") value = get.get(id, "bank")
         }
         else {
-            if (isNaN(parseInt(value))) return {success: false, message: "Неверный параметр суммы\nИспользование: +банк/-банк [сумма]"};
+            if (isNaN(parseInt(value))) return {success: false, message: "Неверный параметр суммы\nИспользование: -банк [сумма]"};
             if (value.slice(-1) == "%") {
                 value = value.slice(0, -1);
                 if (value > 100 || value < 1) return {success: false, message: "Неверное использование процентного числа. Процентное число должно быть не менее 1 и не более 100% от вашего баланса!"}
@@ -1295,21 +1445,15 @@ let others = {
             }
             else value = obrabotka.kChisla(value);
         }
-        if ((action == "put" && value > get.get(id, "balance")) || (action == "take" && value > get.get(id, "bank")) || value <= 0) return {success: false, message: "Неверное значение (меньше нуля или больше вашего баланса)"}
+        if ((action == "take" && value > get.get(id, "bank")) || value <= 0) return {success: false, message: "Неверное значение (меньше нуля или больше баланса в банке)"}
         
         let feeSum = Math.round(value*fee/100)
         if (!get.get(id)) return {success: false, message: "Id не найден"}
-        if (action == "put") {
-            append.appendToUser(id, "bank", value-feeSum);
-            append.appendToUser(id, "balance", -value);
-            data.users[id].paidKkh += feeSum;
-            return {success: true, message: `Переведено ${obrabotka.chisla(value-feeSum)} КШ в банк\nКомиссия ${obrabotka.chisla(feeSum)} КШ (${fee}%)\nВ банке: ${obrabotka.chisla(get.get(id, "bank"))} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`};
-        }
-        else if (action == "take") {
+        if (action == "take") {
             append.appendToUser(id, "bank", -value);
             append.appendToUser(id, "balance", value-feeSum);
             data.users[id].paidKkh += feeSum;
-            return {success: true, message: `Выведено ${obrabotka.chisla(value-feeSum)} КШ из банка\nКомиссия ${obrabotka.chisla(feeSum)} КШ (${fee}%)\nВ банке: ${obrabotka.chisla(get.get(id, "bank"))} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`};
+            return {success: true, message: `Выведено ${obrabotka.chisla(value-feeSum)} КШ из банка\nКомиссия ${obrabotka.chisla(feeSum)} КШ (${fee}%)\nВ банке: ${obrabotka.chisla(get.get(id, "bank"))}/ ${obrabotka.chisla(get.get(id, "bankMax"))} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`};
 
         }
     }
@@ -1363,7 +1507,5 @@ const jobs = [
             }
         })();
     }, 1000 * 60 * 60 * 2),
-    schedule.scheduleJob("*/1 * * * * *", () => accrual.sec()),
-    schedule.scheduleJob({minute: 0}, () => accrual.bank()),
-    schedule.scheduleJob({hour: 0, minute: 0}, () => accrual.balanceBoost())
+    schedule.scheduleJob("*/1 * * * * *", () => accrual.sec())
 ]

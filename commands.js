@@ -251,5 +251,29 @@ exports.COMMANDS = {
         action: "new kmd(message, client).dotValue()",
         usage: "dot <число>",
         permissions: "admin"
+    },
+    "нревард": {
+        description: "Добавить новую награду",
+        action: "new kmd(message, client).rewardAdd()",
+        usage: "нревард <смайлик награды> <название...> || <описание...>",
+        permissions: "admin"
+    },
+    "древард": {
+        description: "Удалить существующую награду\n(удаляет также эту награду у всех пользователей)",
+        action: "new kmd(message, client).rewardRemove()",
+        usage: "древард <смайлик награды>",
+        permissions: "admin"
+    },
+    "награды": {
+        description: "Показать награды пользователя",
+        action: "new kmd(message, client).rewardsUserList()",
+        usage: "награды [id пользователя]",
+        permissions: "user"
+    },
+    "лревардс": {
+        description: "Показать инфо о всех существующих наградах",
+        action: "new kmd(message, client).rewardsAllList()",
+        usage: "лревардс",
+        permissions: "admin"
     }
 }
