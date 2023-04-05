@@ -1271,7 +1271,7 @@ ${(() => {
         else if (this.message_text[1] == "_" && this.message.reply_to_message) user = this.message.reply_to_message.from_user.id;
         else user = this.message_text[1];
         if (!get.id(user)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Пользователь ${user} не найден`});
-        let rewardsList = reward.infoList(reward.list(), true, false);
+        let rewardsList = reward.infoList(get.get(user, "rewards"), true, false);
         if (rewardsList == "") return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "У пользователя нет наград"});
         CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Ваши награды:\n${rewardsList}`});
     }
