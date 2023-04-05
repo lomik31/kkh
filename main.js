@@ -1,7 +1,7 @@
 const { randomInt } = require('crypto');
 const fs = require('fs');
 const schedule = require('node-schedule');
-const data = require('./usrs.json');
+const data = JSON.parse(fs.readFileSync('./usrs.json', {encoding:"utf-8"}));
 const config = require("./config.json");
 const http = require("http");
 const { request } = require('https');
