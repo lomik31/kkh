@@ -1016,13 +1016,12 @@ ${(() => {
         let ret, msg1, msg2;
         if (toSet == "reward" && ["-", "+"].includes(value[0])) {
             let emoji = value.slice(1);
-            let ret;
             if (value[0] == "+") {
                 ret = reward.give(to, emoji);
                 msg1 = `Вам вручили награду ${emoji}\nПосмотреть свои награды: \'награды\'`;
                 msg2 = `Пользователю ${to} вручена награда ${emoji}`;
             }
-            else if (value == "-") {
+            else if (value[0] == "-") {
                 ret = reward.revoke(to, emoji);
                 msg1 = `У вас конфисковали награду \'${emoji}\'`;
                 msg2 = `У пользователя ${to} конфискована награда \'${emoji}\'`;
