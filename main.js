@@ -815,7 +815,15 @@ class kmd {
             }
         }
         else userId = this.message.from_user.id;
-        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Имя: ${get.get(userId, "fullName")}\nid: \`${userId}\`\nАпгрейды: ${get.get(userId, "sec")}/сек; ${get.get(userId, "click")}/клик; ${get.get(userId, "sale")}% скидки\nБаланс: ${obrabotka.chisla(get.get(userId, "balance"))} КШ\nВ банке: ${obrabotka.chisla(get.get(userId, "bank"))}/${obrabotka.chisla(get.get(userId, "bankMax"))} КШ`, parseMode: "MARKDOWN"})
+        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text:
+`Имя: ${get.get(userId, "fullName")}\nid: \`${userId}\`
+Апгрейды: ${get.get(userId, "sec")}/сек; ${get.get(userId, "click")}/клик; ${get.get(userId, "sale")}% скидки
+${(() => {
+    let rewards = get.get(userId, "rewards");
+    if (rewards.length == 0) return ""
+    else return `Награды: ${rewards.join(", ")};\n`
+})()}Баланс: ${obrabotka.chisla(get.get(userId, "balance"))} КШ
+В банке: ${obrabotka.chisla(get.get(userId, "bank"))}/${obrabotka.chisla(get.get(userId, "bankMax"))} КШ`,parseMode: "MARKDOWN"})
     }
     helpCommand() {
         if (this.message_text.length < 2) {
