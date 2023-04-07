@@ -1,17 +1,8 @@
 # -*- coding: utf-8 -*-
 from telebot import types, apihelper, TeleBot
-import time
-import rec_file
+import time, rec_file, random, yadisk, datetime, schedule, json, requests, logging, os.path
 from threading import Thread
-import random
-import yadisk
-import shutil
-import datetime
-import schedule
-import json
-import requests
-import logging
-import os.path
+from shutil import copyfile
 from os import rename
 from commands import COMMANDS
 
@@ -142,7 +133,7 @@ def whiletrue():
 def autoBackup():
     today = datetime.datetime.today()
     name = f"backup-{today.strftime('%Y-%m-%d_%H.%M.%S')}.txt"
-    shutil.copyfile("usrs.json", f"backups/{name}")
+    copyfile("usrs.json", f"backups/{name}")
     y.upload(f"backups/{name}", (f"/kkh_backups/{name}"))
 def updateUsersNameInFile():
     dict = rec_file.updateUserName(fileRead)
@@ -275,7 +266,7 @@ def message_bot_not_started():
 def manual_backup():
     today = datetime.datetime.today()
     name = "backup-" + today.strftime("%Y-%m-%d_%H.%M.%S") + ".txt"
-    shutil.copyfile("usrs.json", f"backups/{name}")
+    copyfile("usrs.json", f"backups/{name}")
     y.upload(f"backups/{name}", (f"/kkh_backups/{name}"))
     return "Бэкап успешно выполнен и загружен на сервер!"
    
