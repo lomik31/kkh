@@ -11,9 +11,19 @@ import schedule
 import json
 import requests
 import logging
+import os.path
+from os import rename
 from commands import COMMANDS
 
-logging.basicConfig(filename=f"logs/logs.log", level=logging.INFO, format="%(asctime)s: %(name)s: %(levelname)s: %(message)s")
+if (os.path.isfile("logs/latest.log")):
+    with open("logs/latest.log", "r") as f:
+        i = 1
+        name = f"{f.readline().split(' ')[0]}-{i}"
+        while (os.path.isfile(f"logs/{name}.log")):
+            name = f"{name}-{i}"
+            i += 1
+        rename("logs/latest.log", f"logs/{name}.log")
+logging.basicConfig(filename=f"logs/latest.log", level=logging.INFO, format="%(asctime)s: %(name)s: %(levelname)s: %(message)s")
 
 main = logging.getLogger("main")
 messageLog = logging.getLogger("message")
