@@ -1,4 +1,4 @@
-import websocket, re
+import websocket
 import json as JSON
 from telebot import TeleBot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
