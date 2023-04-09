@@ -59,8 +59,8 @@ function commandReceiver(message, client) {
             else CLIENTS[client].sendMessage({chatId: message.chat.id, text:  "Эту команду можно использовать только в личных сообщениях с ботом!"});
             return;
         }
-        if (message.chat.type == "private") append.appendId("private", message.chat.id, message.chat.first_name, message.chat.last_name);
-        else append.appendId(message.chat.type, message.chat.id);
+        if (message.chat.type == "private") append.appendId("private", message.chat.id, client, message.chat.first_name, message.chat.last_name);
+        else append.appendId(message.chat.type, message.chat.id, client);
         CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Привет. Это бот-кликер.\nСделали: [@lomik31](tg://user?id=357694314), [@Discord Nitra MV](tg://user?id=1160222752).\nЕсли ты Игорькартошка или Денисизюм, то тебе [сюда](https://docs.google.com/document/d/15a6S5F26kxRn103Yboknpogu-tJtIoxin2G9tBjY65A).\nПо вопросам обращаться к ним.\n[Планы на будущее и то, что в разработке](https://trello.com/b/kfVkY65h/%D0%BA%D0%BA%D1%88)\nНаш канал с новостями: [@kkh_news] (t.me/kkh_news)\nДля списка всех команд введите `команды`.\nЕсли у вас есть промо-код, можете ввести его при помощи `промо <код>`\nНаша беседа: [тык](t.me/+_VgA7r0PfWZiMGFi)\n\n*По вопросам пишите* [@lomik31](tg://user?id=357694314)", parseMode: "MARKDOWN"});
     }
 }
@@ -164,12 +164,13 @@ let file = {
     }
 }
 let append = {
-    appendId: function (appendType, appendId, firstName = null, lastName = null) {
+    appendId: function (appendType, appendId, client, firstName = null, lastName = null) {
         if (appendType === "private") {
             if (get.id(appendId)) return {success: false, message: `Пользователь ${appendId} уже существует`} 
             data.users[appendId] = structuredClone(data.users.default);
             data.users[appendId].firstName = firstName;
             data.users[appendId].registerTime = get.time();
+            data.users[appendId].receiver = client;
             if (lastName != null) data.users[appendId].lastName = lastName;
             return {success: true}
         }
