@@ -168,12 +168,12 @@ let file = {
     }
 }
 let append = {
-    appendId: function (appendType, appendId, client, firstName = null, lastName = null) {
+    appendId: function (appendType, appendId, client, nickname) {
         if (appendType === "private") {
             if (check.internalId(get.internalId(appendId, client))) return {success: false, message: `Пользователь ${appendId} уже существует`}
             let userId = data.lastUser + 1;
             data.users[userId] = structuredClone(data.users[0]);
-            data.users[userId].firstName = firstName;
+            data.users[userId].nickname = nickname;
             data.users[userId].registerTime = get.time();
             data.users[userId].receiver = client;
             data.users[userId].ids[client] = appendId;
@@ -201,13 +201,8 @@ let get = {
     get: function (id, toGet, client = null) {
         let getValues = ["balance", "click", "sec", "keyboard", "sale", "isAdmin",
         "activeKeyboard", "mails", "timeLastBonus", "timeLastSecondBonus", "lastCommand", "bank",
-        "multiplier", "receiver", "bankMax", "rewards", "clientId"]
+        "multiplier", "receiver", "bankMax", "rewards", "clientId", "nickname"]
         if (toGet == "all") return data.users[id]
-        else if (toGet == "fullName") {
-            let name = data.users[id]["firstName"];
-            if (data.users[id]["lastName"] !== null) name += ` ${data.users[id]["lastName"]}`;
-            return name;
-        }
         else if (toGet == "rewards") return Object.keys(data.users[id].rewards);
         else if (toGet == "clientId") {
             if (client == null) throw "client is cannot be null";
@@ -806,7 +801,7 @@ class kmd {
     }
     createMention(userId, client = this.client) {
         let externalUserId = get.get(userId, "clientId", client);
-        let username = get.get(userId, "fullName");
+        let username = get.get(userId, "nickname");
         if (!externalUserId) return username;
         if (client == "telegram") {
             return `<a href = "tg://openmessage?user_id=${externalUserId}">${username.replace("<", "\<").replace(">", "\>")}</a>`
@@ -886,7 +881,7 @@ class kmd {
         userId = get.internalId(userId, this.client);
         if (!check.internalId(userId)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Id не найден"});
         CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text:
-`Имя: ${get.get(userId, "fullName")}
+`${this.createMention(userId)}
 Апгрейды: ${get.get(userId, "sec")}/сек; ${get.get(userId, "click")}/клик; ${get.get(userId, "sale")}% скидки
 ${(() => {
     let rewards = get.get(userId, "rewards");
@@ -945,12 +940,12 @@ ${(() => {
         data.users[from].othersSpends += cost[type];
         if (type == "anonymous") {
             CLIENTS[get.get(internalTo, "receiver")].sendMessage({chatId: to, text: "Вас анонимно послали нахуй"});
-            return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Вы анонимно послали нахуй игрока ${get.get(internalTo, "fullName")} (${internalTo})\nЗабрано ${obrabotka.chisla(cost[type])} КШ`});
+            return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Вы анонимно послали нахуй игрока ${this.createMention(internalTo)}\nЗабрано ${obrabotka.chisla(cost[type])} КШ`});
         }
         else if (type == "normal") {
             let receiver = get.get(internalTo, "receiver");
-            CLIENTS[receiver].sendMessage({chatId: get.get(internalTo, "clientId", get.get(internalTo, "receiver")), text: `Вас послал нахуй пользователь ${get.get(from, "fullName")} (${from})`});
-            return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Вы послали нахуй игрока ${get.get(internalTo, "fullName")} (${internalTo})\nЗабрано ${obrabotka.chisla(cost[type])} КШ`});
+            CLIENTS[receiver].sendMessage({chatId: get.get(internalTo, "clientId", get.get(internalTo, "receiver")), text: `Вас послал нахуй пользователь ${this.createMention(from, receiver)}`});
+            return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Вы послали нахуй игрока ${this.createMention(internalTo)}\nЗабрано ${obrabotka.chisla(cost[type])} КШ`});
         }
     }
     backup() {
@@ -1030,7 +1025,7 @@ ${(() => {
         for (let i in data.users[toReset]) if (!data.doNotClear.includes(i)) data.users[toReset][i] = structuredClone(data.users.default[i]); //ВНИМАНИЕ БЛЯТЬ удаляется default при сбросе пофиксить
         if (type == 0) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Ваш прогресс сброшен!"});
         CLIENTS[get.get(toReset, "receiver")].sendMessage({chatId: etoReset, text: "Ваш прогресс сброшен администратором!"});
-        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Прогресс пользователя ${get.get(toReset, "fullName")} успешно сброшен!`})
+        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Прогресс пользователя ${this.createMention(toReset)} успешно сброшен!`})
     }
     pay() {
         if (this.message_text.length < 3) {
@@ -1100,7 +1095,7 @@ ${(() => {
             else ret = set.set(to, toSet, value);
             if (!ret.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: ret.message});
             msg1 = `Вам установлено ${value} значение ${toSet} администратором`;
-            msg2 = `Пользователю ${get.get(to, "fullName")} установлено ${value} значение ${toSet}`;
+            msg2 = `Пользователю ${this.createMention(to)} установлено ${value} значение ${toSet}`;
         }
         if (msg1 && msg2) {
             let receiver = get.get(to, "receiver");
@@ -1274,7 +1269,7 @@ ${(() => {
         let text = "";
         let ids = get.ids();
         ids.forEach(i => {
-            text += `${get.get(i, "fullName")} (${i})\n`
+            text += `${this.createMention(i)} (${i})\n`
         });
         return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Вот список всех ${ids.length} пользователей:\n${text.slice(0, -1)}`});
     }
@@ -1353,7 +1348,7 @@ ${(() => {
     }
 }
 let others = {
-    leaderbord: function ({mode, active_top, caller_id, page}) {
+    leaderbord: function ({mode, active_top, caller_id, page, kmd}) {
         let lb_data = data;
         let inverse;
         let sorted = [];
@@ -1381,7 +1376,7 @@ let others = {
         let place = 1;
         let to_append = [];
         for (let i = 0; i < Object.keys(lb_data.users).length; i++) {
-            to_append = [place, sorted[i][0], get.get(sorted[i][0], "fullName")];
+            to_append = [place, sorted[i][0], get.get(sorted[i][0], "nickname")]; //ВНИМАНИЕ БЛЯТЬ
             if (to_append[1] == caller_id) caller_place = place - 1
             if (i != 0) {
                 if (sorted[i - 1][1] == sorted[i][1]) {
@@ -1444,25 +1439,25 @@ let others = {
         }
         msg += "\n\n"
         if (mode == "money") {
-            for (let user = start_user; user < end_user; user++) msg += `#${top[user][0]}: <a href='tg://user?id=${top[user][1]}'>${top[user][2]}</a>: ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[user][1]][order[2]])}/${obrabotka.chisla(data.users[top[user][1]]["bankMax"])}${order_words[2]}\n`
+            for (let user = start_user; user < end_user; user++) msg += `#${top[user][0]}: ${kmd.createMention(top[user][1], kmd.client)}: ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[user][1]][order[2]])}/${obrabotka.chisla(data.users[top[user][1]]["bankMax"])}${order_words[2]}\n`
             msg += "__________\n"
             msg += `Вы: #${top[caller_place][0]}: ${top[caller_place][2]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[2]])}/${obrabotka.chisla(data.users[top[caller_place][1]]["bankMax"])}${order_words[2]}\n`
         
         }
         else if (mode == "bank") {
-            for (let user = start_user; user < end_user; user++) msg += `#${top[user][0]}: <a href='tg://user?id=${top[user][1]}'>${top[user][2]}</a>: ${obrabotka.chisla(data.users[top[user][1]][order[0]])}/${obrabotka.chisla(data.users[top[user][1]]["bankMax"])}${order_words[0]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}, ${data.users[top[user][1]][order[2]]}${order_words[2]}, ${data.users[top[user][1]][order[3]]}${order_words[3]}\n`
+            for (let user = start_user; user < end_user; user++) msg += `#${top[user][0]}: ${kmd.createMention(top[user][1], kmd.client)}: ${obrabotka.chisla(data.users[top[user][1]][order[0]])}/${obrabotka.chisla(data.users[top[user][1]]["bankMax"])}${order_words[0]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}, ${data.users[top[user][1]][order[2]]}${order_words[2]}, ${data.users[top[user][1]][order[3]]}${order_words[3]}\n`
             msg += "__________\n"
             msg += `Вы: #${top[caller_place][0]}: ${data.users[top[caller_place][1]][order[0]]}/${obrabotka.chisla(data.users[top[caller_place][1]]["bankMax"])}${order_words[0]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[2]])}${order_words[2]}, ${data.users[top[caller_place][1]][order[3]]}${order_words[3]}\n`
         }
         else if (mode == "registerTime") {
-            for (let user = start_user; user < end_user; user++) msg += `#${top[user][0]}: <a href='tg://user?id=${top[user][1]}'>${top[user][2]}</a>: ${obrabotka.vremeni(data.users[top[user][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}\n`
+            for (let user = start_user; user < end_user; user++) msg += `#${top[user][0]}: ${kmd.createMention(top[user][1], kmd.client)}: ${obrabotka.vremeni(data.users[top[user][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}\n`
             msg += "__________\n"
             msg += `Вы: #${top[caller_place][0]}: ${obrabotka.vremeni(data.users[top[caller_place][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[1]])}${order_words[1]}\n`
     
         }
         else {
             for (let user = start_user; user < end_user; user++) {
-                msg += `#${top[user][0]}: <a href='tg://user?id=${top[user][1]}'>${top[user][2]}</a>: ${obrabotka.chisla(data.users[top[user][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[user][1]][order[2]])}${order_words[2]}\n`
+                msg += `#${top[user][0]}: ${kmd.createMention(top[user][1], kmd.client)}: ${obrabotka.chisla(data.users[top[user][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[user][1]][order[2]])}${order_words[2]}\n`
             }
             msg += "__________\n"
             msg += `Вы: #${top[caller_place][0]}: ${obrabotka.chisla(data.users[top[caller_place][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[2]])}${order_words[2]}\n`
@@ -1470,7 +1465,7 @@ let others = {
         msg += `\nСтраница ${page} из ${Math.ceil(top.length / 10)}`
         return msg
     },
-    pay: function(from, to, client, amount, comment = undefined) {
+    pay: function(from, to, kmd, amount, comment = undefined) {
         if (amount == "#r") amount = randomInt(1, get.get(from, "balance"));
         else if (amount.slice(-1) == "%") {
             amount = obrabotka.kChisla(amount.slice(0, -1));
@@ -1496,12 +1491,12 @@ let others = {
         data.users[to].receivedKkh += amount;
         let receiver = get.get(to, "receiver");
         if (comment) {
-            CLIENTS[receiver].sendMessage({chatId: get.get(to, "clientId", receiver), text: `Получен перевод ${obrabotka.chisla(amount)} КШ от пользователя ${get.get(from, "fullName")} (${from})\nСообщение: ${comment}`});
-            return {success: true, message: `Перевод ${obrabotka.chisla(amount)} КШ пользователю ${get.get(to, "fullName")} (${to}) выполнен успешно!\nКомментарий к переводу: ${comment}`};
+            kmd.sendMessage({userId: to, client: receiver, text: `Получен перевод ${obrabotka.chisla(amount)} КШ от пользователя ${kmd.createMention(from, kmd.client)}\nСообщение: ${comment}`});
+            return {success: true, message: `Перевод ${obrabotka.chisla(amount)} КШ пользователю ${kmd.createMention(to)} выполнен успешно!\nКомментарий к переводу: ${comment}`};
         }
         else {
-            CLIENTS[receiver].sendMessage({chatId: get.get(to, "clientId", receiver), text: `Получен перевод ${obrabotka.chisla(amount)} КШ от пользователя ${get.get(from, "fullName")} (${from})`});
-            return {success: true, message: `Перевод ${obrabotka.chisla(amount)} КШ пользователю ${get.get(to, "fullName")} (${to}) выполнен успешно!`};
+            kmd.sendMessage({userId: to, client: receiver, text: `Получен перевод ${obrabotka.chisla(amount)} КШ от пользователя ${kmd.createMention(from, kmd.client)}`});
+            return {success: true, message: `Перевод ${obrabotka.chisla(amount)} КШ пользователю ${kmd.createMention(to)} выполнен успешно!`};
         }
     },
     bankTransfer: function(id, action, value = -1) {

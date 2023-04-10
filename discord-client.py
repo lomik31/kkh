@@ -96,7 +96,7 @@ async def parser(message):
     },
     "from_user": {
         "id": str(message.author.id),
-        "first_name": message.author.name
+        "nickname": message.author.name
     },
     "reply_to_message": None if (message.reference is None) else {
         "id": str(message.reference.message_id),
