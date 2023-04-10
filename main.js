@@ -809,7 +809,7 @@ class kmd {
         }
     }
     top() {
-        let top = {mode: "balance", active_top: true, caller_id: get.internalId(this.message.from_user.id), page: 1};
+        let top = {mode: "balance", active_top: true, caller_id: get.internalId(this.message.from_user.id), page: 1, kmd: this};
         if (this.message_text[0] == "всетоп") top.active_top = false;
         if (this.message_text.length >= 2) {
             if (["клик", "к", "click"].includes(this.message_text[1])) top.mode = "click";
@@ -825,7 +825,7 @@ class kmd {
         this.sendMessage({chatId: this.message.chat.id, text: others.leaderbord(top), parseMode: "HTML"});
     }
     buyBoost(boost) {
-        let id = get.internalId(this.message.from_user.id, this.click);
+        let id = get.internalId(this.message.from_user.id, this.client);
         let args = this.message_text.filter((i) => !boost.split(" ").includes(i));
         if (boost == "клик") boost = "click";
         else if (boost == "сек") boost = "sec";
@@ -1038,7 +1038,7 @@ ${(() => {
         if (!get.internalId(to, this.client)) return this.sendMessage({chatId: this.message.chat.id, text: "Id не найден"});
         let comment;
         if (this.message_text.length > 3) comment = this.message.text.split(" ").slice(3).join(" ");
-        let res = others.pay(get.internalId(from, this.client), get.internalId(to, this.client), this.client, this.message_text[1], comment);
+        let res = others.pay(get.internalId(from, this.client), get.internalId(to, this.client), this, this.message_text[1], comment);
         return this.sendMessage({chatId: this.message.chat.id, text: res.message, parseMode: "HTML"});
     }
     price() {
