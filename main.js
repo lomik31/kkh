@@ -26,13 +26,14 @@ webSocketServer.on('connection', (ws, req) => {
         if (!data.serverId) delete data.serverId;
         ws.sendData(JSON.stringify(data))
     }
-    CLIENTS[name].sendMessage = ({chatId, serverId = undefined, text, parseMode = undefined, keyboard = undefined}) => {
+    CLIENTS[name].sendMessage = ({chatId, serverId = undefined, text, parseMode = undefined, keyboard = undefined, chatType}) => {
         let message = {};
         if (serverId) message.serverId = serverId;
         message.chatId = chatId;
         message.text = text;
         if (parseMode) message.parseMode = parseMode;
         if (keyboard) message.keyboard = keyboard;
+        if (chatType) message.chat.type = chatType;
         CLIENTS[name].send({event: "sendMessage", message})
     }
     console.log(`New connection: ${name}. All connections: ${Object.keys(CLIENTS)}`);
@@ -780,6 +781,22 @@ class kmd {
         let command = message.text;
         if (customCommand) command = customCommand;
         set.lastCommand(message.from_user.id, command);
+    }
+    sendMessage({userId = undefined, chatId = undefined, client = this.client, text, chatType = this.message.chat.type, ...args}) {
+        userId = get.get(userId, "clientId", client);
+        if (!userId && !chatId) {
+            console.log("Невозможно отправить сообщение т.к. id не задан");
+            return;
+        }
+        if (userId && chatId) {
+            console.log("Не могу определиться, куда отправить сообщение. Вы задали chatId и userId");
+            return;
+        }
+        if (userId) {
+            chatType = "private";
+            chatId = userId;
+        }
+        CLIENTS[client].sendMessage({chatId, text, chatType, ...args})
     }
     top() {
         let top = {mode: "balance", active_top: true, caller_id: get.internalId(this.message.from_user.id), page: 1};
