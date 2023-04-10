@@ -807,7 +807,7 @@ class kmd {
     createMention(userId, client = this.client) {
         let externalUserId = get.get(userId, "clientId", client);
         let username = get.get(userId, "fullName");
-        if (!userId) return username;
+        if (!externalUserId) return username;
         if (client == "telegram") {
             return `<a href = "tg://openmessage?user_id=${externalUserId}">${username.replace("<", "\<").replace(">", "\>")}</a>`
         }
