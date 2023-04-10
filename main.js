@@ -655,7 +655,7 @@ let game = {
             
     //     }
     // },
-    btcBet: function (kmd, id, amount, bet) {
+    btcBet: function (kmd, id, chatId, amount, bet) {
         if (amount == "#r") amount = randomInt(1, get.get(id, "balance"));
         else if (amount == "все" || amount == "всё") amount = get.get(id, "balance");
         else {
@@ -670,7 +670,7 @@ let game = {
         if (amount > get.get(id, "balance") || amount <= 0) return {success: false, message: "Неверная ставка (меньше нуля или больше вашего баланса)"};
         if (["вверх", "вниз"].indexOf(bet) == -1) return {success: false, message: "Использование: бит <ставка/всё> <вверх/вниз>"};
         append.appendToUser(id, "balance", -amount);
-        this.send({chatId, text: `Ваша ставка ${obrabotka.chisla(amount)} КШ, ждем минуту.`})
+        kmd.sendMessage({chatId, text: `Ваша ставка ${obrabotka.chisla(amount)} КШ, ждем минуту.`})
         request1("https://blockchain.info/ticker", function (err, res, body) {
             if (err) {
                 append.appendToUser(id, "balance", amount);
@@ -1277,8 +1277,8 @@ ${(() => {
             this.message.text = "команда " + this.message.text;
             return new kmd(this.message, this.client, text).helpCommand();
         }
-        let res = game.btcBet(this.client, this.message.chat.id, get.internalId(this.message.from_user.id, this.client), this.message_text[1], this.message_text[2]);
-        if (!res.success) this.sendMessage({chatId: this.message.chat.id, text: res.message});
+        let res = game.btcBet(this, get.internalId(this.message.from_user.id, this.client), this.message.chat.id, this.message_text[1], this.message_text[2]);
+        // if (!res.success) this.sendMessage({chatId: this.message.chat.id, text: res.message});
     }
     upgrades() {
         let type = this.message.chat.type;
