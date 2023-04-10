@@ -33,7 +33,7 @@ webSocketServer.on('connection', (ws, req) => {
         message.text = text;
         if (parseMode) message.parseMode = parseMode;
         if (keyboard) message.keyboard = keyboard;
-        if (chatType) message.chat.type = chatType;
+        if (chatType) message.chatType = chatType;
         CLIENTS[name].send({event: "sendMessage", message})
     }
     console.log(`New connection: ${name}. All connections: ${Object.keys(CLIENTS)}`);
