@@ -886,7 +886,7 @@ ${(() => {
     if (rewards.length == 0) return ""
     else return `Награды: ${rewards.join(", ")};\n`
 })()}Баланс: ${obrabotka.chisla(get.get(userId, "balance"))} КШ
-В банке: ${obrabotka.chisla(get.get(userId, "bank"))}/${obrabotka.chisla(get.get(userId, "bankMax"))} КШ`,parseMode: "MARKDOWN"})
+В банке: ${obrabotka.chisla(get.get(userId, "bank"))}/${obrabotka.chisla(get.get(userId, "bankMax"))} КШ`,parseMode: "HTML"})
     }
     helpCommand() {
         if (this.message_text.length < 2) {
@@ -938,12 +938,12 @@ ${(() => {
         data.users[from].othersSpends += cost[type];
         if (type == "anonymous") {
             this.sendMessage({userId: to, client: get.get(internalTo, "receiver"), text: "Вас анонимно послали нахуй"});
-            return this.sendMessage({chatId: this.message.chat.id, text: `Вы анонимно послали нахуй игрока ${this.createMention(internalTo)}\nЗабрано ${obrabotka.chisla(cost[type])} КШ`});
+            return this.sendMessage({chatId: this.message.chat.id, text: `Вы анонимно послали нахуй игрока ${this.createMention(internalTo)}\nЗабрано ${obrabotka.chisla(cost[type])} КШ`, parseMode: "HTML"});
         }
         else if (type == "normal") {
             let receiver = get.get(internalTo, "receiver");
-            this.sendMessage({chatId: get.get(internalTo, "clientId", get.get(internalTo, "receiver")), text: `Вас послал нахуй пользователь ${this.createMention(from, receiver)}`});
-            return this.sendMessage({chatId: this.message.chat.id, text: `Вы послали нахуй игрока ${this.createMention(internalTo)}\nЗабрано ${obrabotka.chisla(cost[type])} КШ`});
+            this.sendMessage({chatId: get.get(internalTo, "clientId", get.get(internalTo, "receiver")), text: `Вас послал нахуй пользователь ${this.createMention(from, receiver)}`, parseMode: "HTML"});
+            return this.sendMessage({chatId: this.message.chat.id, text: `Вы послали нахуй игрока ${this.createMention(internalTo)}\nЗабрано ${obrabotka.chisla(cost[type])} КШ`, parseMode: "HTML"});
         }
     }
     backup() {
@@ -1023,7 +1023,7 @@ ${(() => {
         for (let i in data.users[toReset]) if (!data.doNotClear.includes(i)) data.users[toReset][i] = structuredClone(data.users.default[i]); //ВНИМАНИЕ БЛЯТЬ удаляется default при сбросе пофиксить
         if (type == 0) return this.sendMessage({chatId: this.message.chat.id, text: "Ваш прогресс сброшен!"});
         CLIENTS[get.get(toReset, "receiver")].sendMessage({chatId: etoReset, text: "Ваш прогресс сброшен администратором!"});
-        return this.sendMessage({chatId: this.message.chat.id, text: `Прогресс пользователя ${this.createMention(toReset)} успешно сброшен!`})
+        return this.sendMessage({chatId: this.message.chat.id, text: `Прогресс пользователя ${this.createMention(toReset)} успешно сброшен!`, parseMode: "HTML"})
     }
     pay() {
         if (this.message_text.length < 3) {
@@ -1039,7 +1039,7 @@ ${(() => {
         let comment;
         if (this.message_text.length > 3) comment = this.message.text.split(" ").slice(3).join(" ");
         let res = others.pay(get.internalId(from, this.client), get.internalId(to, this.client), this.client, this.message_text[1], comment);
-        return this.sendMessage({chatId: this.message.chat.id, text: res.message});
+        return this.sendMessage({chatId: this.message.chat.id, text: res.message, parseMode: "HTML"});
     }
     price() {
         if (this.message_text.length < 2) {
@@ -1098,7 +1098,7 @@ ${(() => {
         if (msg1 && msg2) {
             let receiver = get.get(to, "receiver");
             CLIENTS[receiver].sendMessage({chatId: get.get(to, "clientId", receiver), text: msg1});
-            this.sendMessage({chatId: this.message.chat.id, text: msg2});
+            this.sendMessage({chatId: this.message.chat.id, text: msg2, parseMode: "HTML"});
         }
     }
     coin() {
@@ -1269,7 +1269,7 @@ ${(() => {
         ids.forEach(i => {
             text += `${this.createMention(i)} (${i})\n`
         });
-        return this.sendMessage({chatId: this.message.chat.id, text: `Вот список всех ${ids.length} пользователей:\n${text.slice(0, -1)}`});
+        return this.sendMessage({chatId: this.message.chat.id, text: `Вот список всех ${ids.length} пользователей:\n${text.slice(0, -1)}`, parseMode: "HTML"});
     }
     btcBet() {
         if (this.message_text.length < 3) {
