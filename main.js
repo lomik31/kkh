@@ -784,19 +784,17 @@ class kmd {
         set.lastCommand(message.from_user.id, command);
     }
     sendMessage({userId = undefined, chatId = undefined, client = this.client, text, chatType = this.message.chat.type, ...args}) {
-        userId = get.get(userId, "clientId", client);
-        if (!userId && !chatId) {
+        let user_Id = get.get(userId, "clientId", client);
+        if (!user_Id && !chatId) {
             console.log("Невозможно отправить сообщение т.к. id не задан");
             return;
         }
-        if (userId && chatId) {
+        if (user_Id && chatId) {
             console.log("Не могу определиться, куда отправить сообщение. Вы задали chatId и userId");
             return;
         }
-        if (userId) {
-            chatType = "private";
-            chatId = userId;
-        }
+        if (user_Id) chatType = "private";
+        if (chatType == "private") chatId = user_Id;
         CLIENTS[client].sendMessage({chatId, text, chatType, ...args})
     }
     createMention(userId, client = this.client) {
@@ -804,7 +802,7 @@ class kmd {
         let username = get.get(userId, "nickname");
         if (!externalUserId) return username;
         if (client == "telegram") {
-            return `<a href = "tg://openmessage?user_id=${externalUserId}">${username.replace("<", "\<").replace(">", "\>")}</a>`
+            return `<a href='tg://openmessage?user_id=${externalUserId}'>${username.replace("<", "\<").replace(">", "\>")}</a>`
         }
         else if (client == "discord") {
             return `<@${externalUserId}>`
