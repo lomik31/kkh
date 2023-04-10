@@ -59,15 +59,15 @@ connection = CONNECTION()
 
 @bot.message_handler(commands=["start"])
 def start_command(message):
-    data = dict(message)
-    data["from_user"]["nickname"] = {message.from_user.first_name}
+    data = JSON.loads(JSON.dumps(message, default=lambda x: x.__dict__))
+    data["from_user"]["nickname"] = message.from_user.first_name
     if (message.from_user.last_name): data["from_user"]["nickname"] += f" {message.from_user.last_name}"
     connection.sendData({"event": "newCommand", "client": connection.CLIENT, "message": data})
 
 @bot.message_handler(content_types=["text"])
 def text(message):
-    data = dict(message)
-    data["from_user"]["nickname"] = {message.from_user.first_name}
+    data = JSON.loads(JSON.dumps(message, default=lambda x: x.__dict__))
+    data["from_user"]["nickname"] = message.from_user.first_name
     if (message.from_user.last_name): data["from_user"]["nickname"] += f" {message.from_user.last_name}"
     connection.sendData({"event": "newMessage", "client": connection.CLIENT, "message": data})
 
