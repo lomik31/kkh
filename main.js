@@ -211,8 +211,14 @@ let get = {
         else if (toGet == "rewards") return Object.keys(data.users[id].rewards);
         else if (toGet == "clientId") {
             if (client == null) throw "client is cannot be null";
-            let res = data.users[id].ids[client];
-            if (res == null) return false;
+            let res;
+            try {
+                res = data.users[id].ids[client];
+            }
+            catch {
+                res = undefined;
+            }
+            if (!res) return false;
             return res;
         }
         if (getValues.indexOf(toGet) == -1) return {success: false, message: "Данный параметр не найден"};
