@@ -783,19 +783,31 @@ class kmd {
         if (customCommand) command = customCommand;
         set.lastCommand(message.from_user.id, command);
     }
-    sendMessage({userId = undefined, chatId = undefined, client = this.client, text, chatType = this.message.chat.type, ...args}) {
-        let user_Id = get.get(userId, "clientId", client);
-        if (!user_Id && !chatId) {
-            console.log("Невозможно отправить сообщение т.к. id не задан");
-            return;
+    sendMessage({userId = undefined, chatId = undefined, client = undefined, text, chatType = this.message.chat.type, ...args}) {
+
+        // {chatId, text, parseMode?, keyboard?, chatType}
+
+        if (client) chatType = "private";
+        else client = this.client;
+
+        if (chatType) {
+            if (chatType == "private") {
+                if (userId) {
+                    chatId = get.get(userId, "clientId", client);
+                    if (!chatId) {
+                        console.log("Пользователь не найден");
+                        return;
+                    }
+                    return CLIENTS[client].sendMessage({chatId, text, chatType, ...args});
+                }
+                else chatId = this.message.from_user.id;
+                return CLIENTS[client].sendMessage({chatId, text, chatType, ...args});
+            }
+            else {
+                if (!chatId) chatId = this.message.chat.id;
+                return CLIENTS[client].sendMessage({chatId, text, chatType, ...args});
+            }
         }
-        if (user_Id && chatId) {
-            console.log("Не могу определиться, куда отправить сообщение. Вы задали chatId и userId");
-            return;
-        }
-        if (user_Id) chatType = "private";
-        if (chatType == "private") chatId = user_Id;
-        CLIENTS[client].sendMessage({chatId, text, chatType, ...args})
     }
     createMention(userId, client = this.client) {
         let externalUserId = get.get(userId, "clientId", client);
