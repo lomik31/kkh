@@ -83,7 +83,7 @@ connection = CONNECTION()
 
 @client.event
 async def on_message(message):
-    if (client.user.id == message.author.id or message.content): return
+    if (client.user.id == message.author.id or not message.content): return
     if (message.content[0] == "/" and message.content == "/start"):
         connection.send({"event": "newCommand", "client": connection.CLIENT, "message": await parser(message)}) 
     else:
