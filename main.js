@@ -798,6 +798,17 @@ class kmd {
         }
         CLIENTS[client].sendMessage({chatId, text, chatType, ...args})
     }
+    createMention(userId, client = this.client) {
+        let externalUserId = get.get(userId, "clientId", client);
+        let username = get.get(userId, "fullName");
+        if (!userId) return username;
+        if (client == "telegram") {
+            return `<a href = "tg://openmessage?user_id=${externalUserId}">${username.replace("<", "\<").replace(">", "\>")}</a>`
+        }
+        else if (client == "discord") {
+            return `<@${externalUserId}>`
+        }
+    }
     top() {
         let top = {mode: "balance", active_top: true, caller_id: get.internalId(this.message.from_user.id), page: 1};
         if (this.message_text[0] == "всетоп") top.active_top = false;
