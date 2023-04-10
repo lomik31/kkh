@@ -8,7 +8,7 @@ with open("config.json", encoding="utf-8") as config:
 
 intents = discord.Intents.default()
 intents.message_content = True
-# intents.members = True #если тебе оно нужно, конечно
+intents.members = True #если тебе оно нужно, конечно
 client = discord.Client(intents=intents)
 
 
@@ -19,11 +19,14 @@ async def kostil():
     while True:
         if (len(kostil_list)):
             try:
-                channel = client.get_channel(int(kostil_list[0]["channel"]))
-                await channel.send(kostil_list[0]["message"]) 
-            except: print("ошибка в костыле")
+                if (kostil_list[0]["chatType"] == "private"):
+                    channel = client.get_user(int(kostil_list[0]["chatId"]))
+                else:
+                    channel = client.get_channel(int(kostil_list[0]["chatId"]))
+                await channel.send(kostil_list[0]["message"])
+            except: print("ошибка в костыле", format_exc(), sep="\n")
             finally: kostil_list.pop(0)
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.7)
 
 @client.event
 async def on_ready():
@@ -35,11 +38,12 @@ class CONNECTION:
         json = JSON.loads(json)
         self.json = json
         if (json.get("event") == "sendMessage" and json.get("message")):
-            channel = int(json["message"].get("chatId"))
+            chatId = int(json["message"].get("chatId"))
             text = json["message"].get("text")
             parseMode = json["message"].get("parseMode")
             keyboard = json["message"].get("keyboard")
-            if (channel and text):
+            chatType = json["message"].get("chatType")
+            if (chatId and text):
                 # data = [chatId, text]
                 # if (parseMode): data.append(parseMode)
                 # if (keyboard):
@@ -55,7 +59,7 @@ class CONNECTION:
                 # try: channel.send(text)
                     # bot.send_message(*data)
                 # except Exception as e: print(e)
-                kostil_list.append({"message": text, "channel": channel})
+                kostil_list.append({"message": text, "chatId": chatId, "chatType": chatType})
         else: pass
     def on_close(self, ws, close_status_code, close_msg):
         print("### closed ###\ncode: {}, message: {}".format(close_status_code, close_msg))
