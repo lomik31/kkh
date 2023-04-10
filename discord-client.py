@@ -2,6 +2,7 @@ import discord, websocket, asyncio
 import json as JSON
 from threading import Thread
 from time import sleep
+from traceback import format_exc
 
 with open("config.json", encoding="utf-8") as config:
     config = JSON.load(config)
@@ -82,7 +83,7 @@ connection = CONNECTION()
 
 @client.event
 async def on_message(message):
-    if (client.user.id == message.author.id): return
+    if (client.user.id == message.author.id or message.content): return
     if (message.content[0] == "/" and message.content == "/start"):
         connection.send({"event": "newCommand", "client": connection.CLIENT, "message": await parser(message)}) 
     else:
