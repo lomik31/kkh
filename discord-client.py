@@ -42,8 +42,8 @@ class CONNECTION:
         if (json.get("event") == "sendMessage" and json.get("message")):
             chatId = int(json["message"].get("chatId"))
             text = json["message"].get("text")
-            parseMode = json["message"].get("parseMode")
-            keyboard = json["message"].get("keyboard")
+            # parseMode = json["message"].get("parseMode")
+            # keyboard = json["message"].get("keyboard")
             chatType = json["message"].get("chatType")
             if (chatId and text):
                 # data = [chatId, text]
