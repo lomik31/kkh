@@ -261,7 +261,7 @@ let check = {
     externalId: function(externalId) { // внешний id --> существует ли такой внешний id --> (true && внутренний id && client) | false
         for (let i of Object.keys(data.users)) {
             if (Object.values(data.users[i].ids).includes(externalId)) {
-                for (let j of data.users[i].ids) {
+                for (let j of Object.keys(data.users[i].ids)) {
                     if (data.users[i].ids[j] == externalId) return {success: true, id: i, client: j}
                 }
             }
