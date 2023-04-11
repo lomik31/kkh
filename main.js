@@ -1157,7 +1157,7 @@ ${(() => {
             let receiver;
             for (let i of get.ids()) {
                 receiver = get.get(i, "receiver")
-                if (get.get(i, "mails") && i != "default") this.sendMessage({userId: get.get(i, "clientId", receiver), receiver, text});
+                if (get.get(i, "mails")) this.sendMessage({userId: i, client: receiver, text, chatType: "private"});
             }
             this.sendMessage({chatId: this.message.chat.id, text: "Рассылка отправлена"});
         }
