@@ -424,7 +424,8 @@ let set = {
         return {success: true};
     },
     keyboard: {
-        passive: function (id, type, state) {
+        passive: function (id, type, state, client) {
+            if (client == "discord") return {success: true};
             if (type == "private") {
                 if (!check.internalId(id)) return {success: false, message: "Неверный пользователь"};
                 data.users[id].keyboard = state;
@@ -436,7 +437,8 @@ let set = {
                 return {success: true}
             }
         },
-        active: function (id, type, state) {
+        active: function (id, type, state, client) {
+            if (client == "discord") return {success: true};
             if (type == "private") {
                 if (!check.internalId(id)) return {success: false, message: "Неверный пользователь"};
                 data.users[id].activeKeyboard = state;
@@ -871,17 +873,17 @@ class kmd {
             cost = calc.boost(id, boost).cost;
         }
         if (i == 0) return this.sendMessage({chatId: this.message.chat.id, text: `Недостаточно средств. Для покупки ещё необходимо ${obrabotka.chisla(cost - balance)} КШ`});
-        else {
-            if (get.keyboard(this.message.chat.id, "activeKeyboard", this.client, this.message.chat.type)) return this.sendMessage({chatId: this.message.chat.id, text: `Успешно куплено Успешно куплено апгрейдов: ${i}
+        let type = this.message.chat.type;
+        let a = get.internalId((type == "private") ? this.message.from_user.id : this.message.chat.id, this.client, type);
+        if (get.keyboard(a, "activeKeyboard", this.client, type)) return this.sendMessage({chatId: this.message.chat.id, text: `Успешно куплено Успешно куплено апгрейдов: ${i}
 Апгрейды: ${get.get(id, "sec")}/сек; ${get.get(id, "click")}/клик; ${get.get(id, "sale")}% скидки
 Баланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ
-В банке: ${obrabotka.chisla(get.get(id, "bank"))}/ ${obrabotka.chisla(get.get(id, "bankMax"))} КШ`, parseMode: "HTML", keyboard: keyboard.upgrade(this.message.from_user.id)});
+В банке: ${obrabotka.chisla(get.get(id, "bank"))}/ ${obrabotka.chisla(get.get(id, "bankMax"))} КШ`, parseMode: "HTML", keyboard: keyboard.upgrade(get.internalId(this.message.from_user.id, this.client))});
 
-            return this.sendMessage({chatId: this.message.chat.id, text: `Успешно куплено Успешно куплено апгрейдов: ${i}
+        return this.sendMessage({chatId: this.message.chat.id, text: `Успешно куплено Успешно куплено апгрейдов: ${i}
 Апгрейды: ${get.get(id, "sec")}/сек; ${get.get(id, "click")}/клик; ${get.get(id, "sale")}% скидки
 Баланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ
 В банке: ${obrabotka.chisla(get.get(id, "bank"))}/ ${obrabotka.chisla(get.get(id, "bankMax"))} КШ`, parseMode: "HTML"});
-        }
     }
     click() {
         let userId = get.internalId(this.message.from_user.id, this.client);
@@ -1237,10 +1239,11 @@ ${(() => {
         if (this.message_text[1] == "да") state = true;
         else if (this.message_text[1] == "нет") state = false;
         let type = this.message.chat.type;
-        let res = set.keyboard.passive(get.internalId(this.message.chat.id, this.client), type, state);
+        let id = get.internalId((type == "private") ? this.message.from_user.id : this.message.chat.id, this.client, type);
+        let res = set.keyboard.passive(id, type, state, this.client);
         if (!res) return this.sendMessage({chatId: this.message.chat.id, text: res.message});
         if (state) return this.sendMessage({chatId: this.message.chat.id, text: "Клавиатура включена", keyboard: keyboard.mainMenu});
-        set.keyboard.active(get.internalId(this.message.chat.id, this.client), type, false);
+        set.keyboard.active(id, type, false, this.client);
         this.sendMessage({chatId: this.message.chat.id, text: "Клавиатура отключена", keyboard: -1});
     }
     getUserInfo() {
@@ -1301,15 +1304,17 @@ ${(() => {
     }
     upgrades() {
         let type = this.message.chat.type;
-        let keyboardState = get.keyboard(this.message.chat.id, "keyboard", this.client, type);
+        let id = get.internalId((type == "private") ? this.message.from_user.id : this.message.chat.id, this.client, this.message.chat.type);
+        let keyboardState = get.keyboard(id, "keyboard", this.client, type);
         if (!keyboardState) return this.sendMessage({chatId: this.message.chat.id, text: "Открыто меню апгрейдов"});
-        set.keyboard.active(this.message.chat.id, type, true);
-        this.sendMessage({chatId: this.message.chat.id, text: "Открыто меню апгрейдов", keyboard: keyboard.upgrade(this.message.from_user.id)});
+        set.keyboard.active(id, type, true, this.client);
+        this.sendMessage({chatId: this.message.chat.id, text: "Открыто меню апгрейдов", keyboard: keyboard.upgrade(get.internalId(this.message.from_user.id, this.client))});
     }
     backKeyboardMenu() {
         let type = this.message.chat.type;
-        if (get.keyboard(this.message.chat.id, "activeKeyboard", this.client, type)) {
-            set.keyboard.active(this.message.chat.id, type, false);
+        let id = get.internalId((type == "private") ? this.message.from_user.id : this.message.chat.id, this.client, this.message.chat.type);
+        if (get.keyboard(id, "activeKeyboard", this.client, type)) {
+            set.keyboard.active(id, type, false, this.client);
             this.sendMessage({chatId: this.message.chat.id, text: "Вы вышли из меню", keyboard: keyboard.mainMenu});
         }
         else this.sendMessage({chatId: this.message.chat.id, text: "Вы вышли из меню"});
