@@ -788,6 +788,7 @@ class kmd {
         this.message_text = message.text.toLowerCase().split(" ");
         this.client = client;
         let command = message.text;
+        this.userInternalId = get.internalId(this.message.from_user.id, this.client);
         if (customCommand) command = customCommand;
         set.lastCommand(message.from_user.id, command);
     }
