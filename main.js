@@ -790,7 +790,7 @@ class kmd {
         let command = message.text;
         this.userInternalId = get.internalId(this.message.from_user.id, this.client);
         if (customCommand) command = customCommand;
-        set.lastCommand(message.from_user.id, command);
+        set.lastCommand(this.userInternalId, command);
     }
     sendMessage({userId = undefined, chatId = undefined, client = undefined, text, chatType = this.message.chat.type, ...args}) {
 
