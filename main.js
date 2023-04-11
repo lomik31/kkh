@@ -929,7 +929,7 @@ ${(() => {
     sendUser() {
         if (this.message_text.length < 2) {
             this.message.text = "команда " + this.message.text;
-            new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client).helpCommand();
         }
         let from = this.userInternalId;
         let to;
@@ -949,12 +949,12 @@ ${(() => {
         append.appendToUser(from, "balance", -cost[type]);
         data.users[from].othersSpends += cost[type];
         if (type == "anonymous") {
-            this.sendMessage({userId: to, client: get.get(internalTo, "receiver"), text: "Вас анонимно послали нахуй"});
+            this.sendMessage({userId: internalTo, client: get.get(internalTo, "receiver"), text: "Вас анонимно послали нахуй"});
             return this.sendMessage({chatId: this.message.chat.id, text: `Вы анонимно послали нахуй игрока ${this.createMention(internalTo)}\nЗабрано ${obrabotka.chisla(cost[type])} КШ`, parseMode: "HTML"});
         }
         else if (type == "normal") {
             let receiver = get.get(internalTo, "receiver");
-            this.sendMessage({chatId: get.get(internalTo, "clientId", get.get(internalTo, "receiver")), text: `Вас послал нахуй пользователь ${this.createMention(from, receiver)}`, parseMode: "HTML"});
+            this.sendMessage({userId: internalTo, client: receiver, text: `Вас послал нахуй пользователь ${this.createMention(from, receiver)}`, parseMode: "HTML"});
             return this.sendMessage({chatId: this.message.chat.id, text: `Вы послали нахуй игрока ${this.createMention(internalTo)}\nЗабрано ${obrabotka.chisla(cost[type])} КШ`, parseMode: "HTML"});
         }
     }
@@ -1108,7 +1108,7 @@ ${(() => {
         }
         if (msg1 && msg2) {
             let receiver = get.get(to, "receiver");
-            this.sendMessage({chatId: get.get(to, "clientId", receiver), receiver, text: msg1, parseMode: "HTML"});
+            this.sendMessage({userId: to, client: receiver, text: msg1, parseMode: "HTML"});
             this.sendMessage({chatId: this.message.chat.id, text: msg2, parseMode: "HTML"});
         }
     }
