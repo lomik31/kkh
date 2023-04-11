@@ -171,7 +171,8 @@ let append = {
     appendId: function (appendType, appendId, client, nickname) {
         if (appendType === "private") {
             if (check.internalId(get.internalId(appendId, client))) return {success: false, message: `Пользователь ${appendId} уже существует`}
-            let userId = data.lastUser + 1;
+            data.lastUser++;
+            let userId = data.lastUser;
             data.users[userId] = structuredClone(data.users[0]);
             data.users[userId].nickname = nickname;
             data.users[userId].registerTime = get.time();
