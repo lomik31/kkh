@@ -27,7 +27,8 @@ async def kostil():
                 await channel.send(kostil_list[0]["message"])
             except: print("ошибка в костыле", format_exc(), sep="\n")
             finally: kostil_list.pop(0)
-        await asyncio.sleep(0.7)
+        if (len(kostil_list)): await asyncio.sleep(0.3)
+        else: await asyncio.sleep(0.7)
 
 @client.event
 async def on_ready():
