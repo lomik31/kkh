@@ -259,7 +259,7 @@ exports.COMMANDS = {
         permissions: "admin"
     },
     "древард": {
-        description: "Удалить существующую награду\n(удаляет также эту награду у всех пользователей)",
+        description: "Удалить существующую наград (удаляет также эту награду у всех пользователей)",
         action: "new kmd(message, client).rewardRemove()",
         usage: "древард <смайлик награды>",
         permissions: "admin"
