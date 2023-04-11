@@ -225,6 +225,7 @@ let get = {
         return ids;
     },
     internalId: function (externalId, client, type = "private") { // (внешний id && client) --> получить внутренний id по внешнему id --> внутренний id | false
+        if (check.internalId(externalId)) return externalId;
         if (type != "private") {
             if (check.internalId(externalId, type)) return externalId;
             return false;
