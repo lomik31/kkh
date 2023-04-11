@@ -229,8 +229,7 @@ let get = {
         
     },
     ids: function () {
-        let ids = Object.keys(data.users);
-        ids.splice(ids.indexOf('default'), 1);
+        let ids = Object.keys(data.users).filter(i => i != "0");
         return ids;
     },
     internalId: function (externalId, client, type = "private") { // (внешний id && client) --> получить внутренний id по внешнему id --> внутренний id | false
