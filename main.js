@@ -67,8 +67,6 @@ function commandReceiver(message, client) {
     }
 }
 function textReceiver(message, client) {
-    if (!get.internalId(message.from_user.id, client)) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Для взаимодействия с ботом вам необходимо сначала активировать его. Напишите боту *в ЛС* команду /start!", parseMode: "MARKDOWN", chatType: message.chat.type})
-    let internalUserId = get.internalId(message.from_user.id, client);
     let message_text = message.text.toLowerCase().split(" ");
     if (!(["кмд", "_"].includes(message_text[0]) || (message_text[0][0] == "+"))) {
         let i = 0;
@@ -77,6 +75,8 @@ function textReceiver(message, client) {
             if (i > 3) return;
             if (Object.keys(COMMANDS).includes(checkCommand)) {
                 if (Object.keys(COMMANDS[checkCommand]).includes("link")) checkCommand = COMMANDS[checkCommand].link;
+                let internalUserId = get.internalId(message.from_user.id, client);
+                if (!internalUserId) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Для взаимодействия с ботом вам необходимо сначала активировать его. Напишите боту *в ЛС* команду /start!", parseMode: "MARKDOWN", chatType: message.chat.type});
                 if (COMMANDS[checkCommand].permissions == "admin" && !get.get(internalUserId, "isAdmin")) return;
                 if (COMMANDS[checkCommand].permissions == "owner" && internalUserId != 1) return; //ВНИМАНИЕ БЛЯТЬ
                 //лог
@@ -89,6 +89,8 @@ function textReceiver(message, client) {
         }
     }
     else if (message_text[0] == "кмд") {
+        let internalUserId = get.internalId(message.from_user.id, client);
+        if (!internalUserId) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Для взаимодействия с ботом вам необходимо сначала активировать его. Напишите боту *в ЛС* команду /start!", parseMode: "MARKDOWN", chatType: message.chat.type});
         if (!get.get(internalUserId, "isAdmin")) return;
         if (message_text.length < 3) {
             message.text = "команда кмд";
@@ -114,12 +116,16 @@ function textReceiver(message, client) {
         textReceiver(message, client);
     }
     else if (message_text[0] == "_") {
-        let command = get.get(get.internalId(message.from_user.id, client), "lastCommand");
+        let internalUserId = get.internalId(message.from_user.id, client);
+        if (!internalUserId) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Для взаимодействия с ботом вам необходимо сначала активировать его. Напишите боту *в ЛС* команду /start!", parseMode: "MARKDOWN", chatType: message.chat.type});
+        let command = get.get(internalUserId, "lastCommand");
         if (command == "") return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Последняя команда не обнаружена"});
         message.text = command;
         textReceiver(message, client);
     }
     else if (message_text[0][0] == "+") {
+        let internalUserId = get.internalId(message.from_user.id, client);
+        if (!internalUserId) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Для взаимодействия с ботом вам необходимо сначала активировать его. Напишите боту *в ЛС* команду /start!", parseMode: "MARKDOWN", chatType: message.chat.type});
         let loxtext = message.text;
         let r = new RegExp(/ \(\d+[\.\d]* КШ\)/);
         if (r.test(message.text)) message.text = message.text.replace(r, "");
