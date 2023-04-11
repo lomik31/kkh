@@ -12,27 +12,10 @@ intents.message_content = True
 intents.members = True #если тебе оно нужно, конечно
 client = discord.Client(intents=intents)
 
-
-kostil_list = []
-
-async def kostil():
-    global kostil_list
-    while True:
-        if (len(kostil_list)):
-            try:
-                if (kostil_list[0]["chatType"] == "private"):
-                    channel = client.get_user(int(kostil_list[0]["chatId"]))
-                else:
-                    channel = client.get_channel(int(kostil_list[0]["chatId"]))
-                await channel.send(kostil_list[0]["message"])
-            except: print("ошибка в костыле", format_exc(), sep="\n")
-            finally: kostil_list.pop(0)
-        if (len(kostil_list)): await asyncio.sleep(0.3)
-        else: await asyncio.sleep(0.7)
-
-@client.event
-async def on_ready():
-    await kostil()
+async def kostil(message):
+    if (message["chatType"] == "private"): channel = client.get_user(int(message["chatId"]))
+    else: channel = client.get_channel(int(message["chatId"]))
+    await channel.send(message["text"])
 
 class CONNECTION:
     CLIENT = "discord"
@@ -45,7 +28,7 @@ class CONNECTION:
             # parseMode = json["message"].get("parseMode")
             # keyboard = json["message"].get("keyboard")
             chatType = json["message"].get("chatType")
-            if (chatId and text):
+            if (chatId and text and chatType):
                 # data = [chatId, text]
                 # if (parseMode): data.append(parseMode)
                 # if (keyboard):
@@ -61,7 +44,9 @@ class CONNECTION:
                 # try: channel.send(text)
                     # bot.send_message(*data)
                 # except Exception as e: print(e)
-                kostil_list.append({"message": text, "chatId": chatId, "chatType": chatType})
+                try:
+                    asyncio.run_coroutine_threadsafe(kostil(json["message"]), client.loop).result()
+                except: print(format_exc())
         else: pass
     def on_close(self, ws, close_status_code, close_msg):
         print("### closed ###\ncode: {}, message: {}".format(close_status_code, close_msg))
@@ -71,7 +56,6 @@ class CONNECTION:
     def on_open(self, ws):
         print("Opened connection")
     def send(self, data):
-        print(JSON.dumps(data))
         ws.send(JSON.dumps(data))
     def reconnect():
         while True:
