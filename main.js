@@ -1013,7 +1013,7 @@ ${(() => {
     }
     resetId() {
         if (this.message_text.length == 1 || (this.message_text.length > 1 && this.message_text[1] == "справка")) return this.sendMessage({chatId: this.message.chat.id, text: "Обнуляет прогресс и вы начинаете игру заново.\nЧтобы сбросить прогресс, введите `сброс подтвердить`"});
-        let toReset, etoReset;
+        let toReset;
         let type = 0;
         if (this.message_text[1] == "подтвердить") {
             toReset = this.userInternalId;
@@ -1024,16 +1024,15 @@ ${(() => {
                 this.message.text = "команда " + this.message.text;
                 return new kmd(this.message, this.client).helpCommand();
             }
-            etoReset = this.message_text[1];
-            if (!check.internalId(etoReset)) toReset = get.internalId(toReset, this.client);
             if (this.message_text[1] == "_" && this.message.reply_to_message) toReset = get.internalId(this.message.reply_to_message.from_user.id, this.client);
+            else if (check.externalId(this.message_text[1])) toReset = get.internalId(this.message_text[1], this.client);
             if (!check.internalId(toReset)) return this.sendMessage({chatId: this.message.chat.id, text: `Пользователя ${etoReset} не существует`});
             if (get.get(toReset, "isAdmin") && this.userInternalId != 1) return this.sendMessage({chatId: this.message.chat.id, text: "Невозможно сбросить прогресс этого пользователя"});
             type = 1;
         }
-        for (let i in data.users[toReset]) if (!data.doNotClear.includes(i)) data.users[toReset][i] = structuredClone(data.users.default[i]); //ВНИМАНИЕ БЛЯТЬ удаляется default при сбросе пофиксить
+        for (let i in data.users[toReset]) if (!data.doNotClear.includes(i)) data.users[toReset][i] = structuredClone(data.users["0"][i]); //ВНИМАНИЕ БЛЯТЬ удаляется default при сбросе пофиксить
         if (type == 0) return this.sendMessage({chatId: this.message.chat.id, text: "Ваш прогресс сброшен!"});
-        this.sendMessage({chatId: etoReset, client: get.get(toReset, "receiver"), text: "Ваш прогресс сброшен администратором!"});
+        this.sendMessage({userId: toReset, client: get.get(toReset, "receiver"), text: "Ваш прогресс сброшен администратором!"});
         return this.sendMessage({chatId: this.message.chat.id, text: `Прогресс пользователя ${this.createMention(toReset)} успешно сброшен!`, parseMode: "HTML"})
     }
     pay() {
