@@ -57,13 +57,13 @@ function commandReceiver(message, client) {
     if (message.text == "/start") {
         let id = message.from_user.id;
         if (get.internalId(id, client)) {
-            if (message.chat.type == "private") CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Привет. Это бот-кликер.\nСделали: [@lomik31](tg://user?id=357694314), [@Discord Nitra MV](tg://user?id=1160222752).\nЕсли ты Игорькартошка или Денисизюм, то тебе [сюда](https://docs.google.com/document/d/15a6S5F26kxRn103Yboknpogu-tJtIoxin2G9tBjY65A).\nПо вопросам обращаться к ним.\n[Планы на будущее и то, что в разработке](https://trello.com/b/kfVkY65h/%D0%BA%D0%BA%D1%88)\nНаш канал с новостями: [@kkh_news] (t.me/kkh_news)\nДля списка всех команд введите `команды`.\nЕсли у вас есть промо-код, можете ввести его при помощи `промо <код>`\nНаша беседа: [тык](t.me/+_VgA7r0PfWZiMGFi)\n\n*По вопросам пишите* [@lomik31](tg://user?id=357694314)", parseMode: "MARKDOWN"});
-            else CLIENTS[client].sendMessage({chatId: message.chat.id, text:  "Эту команду можно использовать только в личных сообщениях с ботом!"});
+            if (message.chat.type == "private") CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Привет. Это бот-кликер.\nСделали: [@lomik31](tg://user?id=357694314), [@Discord Nitra MV](tg://user?id=1160222752).\nЕсли ты Игорькартошка или Денисизюм, то тебе [сюда](https://docs.google.com/document/d/15a6S5F26kxRn103Yboknpogu-tJtIoxin2G9tBjY65A).\nПо вопросам обращаться к ним.\n[Планы на будущее и то, что в разработке](https://trello.com/b/kfVkY65h/%D0%BA%D0%BA%D1%88)\nНаш канал с новостями: [@kkh_news] (t.me/kkh_news)\nДля списка всех команд введите `команды`.\nЕсли у вас есть промо-код, можете ввести его при помощи `промо <код>`\nНаша беседа: [тык](t.me/+_VgA7r0PfWZiMGFi)\n\n*По вопросам пишите* [@lomik31](tg://user?id=357694314)", parseMode: "MARKDOWN", chatType: message.chat.type});
+            else CLIENTS[client].sendMessage({chatId: message.chat.id, text:  "Эту команду можно использовать только в личных сообщениях с ботом!", chatType: message.chat.type});
             return;
         }
         if (message.chat.type == "private") append.appendId(message.chat.type, id, client, message.nickname);
         else append.appendId(message.chat.type, id, client);
-        CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Привет. Это бот-кликер.\nСделали: [@lomik31](tg://user?id=357694314), [@Discord Nitra MV](tg://user?id=1160222752).\nЕсли ты Игорькартошка или Денисизюм, то тебе [сюда](https://docs.google.com/document/d/15a6S5F26kxRn103Yboknpogu-tJtIoxin2G9tBjY65A).\nПо вопросам обращаться к ним.\n[Планы на будущее и то, что в разработке](https://trello.com/b/kfVkY65h/%D0%BA%D0%BA%D1%88)\nНаш канал с новостями: [@kkh_news] (t.me/kkh_news)\nДля списка всех команд введите `команды`.\nЕсли у вас есть промо-код, можете ввести его при помощи `промо <код>`\nНаша беседа: [тык](t.me/+_VgA7r0PfWZiMGFi)\n\n*По вопросам пишите* [@lomik31](tg://user?id=357694314)", parseMode: "MARKDOWN"});
+        CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Привет. Это бот-кликер.\nСделали: [@lomik31](tg://user?id=357694314), [@Discord Nitra MV](tg://user?id=1160222752).\nЕсли ты Игорькартошка или Денисизюм, то тебе [сюда](https://docs.google.com/document/d/15a6S5F26kxRn103Yboknpogu-tJtIoxin2G9tBjY65A).\nПо вопросам обращаться к ним.\n[Планы на будущее и то, что в разработке](https://trello.com/b/kfVkY65h/%D0%BA%D0%BA%D1%88)\nНаш канал с новостями: [@kkh_news] (t.me/kkh_news)\nДля списка всех команд введите `команды`.\nЕсли у вас есть промо-код, можете ввести его при помощи `промо <код>`\nНаша беседа: [тык](t.me/+_VgA7r0PfWZiMGFi)\n\n*По вопросам пишите* [@lomik31](tg://user?id=357694314)", parseMode: "MARKDOWN", chatType: message.chat.type});
     }
 }
 function textReceiver(message, client) {
@@ -99,9 +99,9 @@ function textReceiver(message, client) {
         if (message_text[1] == "_" && message.reply_to_message) userId = message.reply_to_message.from_user.id;
         else userId = message_text[1];
         let internalUserReplyId = get.internalId(userId, client);
-        if (!internalUserReplyId) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Id не найден"});
-        if (message_text[2] == "кмд") return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "э, так нельзя, бан"});
-        if (get.get(internalUserReplyId, "isAdmin") && internalUserId != 1) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Невозможно выполнить кмд для этого юзера!"});
+        if (!internalUserReplyId) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Id не найден", chatType: message.chat.type});
+        if (message_text[2] == "кмд") return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "э, так нельзя, бан", chatType: message.chat.type});
+        if (get.get(internalUserReplyId, "isAdmin") && internalUserId != 1) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Невозможно выполнить кмд для этого юзера!", chatType: message.chat.type});
         new kmd(message, message_text);
         message.from_user.id = userId;
         let a = message.text.split(" ").slice(2);
@@ -119,7 +119,7 @@ function textReceiver(message, client) {
         let internalUserId = get.internalId(message.from_user.id, client);
         if (!internalUserId) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Для взаимодействия с ботом вам необходимо сначала активировать его. Напишите боту *в ЛС* команду /start!", parseMode: "MARKDOWN", chatType: message.chat.type});
         let command = get.get(internalUserId, "lastCommand");
-        if (command == "") return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Последняя команда не обнаружена"});
+        if (command == "") return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Последняя команда не обнаружена", chatType: message.chat.type});
         message.text = command;
         textReceiver(message, client);
     }
@@ -138,7 +138,7 @@ function textReceiver(message, client) {
             t = a.join(" ");
             if (["сек", "клик", "скидка", "1% скидки", "банк"].includes(t)) return new kmd(message, client, loxtext).buyBoost(t);
         }
-        return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Неверный тип апгрейда"});
+        return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Неверный тип апгрейда", chatType: message.chat.type});
     }
 }
 function choose(choices) {
