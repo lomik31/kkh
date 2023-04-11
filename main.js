@@ -102,17 +102,9 @@ function textReceiver(message, client) {
         if (!internalUserReplyId) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Id не найден", chatType: message.chat.type});
         if (message_text[2] == "кмд") return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "э, так нельзя, бан", chatType: message.chat.type});
         if (get.get(internalUserReplyId, "isAdmin") && internalUserId != 1) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Невозможно выполнить кмд для этого юзера!", chatType: message.chat.type});
-        new kmd(message, message_text);
+        new kmd(message, client);
         message.from_user.id = userId;
-        let a = message.text.split(" ").slice(2);
-        message.text = "";
-        let b = 0;
-        for (i of a) {
-            b = a.length - 1;
-            if (b == 0) message.text += i;
-            else message.text += `${i} `;
-        }
-        message.text = message.text.slice(0, -1);
+        message.text = message.text.split(" ").slice(2).join(" ");
         textReceiver(message, client);
     }
     else if (message_text[0] == "_") {
