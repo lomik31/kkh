@@ -59,17 +59,11 @@ connection = CONNECTION()
 
 @bot.message_handler(commands=["start"])
 def start_command(message):
-    data = JSON.loads(JSON.dumps(message, default=lambda x: x.__dict__))
-    data["from_user"]["nickname"] = message.from_user.first_name
-    if (message.from_user.last_name): data["from_user"]["nickname"] += f" {message.from_user.last_name}"
-    connection.sendData({"event": "newCommand", "client": connection.CLIENT, "message": data})
+    connection.sendData({"event": "newCommand", "client": connection.CLIENT, "message": message})
 
 @bot.message_handler(content_types=["text"])
 def text(message):
-    data = JSON.loads(JSON.dumps(message, default=lambda x: x.__dict__))
-    data["from_user"]["nickname"] = message.from_user.first_name
-    if (message.from_user.last_name): data["from_user"]["nickname"] += f" {message.from_user.last_name}"
-    connection.sendData({"event": "newMessage", "client": connection.CLIENT, "message": data})
+    connection.sendData({"event": "newMessage", "client": connection.CLIENT, "message": message})
 
 if __name__ == "__main__":
     ws = websocket.WebSocketApp("ws://127.0.0.1:3200/?client={}".format(connection.CLIENT),

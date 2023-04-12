@@ -172,7 +172,6 @@ let append = {
             data.lastUser++;
             let userId = data.lastUser;
             data.users[userId] = structuredClone(data.users[0]);
-            data.users[userId].nickname = nickname;
             data.users[userId].registerTime = get.time();
             data.users[userId].receiver = client;
             data.users[userId].ids[client] = appendId;

@@ -85,8 +85,7 @@ async def parser(message):
         "type": "private" if (message.guild is None) else "server"
     },
     "from_user": {
-        "id": str(message.author.id),
-        "nickname": message.author.name
+        "id": str(message.author.id)
     },
     "reply_to_message": None if (message.reference is None) else {
         "id": str(message.reference.message_id),
