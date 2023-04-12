@@ -171,18 +171,11 @@ exports.COMMANDS = {
         usage: "бит <ставка> <вверх/вниз>",
         permissions: "user"
     },
-    "банк": {
-        description: "Перевод КШ в банк/из банка",
-        action: "new kmd(message, client).bankTransfer()",
-        usage: "+банк [сумма] / -банк [сумма]",
-        permissions: "user",
-        links: ["+банк", "-банк"]
-    },
-    "+банк": {
-        link: "банк"
-    },
     "-банк": {
-        link: "банк"
+        description: "Перевод КШ из банка",
+        action: "new kmd(message, client).bankTransfer()",
+        usage: "-банк [сумма]",
+        permissions: "user"
     },
     "назад": {
         description: "Выйти из меню",
@@ -275,5 +268,25 @@ exports.COMMANDS = {
         action: "new kmd(message, client).rewardsAllList()",
         usage: "лревардс",
         permissions: "admin"
+    },
+    "+сек": {
+        description: "Улучшить /сек",
+        action: "",
+        usage: "+сек [количество/все]"
+    },
+    "+клик": {
+        description: "Улучшить /клик",
+        action: "",
+        usage: "+сек [количество/все]"
+    },
+    "+скидка": {
+        description: "Улучшить скидку",
+        action: "",
+        usage: "+скидка [количество/все]"
+    },
+    "+банк": {
+        description: "Улучшить вместимость банка",
+        action: "",
+        usage: "+банк [количество/все]"
     }
 }
