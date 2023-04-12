@@ -97,7 +97,7 @@ async def parser(message):
     return res
     
 if __name__ == "__main__":
-    ws = websocket.WebSocketApp("ws://127.0.0.1:3200/?client={}".format(connection.CLIENT),
+    ws = websocket.WebSocketApp(f"ws://{config['websocketIp']}/?client={connection.CLIENT}",
                 on_open=connection.on_open,
                 on_message=connection.receiver,
                 on_error=connection.on_error,
