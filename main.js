@@ -1353,7 +1353,7 @@ ${(() => {
         if (!user) return this.sendMessage({chatId: this.message.chat.id, text: `Пользователь ${user} не найден`});
         let rewardsList = reward.infoList(get.get(user, "rewards"), true, false);
         if (rewardsList == "") return this.sendMessage({chatId: this.message.chat.id, text: "У пользователя нет наград"});
-        this.sendMessage({chatId: this.message.chat.id, text: `Ваши награды:\n${rewardsList}`});
+        this.sendMessage({chatId: this.message.chat.id, text: `Награды ${this.createMention(user)}:\n${rewardsList}`});
     }
     rewardsAllList() {
         this.sendMessage({chatId: this.message.chat.id, text: `Список всех наград:\n${reward.infoList(reward.list(), true, true)}`});
