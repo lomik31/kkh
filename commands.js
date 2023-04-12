@@ -288,5 +288,10 @@ exports.COMMANDS = {
         description: "Улучшить вместимость банка",
         action: "",
         usage: "+банк [количество/все]"
+    },
+    "ресивер": {
+        description: "Установить ресивер, куда будут приходить сообщения",
+        action: "new kmd(message, client).setReceiver()",
+        usage: "ресивер <телеграм/дискорд>"
     }
 }

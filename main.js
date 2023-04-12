@@ -407,10 +407,15 @@ let set = {
         return {success: true};
     },
     set: function (id, toSet, value) {
-        let setValues = ["isAdmin", "multiplier", "mails", "balance", "click", "sec", "sale", "bankMax", "bank", "timeLastBonus", "keyboard", "activeKeyboard"];
+        let setValues = ["isAdmin", "multiplier", "mails", "balance", "click", "sec", "sale",
+        "bankMax", "bank", "timeLastBonus", "keyboard", "activeKeyboard", "receiver"];
+        let strings = ["receiver"] // не подлежат obrabotka.kChisla
         if (setValues.indexOf(toSet) == -1) return {success: false, message: `Невозможно изменить значение ${toSet}`};
-        if (["string", "number"].indexOf(typeof value) != -1) value = obrabotka.kChisla(value)
-        if (typeof data.users[id][toSet] != typeof value || isNaN(value)) return {success: false, message: "Ошибка типа"};
+        if (["string", "number"].includes(typeof value) && !strings.includes(toSet)) {
+            value = obrabotka.kChisla(value);
+            if (isNaN(value)) return {success: false, message: "Ошибка типа"};
+        }
+        if (typeof data.users[id][toSet] != typeof value) return {success: false, message: "Ошибка типа"};
         data.users[id][toSet] = value;
         return {success: true};
     },
@@ -1357,6 +1362,26 @@ ${(() => {
     }
     rewardsAllList() {
         this.sendMessage({chatId: this.message.chat.id, text: `Список всех наград:\n${reward.infoList(reward.list(), true, true)}`});
+    }
+    setReceiver() {
+        if (this.message_text.length < 2 ) {
+            let text = this.message.text;
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client, text).helpCommand();
+        }
+        let receiver;
+        if (this.message_text[1] == "телеграм") receiver = "telegram";
+        else if (this.message_text[1] == "дискорд") receiver = "discord";
+        else receiver = this.message_text[1];
+        if (!["telegram", "discord"].includes(receiver)) {
+            let text = this.message.text;
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client, text).helpCommand();
+        }
+        if (!get.get(this.userInternalId, "clientId", receiver)) return this.sendMessage({chatId: this.message.chat.id, text: `Ваш профиль не привязян к ${receiver}\nДля привязки используйте команду \`привязать\``, parseMode: "MARKDOWN"});
+        let res = set.set(this.userInternalId, "receiver", receiver);
+        if (!res.success) return this.sendMessage({chatId: this.message.chat.id, text: res.message});
+        this.sendMessage({chatId: this.message.chat.id, text: `Ресивер установлен на ${receiver}`});
     }
 }
 let others = {
