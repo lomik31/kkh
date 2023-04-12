@@ -232,6 +232,14 @@ let get = {
         for (let i of Object.keys(data.users)) {
             if (data.users[i].ids[client] == externalId) return i;
         }
+        let res = this.internalIdByNickname(externalId);
+        if (res) return res;
+        return false;
+    },
+    internalIdByNickname: function(nickname) {
+        for (let i of Object.keys(data.users)) {
+            if (data.users[i].nickname == nickname) return i;
+        }
         return false;
     },
     time: function () {
@@ -408,8 +416,8 @@ let set = {
     },
     set: function (id, toSet, value) {
         let setValues = ["isAdmin", "multiplier", "mails", "balance", "click", "sec", "sale",
-        "bankMax", "bank", "timeLastBonus", "keyboard", "activeKeyboard", "receiver"];
-        let strings = ["receiver"] // не подлежат obrabotka.kChisla
+        "bankMax", "bank", "timeLastBonus", "keyboard", "activeKeyboard", "receiver", "nickname"];
+        let strings = ["receiver", "nickname"] // не подлежат obrabotka.kChisla
         if (setValues.indexOf(toSet) == -1) return {success: false, message: `Невозможно изменить значение ${toSet}`};
         if (["string", "number"].includes(typeof value) && !strings.includes(toSet)) {
             value = obrabotka.kChisla(value);
@@ -1382,6 +1390,20 @@ ${(() => {
         let res = set.set(this.userInternalId, "receiver", receiver);
         if (!res.success) return this.sendMessage({chatId: this.message.chat.id, text: res.message});
         this.sendMessage({chatId: this.message.chat.id, text: `Ресивер установлен на ${receiver}`});
+    }
+    setNickname() {
+        if (this.message_text.length < 2) {
+            let text = this.message.text;
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client, text).helpCommand();
+        }
+        if (this.message_text.length > 2) return this.sendMessage({chatId: this.message.chat.id, text: "Невозможно установить ник с пробелами"});
+        let nickname = this.message_text[1];
+        if (nickname.length > 10) return this.sendMessage({chatId: this.message.chat.id, text: "Длина ника не должна превышать 10 символов"});
+        if (get.internalIdByNickname(nickname)) return this.sendMessage({chatId: this.message.chat.id, text: "Пользователь с таким ником уже существует"});
+        let res = set.set(this.userInternalId, "nickname", nickname);
+        if (!res.success) return this.sendMessage({chatId: this.message.chat.id, text: res.message});
+        this.sendMessage({chatId: this.message.chat.id, text: `Установлен ник ${nickname}`})
     }
 }
 let others = {

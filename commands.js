@@ -293,5 +293,10 @@ exports.COMMANDS = {
         description: "Установить ресивер, куда будут приходить сообщения",
         action: "new kmd(message, client).setReceiver()",
         usage: "ресивер <телеграм/дискорд>"
+    },
+    "ник": {
+        description: "Установить ник",
+        action: "new kmd(message, client).setNickname()",
+        usage: "ник <ник>"
     }
 }
