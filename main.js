@@ -110,9 +110,11 @@ function textReceiver(message, client) {
     else if (message_text[0] == "_") {
         let internalUserId = get.internalId(message.from_user.id, client);
         if (!internalUserId) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Для взаимодействия с ботом вам необходимо сначала активировать его. Напишите боту *в ЛС* команду /start!", parseMode: "MARKDOWN", chatType: message.chat.type});
-        let command = get.get(internalUserId, "lastCommand");
-        if (command == "") return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Последняя команда не обнаружена", chatType: message.chat.type});
-        message.text = command;
+        let res = get.lastCommand(internalUserId);
+        if (!res) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Последняя команда не обнаружена", chatType: message.chat.type});
+        message.text = res.command;
+        if (res.reply_to) message.reply_to_message = {from_user: {id: res.reply_to}}
+        else message.reply_to_message = undefined;
         textReceiver(message, client);
     }
     else if (message_text[0][0] == "+") {
@@ -182,14 +184,15 @@ let append = {
         data.groups[appendId] = structuredClone(data.groups.default);
         return {success: true}
     },
-    appendToUser: function (userId, toAppend, appendAmount) {
+    appendToUser: function (userId, toAppend, appendAmount, reply_to) {
         let appendVariables = ["balance", "click", "sec", "sale", "bankMax", "lastCommand", "bank"];
         if (appendVariables.indexOf(toAppend) === -1) return {success: false, message: `Параметр ${toAppend} не найден`};
         appendAmount = obrabotka.kChisla(appendAmount);
         if (typeof data.users[userId][toAppend] != typeof appendAmount || isNaN(appendAmount)) return {success: false, message: "Ошибка типа"};
         if (toAppend === "lastCommand") {
-            data.users[userId][toAppend] = appendAmount;
-            data.users[userId]["timeLastCommand"] = get.time();
+            data.users[userId].lastCommand.command = appendAmount;
+            data.users[userId].lastCommand.time = get.time();
+            data.users[userId].lastCommand.reply_to = reply_to;
         }
         else data.users[userId][toAppend] += appendAmount;
         return {success: true}
@@ -198,7 +201,7 @@ let append = {
 let get = {
     get: function (id, toGet, client = null) {
         let getValues = ["balance", "click", "sec", "keyboard", "sale", "isAdmin",
-        "activeKeyboard", "mails", "timeLastBonus", "timeLastSecondBonus", "lastCommand", "bank",
+        "activeKeyboard", "mails", "timeLastBonus", "timeLastSecondBonus", "bank",
         "multiplier", "receiver", "bankMax", "rewards", "clientId", "nickname"]
         if (toGet == "all") return data.users[id]
         else if (toGet == "rewards") return Object.keys(data.users[id].rewards);
@@ -235,6 +238,10 @@ let get = {
         let res = this.internalIdByNickname(externalId);
         if (res) return res;
         return false;
+    },
+    lastCommand: function(userId) {
+        if (!data.users[userId].lastCommand.command) return false;
+        else return data.users[userId].lastCommand;
     },
     internalIdByNickname: function(nickname) {
         for (let i of Object.keys(data.users)) {
@@ -408,10 +415,11 @@ let give = {
     }
 }
 let set = {
-    lastCommand: function (id, command) {
+    lastCommand: function (id, command, reply) {
         if (!check.internalId(id)) return {success: false};
-        data.users[id].lastCommand = command;
-        data.users[id].timeLastCommand = get.time();
+        data.users[id].lastCommand.command = command;
+        data.users[id].lastCommand.time = get.time();
+        data.users[id].lastCommand.reply_to = reply;
         return {success: true};
     },
     set: function (id, toSet, value) {
@@ -795,7 +803,7 @@ class kmd {
         let command = message.text;
         this.userInternalId = get.internalId(this.message.from_user.id, this.client);
         if (customCommand) command = customCommand;
-        set.lastCommand(this.userInternalId, command);
+        set.lastCommand(this.userInternalId, command, (this.message.reply_to_message) ? this.message.reply_to_message.from_user.id: undefined);
     }
     sendMessage({userId = undefined, chatId = undefined, client = undefined, text, chatType = this.message.chat.type, ...args}) {
 
@@ -1414,7 +1422,7 @@ let others = {
         delete lb_data.users["default"];
         inverse = mode == "registerTime";
         for (key in lb_data.users) {
-            if (active_top && get.time() - lb_data.users[key].timeLastCommand > 181440000) delete lb_data.users[key]
+            if (active_top && get.time() - lb_data.users[key].lastCommand.time > 181440000) delete lb_data.users[key]
             else {
                 if (mode != "money") sorted.push([key, lb_data.users[key][mode]])
                 else sorted.push([key, lb_data.users[key]["balance"] + lb_data.users[key]["bank"]])
