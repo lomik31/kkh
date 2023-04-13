@@ -12,7 +12,7 @@ intents.message_content = True
 intents.members = True #если тебе оно нужно, конечно
 client = discord.Client(intents=intents)
 
-async def kostil(message):
+async def sendMessage(message):
     if (message["chatType"] == "private"): channel = client.get_user(int(message["chatId"]))
     else: channel = client.get_channel(int(message["chatId"]))
     await channel.send(message["text"])
@@ -45,7 +45,7 @@ class CONNECTION:
                     # bot.send_message(*data)
                 # except Exception as e: print(e)
                 try:
-                    asyncio.run_coroutine_threadsafe(kostil(json["message"]), client.loop).result()
+                    asyncio.run_coroutine_threadsafe(sendMessage(json["message"]), client.loop).result()
                 except: print(format_exc())
         else: pass
     def on_close(self, ws, close_status_code, close_msg):
