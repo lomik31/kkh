@@ -17,6 +17,15 @@ async def sendMessage(message):
     else: channel = client.get_channel(int(message["chatId"]))
     await channel.send(message["text"])
 
+async def setActivity(activity: bool):
+    if (activity): await client.change_presence(activity=discord.Game(name="Коллекцию кристальных шаров"))
+    else: await client.change_presence(activity=None)
+
+@client.event
+async def on_ready():
+    if (ws.keep_running): await setActivity(True)
+
+
 class CONNECTION:
     CLIENT = "discord"
     def receiver(self, ws, json):
@@ -50,16 +59,20 @@ class CONNECTION:
         else: pass
     def on_close(self, ws, close_status_code, close_msg):
         print("### closed ###\ncode: {}, message: {}".format(close_status_code, close_msg))
+        asyncio.run_coroutine_threadsafe(setActivity(False), client.loop).result()
     def on_error(self, ws, error):
         print("error: ", error)
         # if (not error): message.send_message(self.sendIds.get(self.json["id"])["chatId"], "noerr") #TODO
     def on_open(self, ws):
         print("Opened connection")
+        if (client.is_ready()):
+            asyncio.run_coroutine_threadsafe(setActivity(True), client.loop).result()
     def send(self, data):
         ws.send(JSON.dumps(data))
     def reconnect():
         while True:
             if (not ws.keep_running):
+                global a
                 a = Thread(target=ws.run_forever).start()
                 sleep(15)
             sleep(10)
