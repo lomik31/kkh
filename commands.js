@@ -81,7 +81,8 @@ exports.COMMANDS = {
         description: "Включает/выключает клавиатуру на экране",
         action: "new kmd(message, client).keyboardSet()",
         usage: "клавиатура <да/нет>",
-        permissions: "user"
+        permissions: "user",
+        links: ["клава"]
     },
     "промо": {
         description: "Активирует промокод",
@@ -298,5 +299,8 @@ exports.COMMANDS = {
         description: "Установить ник",
         action: "new kmd(message, client).setNickname()",
         usage: "ник <ник>"
+    },
+    "клава": {
+        link: "клавиатура"
     }
 }
