@@ -23,7 +23,7 @@ class CONNECTION:
                 if (parseMode): data.append(parseMode)
                 if (keyboard):
                     if (keyboard == -1):
-                        resK = ReplyKeyboardRemove(True)
+                        resK = ReplyKeyboardRemove()
                     else:
                         resK = ReplyKeyboardMarkup(True)
                         for i in keyboard:
