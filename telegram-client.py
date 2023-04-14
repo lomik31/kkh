@@ -22,12 +22,10 @@ class CONNECTION:
                 data = [chatId, text]
                 if (parseMode): data.append(parseMode)
                 if (keyboard):
-                    if (keyboard == -1):
-                        resK = ReplyKeyboardRemove()
+                    if (keyboard == -1): resK = ReplyKeyboardRemove()
                     else:
                         resK = ReplyKeyboardMarkup(True)
-                        for i in keyboard:
-                            resK.add(*i)
+                        for i in keyboard: resK.add(*i)
                     try: bot.send_message(*data, reply_markup=resK)
                     except Exception as e: print(e)
                     return
