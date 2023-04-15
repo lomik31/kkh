@@ -48,6 +48,9 @@ webSocketServer.on('connection', (ws, req) => {
 });
 const dispatchEvent = (message, ws) => {
     const json = JSON.parse(message);
+    if (typeof json.message.from_user.id == "number") json.message.from_user.id = String(json.message.from_user.id);
+    if (json.message.reply_to_message && typeof json.message.reply_to_message.from_user.id == "number") json.message.reply_to_message.from_user.id = String(json.message.reply_to_message.from_user.id);
+    if (typeof json.message.chat.id == "number") json.message.chat.id = String(json.message.chat.id);
     if (json.event == "newMessage") textReceiver(json.message, json.client);
     if (json.event == "newCommand") commandReceiver(json.message, json.client);
 }
