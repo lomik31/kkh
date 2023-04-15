@@ -1241,16 +1241,14 @@ ${(() => {
         return this.sendMessage({chatId: this.message.chat.id, text: res.message});
     }
     keyboardSet() {
-        if (this.message_text.length < 2 || !["да", "нет"].includes(this.message_text[1])) {
-            let text = this.message.text;
-            this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client, text).helpCommand();
-        }
         let state;
-        if (this.message_text[1] == "да") state = true;
-        else if (this.message_text[1] == "нет") state = false;
         let type = this.message.chat.type;
         let id = get.internalId((type == "private") ? this.message.from_user.id : this.message.chat.id, this.client, type);
+        if (this.message_text.length > 1) {
+            if (this.message_text[1] == "да") state = true;
+            else if (this.message_text[1] == "нет") state = false;
+        }
+        else state = !get.keyboard(id, "keyboard", this.client, type);
         let res = set.keyboard.passive(id, type, state, this.client);
         if (!res) return this.sendMessage({chatId: this.message.chat.id, text: res.message});
         if (state) return this.sendMessage({chatId: this.message.chat.id, text: "Клавиатура включена", keyboard: keyboard.mainMenu});
