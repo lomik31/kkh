@@ -300,6 +300,12 @@ exports.COMMANDS = {
         action: "new kmd(message, client).setNickname()",
         usage: "ник <ник>"
     },
+    "пароль": {
+        description: "Установить пароль",
+        action: "new kmd(message, client).setPassword()",
+        usage: "пароль <пароль>",
+        permissions: "user"
+    },
     "клава": {
         link: "клавиатура"
     }

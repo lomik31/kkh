@@ -1,4 +1,4 @@
-const { randomInt } = require('crypto');
+const { randomInt, createHash } = require('crypto');
 const fs = require('fs');
 const schedule = require('node-schedule');
 const data = JSON.parse(fs.readFileSync('./usrs.json', {encoding:"utf-8"}));
@@ -204,7 +204,7 @@ let get = {
     get: function (id, toGet, client = null) {
         let getValues = ["balance", "click", "sec", "keyboard", "sale", "isAdmin",
         "activeKeyboard", "mails", "timeLastBonus", "timeLastSecondBonus", "bank",
-        "multiplier", "receiver", "bankMax", "rewards", "clientId", "nickname"]
+        "multiplier", "receiver", "bankMax", "rewards", "clientId", "nickname", "password"]
         if (toGet == "all") return data.users[id]
         else if (toGet == "rewards") return Object.keys(data.users[id].rewards);
         else if (toGet == "clientId") {
@@ -288,6 +288,10 @@ let check = {
     internalId: function(id, type = "private") { // существует ли такой внутренний id --> true | false
         if (type == "private" && id in data.users) return true;
         if (id in data.groups) return true;
+        return false;
+    },
+    password: function(id, password) {
+        if (get.get(id, "password") == password) return true;
         return false;
     }
 }
@@ -419,6 +423,7 @@ let give = {
 let set = {
     lastCommand: function (id, command, reply) {
         if (!check.internalId(id)) return {success: false};
+        if (command.split(" ")[0] == "пароль") return {success: false};
         data.users[id].lastCommand.command = command;
         data.users[id].lastCommand.time = get.time();
         data.users[id].lastCommand.reply_to = reply;
@@ -426,8 +431,8 @@ let set = {
     },
     set: function (id, toSet, value) {
         let setValues = ["isAdmin", "multiplier", "mails", "balance", "click", "sec", "sale",
-        "bankMax", "bank", "timeLastBonus", "keyboard", "activeKeyboard", "receiver", "nickname"];
-        let strings = ["receiver", "nickname"] // не подлежат obrabotka.kChisla
+        "bankMax", "bank", "timeLastBonus", "keyboard", "activeKeyboard", "receiver", "nickname", "password"];
+        let strings = ["receiver", "nickname", "password"] // не подлежат obrabotka.kChisla
         if (setValues.indexOf(toSet) == -1) return {success: false, message: `Невозможно изменить значение ${toSet}`};
         if (["string", "number"].includes(typeof value) && !strings.includes(toSet)) {
             value = obrabotka.kChisla(value);
@@ -1106,7 +1111,7 @@ ${(() => {
         if (!eto) return this.sendMessage({chatId: this.message.chat.id, text: "Id не найден"});
         if (value == "true") value = true;
         else if (value == "false") value = false;
-        if (["isAdmin", "mails", "timeLastBonus", "keyboard", "activeKeyboard", "receiver"].indexOf(toSet) != -1 && this.userInternalId != 1) return this.sendMessage({chatId: this.message.chat.id, text: "Недостаточно прав"});
+        if (["isAdmin", "keyboard", "activeKeyboard", "receiver", "password"].indexOf(toSet) != -1 && this.userInternalId != 1) return this.sendMessage({chatId: this.message.chat.id, text: "Недостаточно прав"});
         let ret, msg1, msg2;
         if (toSet == "reward" && ["-", "+"].includes(value[0])) {
             let emoji = value.slice(1);
@@ -1412,6 +1417,19 @@ ${(() => {
         let res = set.set(this.userInternalId, "nickname", nickname);
         if (!res.success) return this.sendMessage({chatId: this.message.chat.id, text: res.message});
         this.sendMessage({chatId: this.message.chat.id, text: `Установлен ник ${nickname}`})
+    }
+    setPassword() {
+        if (this.message_text.length < 2) {
+            let text = this.message.text;
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client, text).helpCommand();
+        }
+        if (this.message.chat.type != "private") return this.sendMessage({chatId: this.message.chat.id, text: "Пароль можно установить только в личных сообщениях с ботом"});
+        let password = this.message_text.slice(1).join(" ");
+        password = createHash("sha512").update(password).digest('hex');
+        let res = set.set(this.userInternalId, "password", password);
+        if (!res.success) return this.sendMessage({chatId: this.message.chat.id, text: res.message});
+        return this.sendMessage({chatId: this.message.chat.id, text: "Пароль успешно изменён."});
     }
 }
 let others = {
