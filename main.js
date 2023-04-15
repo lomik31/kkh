@@ -896,12 +896,12 @@ class kmd {
         if (i == 0) return this.sendMessage({chatId: this.message.chat.id, text: `Недостаточно средств. Для покупки ещё необходимо ${obrabotka.chisla(cost - balance)} КШ`});
         let type = this.message.chat.type;
         let a = get.internalId((type == "private") ? this.message.from_user.id : this.message.chat.id, this.client, type);
-        if (get.keyboard(a, "activeKeyboard", this.client, type)) return this.sendMessage({chatId: this.message.chat.id, text: `Успешно куплено Успешно куплено апгрейдов: ${i}
+        if (get.keyboard(a, "activeKeyboard", this.client, type)) return this.sendMessage({chatId: this.message.chat.id, text: `Успешно куплено апгрейдов: ${i}
 Апгрейды: ${get.get(id, "sec")}/сек; ${get.get(id, "click")}/клик; ${get.get(id, "sale")}% скидки
 Баланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ
 В банке: ${obrabotka.chisla(get.get(id, "bank"))}/ ${obrabotka.chisla(get.get(id, "bankMax"))} КШ`, parseMode: "HTML", keyboard: keyboard.upgrade(this.userInternalId)});
 
-        return this.sendMessage({chatId: this.message.chat.id, text: `Успешно куплено Успешно куплено апгрейдов: ${i}
+        return this.sendMessage({chatId: this.message.chat.id, text: `Успешно куплено апгрейдов: ${i}
 Апгрейды: ${get.get(id, "sec")}/сек; ${get.get(id, "click")}/клик; ${get.get(id, "sale")}% скидки
 Баланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ
 В банке: ${obrabotka.chisla(get.get(id, "bank"))}/ ${obrabotka.chisla(get.get(id, "bankMax"))} КШ`, parseMode: "HTML"});
