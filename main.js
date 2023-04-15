@@ -177,7 +177,6 @@ let append = {
             data.users[userId].registerTime = get.time();
             data.users[userId].receiver = client;
             data.users[userId].ids[client] = appendId;
-            if (lastName != null) data.users[userId].lastName = lastName;
             return {success: true}
         }
         else if (appendId in data.groups) return {success: false, message: `Группа ${appendId} уже существует`} 
