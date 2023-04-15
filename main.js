@@ -1416,10 +1416,10 @@ ${(() => {
 }
 let others = {
     leaderbord: function ({mode, active_top, caller_id, page, kmd}) {
-        let lb_data = data;
+        let lb_data = structuredClone(data);
         let inverse;
         let sorted = [];
-        delete lb_data.users["default"];
+        delete lb_data.users[0];
         inverse = mode == "registerTime";
         for (key in lb_data.users) {
             if (active_top && get.time() - lb_data.users[key].lastCommand.time > 181440000) delete lb_data.users[key]
