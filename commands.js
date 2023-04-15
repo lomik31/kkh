@@ -273,32 +273,38 @@ exports.COMMANDS = {
     "+сек": {
         description: "Улучшить /сек",
         action: "",
-        usage: "+сек [количество/все]"
+        usage: "+сек [количество/все]",
+        permissions: "user"
     },
     "+клик": {
         description: "Улучшить /клик",
         action: "",
-        usage: "+сек [количество/все]"
+        usage: "+сек [количество/все]",
+        permissions: "user"
     },
     "+скидка": {
         description: "Улучшить скидку",
         action: "",
-        usage: "+скидка [количество/все]"
+        usage: "+скидка [количество/все]",
+        permissions: "user"
     },
     "+банк": {
         description: "Улучшить вместимость банка",
         action: "",
-        usage: "+банк [количество/все]"
+        usage: "+банк [количество/все]",
+        permissions: "user"
     },
     "ресивер": {
         description: "Установить ресивер, куда будут приходить сообщения",
         action: "new kmd(message, client).setReceiver()",
-        usage: "ресивер <телеграм/дискорд>"
+        usage: "ресивер <телеграм/дискорд>",
+        permissions: "user"
     },
     "ник": {
         description: "Установить ник",
         action: "new kmd(message, client).setNickname()",
-        usage: "ник <ник>"
+        usage: "ник <ник>",
+        permissions: "user"
     },
     "пароль": {
         description: "Установить пароль",
