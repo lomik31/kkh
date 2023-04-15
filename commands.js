@@ -80,7 +80,7 @@ exports.COMMANDS = {
     "клавиатура": {
         description: "Включает/выключает клавиатуру на экране",
         action: "new kmd(message, client).keyboardSet()",
-        usage: "клавиатура <да/нет>",
+        usage: "клавиатура [да/нет]",
         permissions: "user",
         links: ["клава"]
     },
