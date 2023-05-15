@@ -1376,7 +1376,7 @@ ${(() => {
         else if (this.message_text[1] == "_" && this.message.reply_to_message) user = this.message.reply_to_message.from_user.id;
         else user = this.message_text[1];
         user = get.internalId(user, this.client);
-        if (!user) return this.sendMessage({chatId: this.message.chat.id, text: `Пользователь ${user} не найден`});
+        if (!user) return this.sendMessage({chatId: this.message.chat.id, text: `Пользователь не найден`});
         let rewardsList = reward.infoList(get.get(user, "rewards"), true, false);
         if (rewardsList == "") return this.sendMessage({chatId: this.message.chat.id, text: "У пользователя нет наград"});
         this.sendMessage({chatId: this.message.chat.id, text: `Награды ${this.createMention(user)}:\n${rewardsList}`, parseMode: "HTML"});
@@ -1425,8 +1425,7 @@ ${(() => {
             return new kmd(this.message, this.client, text).helpCommand();
         }
         if (this.message.chat.type != "private") return this.sendMessage({chatId: this.message.chat.id, text: "Пароль можно установить только в личных сообщениях с ботом"});
-        let password = this.message_text.slice(1).join(" ");
-        password = createHash("sha512").update(password).digest('hex');
+        let password = createHash("sha512").update(this.message_text.slice(1).join(" ")).digest('hex');
         let res = set.set(this.userInternalId, "password", password);
         if (!res.success) return this.sendMessage({chatId: this.message.chat.id, text: res.message});
         return this.sendMessage({chatId: this.message.chat.id, text: "Пароль успешно изменён."});
