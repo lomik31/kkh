@@ -28,6 +28,7 @@ async def on_ready():
 
 class CONNECTION:
     CLIENT = "discord"
+    pending = []
     def receiver(self, ws, json):
         json = JSON.loads(json)
         self.json = json
@@ -67,8 +68,19 @@ class CONNECTION:
         print("Opened connection")
         if (client.is_ready()):
             asyncio.run_coroutine_threadsafe(setActivity(True), client.loop).result()
+        if (len(self.pending) > 0):
+            print("Sending pending (lol what)")
+            while (len(self.pending)):
+                ws.send(self.pending[0])
+                self.pending.pop(0)
+            print("Successfully sent")
     def send(self, data):
-        ws.send(JSON.dumps(data))
+        if (isinstance(data, object)): data = JSON.dumps(data, default=lambda x: x.__dict__)
+        else: data = JSON.dumps(data)
+        try: ws.send(data)
+        except:
+            print("can't send, added to pending")
+            return self.pending.append(data)
     def reconnect():
         while True:
             if (not ws.keep_running):
