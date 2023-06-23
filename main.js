@@ -1287,7 +1287,7 @@ let others = {
         delete lb_data.users["default"];
         inverse = mode == "registerTime";
         for (key in lb_data.users) {
-            if (active_top && get.time() - lb_data.users[key].timeLastCommand > 181440000) delete lb_data.users[key]
+            if (active_top && get.time() - lb_data.users[key].lastCommand.time > 604800) delete lb_data.users[key]
             else {
                 if (mode != "money") sorted.push([key, lb_data.users[key][mode]])
                 else sorted.push([key, lb_data.users[key]["balance"] + lb_data.users[key]["bank"]])
