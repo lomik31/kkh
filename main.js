@@ -59,14 +59,46 @@ server.listen(3200, () => console.log("Server started"))
 function commandReceiver(message, client) {
     if (message.text == "/start") {
         let id = message.from_user.id;
-        if (get.internalId(id, client)) {
-            if (message.chat.type == "private") CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text: "Привет. Это бот-кликер.\nСделали: [@lomik31](tg://user?id=357694314), [@Discord Nitra MV](tg://user?id=1160222752).\nЕсли ты Игорькартошка или Денисизюм, то тебе [сюда](https://docs.google.com/document/d/15a6S5F26kxRn103Yboknpogu-tJtIoxin2G9tBjY65A).\nПо вопросам обращаться к ним.\n[Планы на будущее и то, что в разработке](https://trello.com/b/kfVkY65h/%D0%BA%D0%BA%D1%88)\nНаш канал с новостями: [@kkh_news] (t.me/kkh_news)\nДля списка всех команд введите `команды`.\nЕсли у вас есть промо-код, можете ввести его при помощи `промо <код>`\nНаша беседа: [тык](t.me/+_VgA7r0PfWZiMGFi)\n\n*По вопросам пишите* [@lomik31](tg://user?id=357694314)", parseMode: "MARKDOWN", chatType: message.chat.type});
-            else CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text:  "Эту команду можно использовать только в личных сообщениях с ботом!", chatType: message.chat.type});
+        let ifExists = get.internalId(id, client, "private");
+        let createMention = function(userId, client) {
+            let externalUserId = get.get(userId, "clientId", client);
+            let username = get.get(userId, "nickname");
+            if (!username) return userId;
+            if (!externalUserId) return username;
+            if (client == "telegram") {
+                return `[${username.replace("<", "\<").replace(">", "\>")}](tg://openmessage?user_id=${externalUserId})`
+            }
+            else if (client == "discord") {
+                return `<@${externalUserId}>`
+            }
+        }
+        if (message.chat.type == "private") {
+            if (!ifExists) append.appendId(message.chat.type, id, client, message.nickname);
+            let lox = `Привет. Это бот-кликер.
+Сделали: ${createMention(1, client)}, ${createMention(2, client)}.
+Если ты Игорькартошка или Денисизюм, то тебе сюда: <https://goo.su/DDJQ83>.
+По вопросам обращаться к ним.\nПланы на будущее и то, что в разработке <https://trello.com/b/kfVkY65h/%D0%BA%D0%BA%D1%88>
+Наш канал с новостями: <t.me/kkh\\_news>\nДля списка всех команд введите \`команды\`.
+Если у вас есть промо-код, можете ввести его при помощи \`промо <код>\`
+Наша беседа: <https://t.me/+\\_VgA7r0PfWZiMGFi>\n\n*По вопросам пишите* ${createMention(1, client)}`;
+            CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text: lox, parseMode: "MARKDOWN", chatType: message.chat.type});
             return;
         }
-        if (message.chat.type == "private") append.appendId(message.chat.type, id, client, message.nickname);
-        else append.appendId(message.chat.type, id, client);
-        CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text: "Привет. Это бот-кликер.\nСделали: [@lomik31](tg://user?id=357694314), [@Discord Nitra MV](tg://user?id=1160222752).\nЕсли ты Игорькартошка или Денисизюм, то тебе [сюда](https://docs.google.com/document/d/15a6S5F26kxRn103Yboknpogu-tJtIoxin2G9tBjY65A).\nПо вопросам обращаться к ним.\n[Планы на будущее и то, что в разработке](https://trello.com/b/kfVkY65h/%D0%BA%D0%BA%D1%88)\nНаш канал с новостями: [@kkh_news] (t.me/kkh_news)\nДля списка всех команд введите `команды`.\nЕсли у вас есть промо-код, можете ввести его при помощи `промо <код>`\nНаша беседа: [тык](t.me/+_VgA7r0PfWZiMGFi)\n\n*По вопросам пишите* [@lomik31](tg://user?id=357694314)", parseMode: "MARKDOWN", chatType: message.chat.type});
+        else {
+            if (!(message.chat.id in data.groups)) {
+                append.appendId(message.chat.type, id, client);
+                CLIENTS[client].sendMessage({chatId: message.chat.id, text: `Чат добавлен в базу данных.
+Привет. Это бот-кликер.
+Сделали: ${createMention(1, client)}, ${createMention(2, client)}.
+Если ты Игорькартошка или Денисизюм, то тебе сюда: <https://goo.su/DDJQ83>.
+По вопросам обращаться к ним.\nПланы на будущее и то, что в разработке <https://trello.com/b/kfVkY65h/%D0%BA%D0%BA%D1%88>
+Наш канал с новостями: <t.me/kkh\\_news>\nДля списка всех команд введите \`команды\`.\nЕсли у вас есть промо-код, можете ввести его при помощи \`промо <код>\`
+Наша беседа: <https://t.me/+\\_VgA7r0PfWZiMGFi>\n\n*По вопросам пишите*  ${createMention(1, client)}`, parseMode: "MARKDOWN", chatType: message.chat.type});
+                return;
+            }
+            if (!ifExists) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Эту команду можно использовать только в личных сообщениях с ботом!", chatType: message.chat.type});
+            else return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Вы уже зарегистрированы", chatType: message.chat.type});
+        }
     }
 }
 function textReceiver(message, client) {
@@ -78,7 +110,7 @@ function textReceiver(message, client) {
             if (i > 3) return;
             if (Object.keys(COMMANDS).includes(checkCommand)) {
                 if (Object.keys(COMMANDS[checkCommand]).includes("link")) checkCommand = COMMANDS[checkCommand].link;
-                let internalUserId = get.internalId(message.from_user.id, client);
+                let internalUserId = get.internalId(message.from_user.id, client, "private");
                 if (!internalUserId) return CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text: "Для взаимодействия с ботом вам необходимо сначала активировать его. Напишите боту *в ЛС* команду /start!", parseMode: "MARKDOWN", chatType: message.chat.type});
                 if (COMMANDS[checkCommand].permissions == "admin" && !get.get(internalUserId, "isAdmin")) return;
                 if (COMMANDS[checkCommand].permissions == "owner" && internalUserId != 1) return; //ВНИМАНИЕ БЛЯТЬ
@@ -92,7 +124,7 @@ function textReceiver(message, client) {
         }
     }
     else if (message_text[0] == "кмд") {
-        let internalUserId = get.internalId(message.from_user.id, client);
+        let internalUserId = get.internalId(message.from_user.id, client, "private");
         if (!internalUserId) return CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text: "Для взаимодействия с ботом вам необходимо сначала активировать его. Напишите боту *в ЛС* команду /start!", parseMode: "MARKDOWN", chatType: message.chat.type});
         if (!get.get(internalUserId, "isAdmin")) return;
         if (message_text.length < 3) {
@@ -101,7 +133,7 @@ function textReceiver(message, client) {
         }
         if (message_text[1] == "_" && message.reply_to_message) userId = message.reply_to_message.from_user.id;
         else userId = message_text[1];
-        let internalUserReplyId = get.internalId(userId, client);
+        let internalUserReplyId = get.internalId(userId, client, "private");
         if (!internalUserReplyId) return CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text: "Id не найден", chatType: message.chat.type});
         if (message_text[2] == "кмд") return CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text: "э, так нельзя, бан", chatType: message.chat.type});
         if (get.get(internalUserReplyId, "isAdmin") && internalUserId != 1) return CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text: "Невозможно выполнить кмд для этого юзера!", chatType: message.chat.type});
