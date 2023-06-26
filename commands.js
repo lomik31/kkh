@@ -314,5 +314,11 @@ exports.COMMANDS = {
     },
     "клава": {
         link: "клавиатура"
+    },
+    "привязать": {
+        description: "Объединить аккаунты на разных платформах (связать аккаунты)",
+        action: "new kmd(message, client).linkAccounts()",
+        usage: "привязать <ID> [подтвердить] <пароль>",
+        permissions: "user"
     }
 }

@@ -326,7 +326,7 @@ let check = {
         return false;
     },
     password: function(id, password) {
-        if (get.get(id, "password") == password) return true;
+        if (get.get(id, "password") == createHash("sha512").update(password).digest('hex')) return true;
         return false;
     }
 }
@@ -458,7 +458,7 @@ let give = {
 let set = {
     lastCommand: function (id, command, reply) {
         if (!check.internalId(id)) return {success: false};
-        if (command.split(" ")[0] == "пароль") return {success: false};
+        if (["пароль", "привязать"].includes(command.split(" ")[0])) return {success: false};
         data.users[id].lastCommand.command = command;
         data.users[id].lastCommand.time = get.time();
         data.users[id].lastCommand.reply_to = reply;
@@ -504,6 +504,11 @@ let set = {
                 return {success: true}
             }
         }
+    },
+    clientId: function(userId, client, setId) {
+        if (typeof setId == "number") setId = String(setId);
+        data.users[userId].ids[client] = setId;
+        return {success: true};
     }
 }
 let promo = {
@@ -1460,10 +1465,36 @@ ${(() => {
             return new kmd(this.message, this.client, text).helpCommand();
         }
         if (this.message.chat.type != "private") return this.sendMessage({chatId: this.message.chat.id, text: "Пароль можно установить только в личных сообщениях с ботом"});
-        let password = createHash("sha512").update(this.message_text.slice(1).join(" ")).digest('hex');
-        let res = set.set(this.userInternalId, "password", password);
+        let res = set.set(this.userInternalId, "password", createHash("sha512").update(this.message_text.slice(1).join(" ")).digest('hex'));
         if (!res.success) return this.sendMessage({chatId: this.message.chat.id, text: res.message});
         return this.sendMessage({chatId: this.message.chat.id, text: "Пароль успешно изменён."});
+    }
+    linkAccounts() {
+        if (this.message_text.length < 3) return this.sendMessage({chatId: this.message.chat.id, text: `Для связи аккаунтов используйте команду \'привязать <ID/ник> <пароль>\'\n\
+для установки пароля используйте на связываемом аккаунте команду \'пароль <пароль>\'. Например пароль мегакрутойпароль\n\n\
+Обратите внимание, что после связи аккаунтов текущий (${this.userInternalId}) будет безвозвратно удален.`})
+        if (this.message.chat.type != "private") return this.sendMessage({chatId: this.message.chat.id, text: "Пароль можно установить только в личных сообщениях с ботом"});
+        let accountToLink = check.externalId(this.message_text[1]);
+        if (!accountToLink.success) {
+            accountToLink = get.internalId(this.message_text[1], this.client, "private");
+            if (!accountToLink) accountToLink = get.internalIdByNickname(this.message_text[1]);
+            if (!accountToLink) return this.sendMessage({chatId: this.message.chat.id, text: "Пользователь не найден"});
+        }
+        else accountToLink = accountToLink.id;
+        if (get.get(accountToLink, "clientId", this.client)) return this.sendMessage({chatId: this.message.chat.id, text: `У данного пользователя уже есть привязанный ${this.client}`});
+        if (this.message_text.length < 4 || this.message_text[2] != "подтвердить") {
+            if (!check.password(accountToLink, this.message_text.slice(2).join(" "))) return this.sendMessage({chatId: this.message.chat.id, text: "Неверный пароль"});
+            return this.sendMessage({chatId: this.message.chat.id, text:
+`Вы уверены, что хотите связать аккаунт ${this.createMention(accountToLink)} c вашим текущим аккаунтом?
+Весь ваш текущий прогресс на данном аккаунте будет безвозвратно удален
+(${obrabotka.chisla(get.get(this.userInternalId, "balance"))} КШ, ${obrabotka.chisla(get.get(this.userInternalId, "balance2"))} Балансов, ${obrabotka.chisla(get.get(this.userInternalId, "bank"))} КШ банка, ${get.get(this.userInternalId, "sec")}/сек,
+${get.get(this.userInternalId, "click")}/клик, ${get.get(this.userInternalId, "sale")}% скидки и все награды текущего аккаунта)
+Если вы подтверждаете действие, введите \`${this.message_text.slice(0, 2).join(" ")} подтвердить <ваш пароль>\``})
+        }
+        if (!check.password(accountToLink, this.message_text.slice(3).join(" "))) return this.sendMessage({chatId: this.message.chat.id, text: "Неверный пароль"});
+        set.clientId(accountToLink, this.client, this.message.from_user.id);
+        delete data.users[this.userInternalId];
+        this.sendMessage({chatId: this.message.chat.id, text: `Успешно связано с аккаунтом ${this.createMention(get.internalId(this.message.from_user.id, this.client))}`});
     }
 }
 let others = {
