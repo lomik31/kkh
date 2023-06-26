@@ -80,8 +80,9 @@ exports.COMMANDS = {
     "клавиатура": {
         description: "Включает/выключает клавиатуру на экране",
         action: "new kmd(message, client).keyboardSet()",
-        usage: "клавиатура <да/нет>",
-        permissions: "user"
+        usage: "клавиатура [да/нет]",
+        permissions: "user",
+        links: ["клава"]
     },
     "промо": {
         description: "Активирует промокод",
@@ -171,18 +172,11 @@ exports.COMMANDS = {
         usage: "бит <ставка> <вверх/вниз>",
         permissions: "user"
     },
-    "банк": {
-        description: "Перевод КШ в банк/из банка",
-        action: "new kmd(message, client).bankTransfer()",
-        usage: "+банк [сумма] / -банк [сумма]",
-        permissions: "user",
-        links: ["+банк", "-банк"]
-    },
-    "+банк": {
-        link: "банк"
-    },
     "-банк": {
-        link: "банк"
+        description: "Перевод КШ из банка",
+        action: "new kmd(message, client).bankTransfer()",
+        usage: "-банк [сумма]",
+        permissions: "user"
     },
     "назад": {
         description: "Выйти из меню",
@@ -259,7 +253,7 @@ exports.COMMANDS = {
         permissions: "admin"
     },
     "древард": {
-        description: "Удалить существующую награду\n(удаляет также эту награду у всех пользователей)",
+        description: "Удалить существующую наград (удаляет также эту награду у всех пользователей)",
         action: "new kmd(message, client).rewardRemove()",
         usage: "древард <смайлик награды>",
         permissions: "admin"
@@ -275,5 +269,56 @@ exports.COMMANDS = {
         action: "new kmd(message, client).rewardsAllList()",
         usage: "лревардс",
         permissions: "admin"
+    },
+    "+сек": {
+        description: "Улучшить /сек",
+        action: "",
+        usage: "+сек [количество/все]",
+        permissions: "user"
+    },
+    "+клик": {
+        description: "Улучшить /клик",
+        action: "",
+        usage: "+сек [количество/все]",
+        permissions: "user"
+    },
+    "+скидка": {
+        description: "Улучшить скидку",
+        action: "",
+        usage: "+скидка [количество/все]",
+        permissions: "user"
+    },
+    "+банк": {
+        description: "Улучшить вместимость банка",
+        action: "",
+        usage: "+банк [количество/все]",
+        permissions: "user"
+    },
+    "ресивер": {
+        description: "Установить ресивер, куда будут приходить сообщения",
+        action: "new kmd(message, client).setReceiver()",
+        usage: "ресивер <телеграм/дискорд>",
+        permissions: "user"
+    },
+    "ник": {
+        description: "Установить ник",
+        action: "new kmd(message, client).setNickname()",
+        usage: "ник <ник>",
+        permissions: "user"
+    },
+    "пароль": {
+        description: "Установить пароль",
+        action: "new kmd(message, client).setPassword()",
+        usage: "пароль <новый пароль>",
+        permissions: "user"
+    },
+    "клава": {
+        link: "клавиатура"
+    },
+    "привязать": {
+        description: "Объединить аккаунты на разных платформах (связать аккаунты)",
+        action: "new kmd(message, client).linkAccounts()",
+        usage: "привязать <ID> [подтвердить] <ваш пароль>",
+        permissions: "user"
     }
 }

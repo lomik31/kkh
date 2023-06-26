@@ -10,6 +10,7 @@ with open("config.json", encoding="utf-8") as config:
 bot = TeleBot(config["tokens"]["telegram"])
 class CONNECTION:
     CLIENT = "telegram"
+    pending = []
     def receiver(self, ws, json):
         json = JSON.loads(json)
         self.json = json
@@ -22,12 +23,10 @@ class CONNECTION:
                 data = [chatId, text]
                 if (parseMode): data.append(parseMode)
                 if (keyboard):
-                    if (keyboard == -1):
-                        resK = ReplyKeyboardRemove(True)
+                    if (keyboard == -1): resK = ReplyKeyboardRemove()
                     else:
                         resK = ReplyKeyboardMarkup(True)
-                        for i in keyboard:
-                            resK.add(*i)
+                        for i in keyboard: resK.add(*i)
                     try: bot.send_message(*data, reply_markup=resK)
                     except Exception as e: print(e)
                     return
@@ -41,14 +40,24 @@ class CONNECTION:
         if (not error): bot.send_message(self.sendIds.get(self.json["id"])["chatId"], "noerr") #TODO
     def on_open(self, ws):
         print("Opened connection")
+        if (len(self.pending) > 0):
+            print("Sending pending (lol what)")
+            while (len(self.pending)):
+                ws.send(self.pending[0])
+                self.pending.pop(0)
+            print("Successfully sent")
     def send(self, data, chatId, callback = None):
         self.id += 1
         self.sendIds[self.id] = {"chatId":chatId, "callback": callback}
         data["id"] = self.id
         self.sendData(data)
     def sendData(self, data):
-        if (isinstance(data, object)): ws.send(JSON.dumps(data, default=lambda x: x.__dict__))
-        else: ws.send(JSON.dumps(data))
+        if (isinstance(data, object)): data = JSON.dumps(data, default=lambda x: x.__dict__)
+        else: data = JSON.dumps(data)
+        try: ws.send(data)
+        except:
+            print("can't send, added to pending")
+            return self.pending.append(data)
     def reconnect():
         while True:
             if (not ws.keep_running):
@@ -66,7 +75,7 @@ def text(message):
     connection.sendData({"event": "newMessage", "client": connection.CLIENT, "message": message})
 
 if __name__ == "__main__":
-    ws = websocket.WebSocketApp("ws://127.0.0.1:3200/?client={}".format(connection.CLIENT),
+    ws = websocket.WebSocketApp(f"ws://{config['websocketIp']}/?client={connection.CLIENT}",
                 on_open=connection.on_open,
                 on_message=connection.receiver,
                 on_error=connection.on_error,

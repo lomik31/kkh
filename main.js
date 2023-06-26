@@ -1,4 +1,4 @@
-const { randomInt } = require('crypto');
+const { randomInt, createHash } = require('crypto');
 const fs = require('fs');
 const schedule = require('node-schedule');
 const data = JSON.parse(fs.readFileSync('./usrs.json', {encoding:"utf-8"}));
@@ -26,13 +26,14 @@ webSocketServer.on('connection', (ws, req) => {
         if (!data.serverId) delete data.serverId;
         ws.sendData(JSON.stringify(data))
     }
-    CLIENTS[name].sendMessage = ({chatId, serverId = undefined, text, parseMode = undefined, keyboard = undefined}) => {
+    CLIENTS[name].sendMessage = ({chatId, serverId = undefined, text, parseMode = undefined, keyboard = undefined, chatType}) => {
         let message = {};
         if (serverId) message.serverId = serverId;
         message.chatId = chatId;
         message.text = text;
         if (parseMode) message.parseMode = parseMode;
         if (keyboard) message.keyboard = keyboard;
+        if (chatType) message.chatType = chatType;
         CLIENTS[name].send({event: "sendMessage", message})
     }
     console.log(`New connection: ${name}. All connections: ${Object.keys(CLIENTS)}`);
@@ -47,6 +48,9 @@ webSocketServer.on('connection', (ws, req) => {
 });
 const dispatchEvent = (message, ws) => {
     const json = JSON.parse(message);
+    if (typeof json.message.from_user.id == "number") json.message.from_user.id = String(json.message.from_user.id);
+    if (json.message.reply_to_message && typeof json.message.reply_to_message.from_user.id == "number") json.message.reply_to_message.from_user.id = String(json.message.reply_to_message.from_user.id);
+    if (typeof json.message.chat.id == "number") json.message.chat.id = String(json.message.chat.id);
     if (json.event == "newMessage") textReceiver(json.message, json.client);
     if (json.event == "newCommand") commandReceiver(json.message, json.client);
 }
@@ -54,18 +58,50 @@ server.listen(3200, () => console.log("Server started"))
 
 function commandReceiver(message, client) {
     if (message.text == "/start") {
-        if (get.id(message.from_user.id)) {
-            if (message.chat.type == "private") CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Привет. Это бот-кликер.\nСделали: [@lomik31](tg://user?id=357694314), [@Discord Nitra MV](tg://user?id=1160222752).\nЕсли ты Игорькартошка или Денисизюм, то тебе [сюда](https://docs.google.com/document/d/15a6S5F26kxRn103Yboknpogu-tJtIoxin2G9tBjY65A).\nПо вопросам обращаться к ним.\n[Планы на будущее и то, что в разработке](https://trello.com/b/kfVkY65h/%D0%BA%D0%BA%D1%88)\nНаш канал с новостями: [@kkh_news] (t.me/kkh_news)\nДля списка всех команд введите `команды`.\nЕсли у вас есть промо-код, можете ввести его при помощи `промо <код>`\nНаша беседа: [тык](t.me/+_VgA7r0PfWZiMGFi)\n\n*По вопросам пишите* [@lomik31](tg://user?id=357694314)", parseMode: "MARKDOWN"});
-            else CLIENTS[client].sendMessage({chatId: message.chat.id, text:  "Эту команду можно использовать только в личных сообщениях с ботом!"});
+        let id = message.from_user.id;
+        let ifExists = get.internalId(id, client, "private");
+        let createMention = function(userId, client) {
+            let externalUserId = get.get(userId, "clientId", client);
+            let username = get.get(userId, "nickname");
+            if (!username) return userId;
+            if (!externalUserId) return username;
+            if (client == "telegram") {
+                return `[${username.replace("<", "\<").replace(">", "\>")}](tg://openmessage?user_id=${externalUserId})`
+            }
+            else if (client == "discord") {
+                return `<@${externalUserId}>`
+            }
+        }
+        if (message.chat.type == "private") {
+            if (!ifExists) append.appendId(message.chat.type, id, client, message.nickname);
+            let lox = `Привет. Это бот-кликер.
+Сделали: ${createMention(1, client)}, ${createMention(2, client)}.
+Если ты Игорькартошка или Денисизюм, то тебе сюда: <https://goo.su/DDJQ83>.
+По вопросам обращаться к ним.\nПланы на будущее и то, что в разработке <https://trello.com/b/kfVkY65h/%D0%BA%D0%BA%D1%88>
+Наш канал с новостями: <t.me/kkh\\_news>\nДля списка всех команд введите \`команды\`.
+Если у вас есть промо-код, можете ввести его при помощи \`промо <код>\`
+Наша беседа: <https://t.me/+\\_VgA7r0PfWZiMGFi>\n\n*По вопросам пишите* ${createMention(1, client)}`;
+            CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text: lox, parseMode: "MARKDOWN", chatType: message.chat.type});
             return;
         }
-        if (message.chat.type == "private") append.appendId("private", message.chat.id, message.chat.first_name, message.chat.last_name);
-        else append.appendId(message.chat.type, message.chat.id);
-        CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Привет. Это бот-кликер.\nСделали: [@lomik31](tg://user?id=357694314), [@Discord Nitra MV](tg://user?id=1160222752).\nЕсли ты Игорькартошка или Денисизюм, то тебе [сюда](https://docs.google.com/document/d/15a6S5F26kxRn103Yboknpogu-tJtIoxin2G9tBjY65A).\nПо вопросам обращаться к ним.\n[Планы на будущее и то, что в разработке](https://trello.com/b/kfVkY65h/%D0%BA%D0%BA%D1%88)\nНаш канал с новостями: [@kkh_news] (t.me/kkh_news)\nДля списка всех команд введите `команды`.\nЕсли у вас есть промо-код, можете ввести его при помощи `промо <код>`\nНаша беседа: [тык](t.me/+_VgA7r0PfWZiMGFi)\n\n*По вопросам пишите* [@lomik31](tg://user?id=357694314)", parseMode: "MARKDOWN"});
+        else {
+            if (!(message.chat.id in data.groups)) {
+                append.appendId(message.chat.type, id, client);
+                CLIENTS[client].sendMessage({chatId: message.chat.id, text: `Чат добавлен в базу данных.
+Привет. Это бот-кликер.
+Сделали: ${createMention(1, client)}, ${createMention(2, client)}.
+Если ты Игорькартошка или Денисизюм, то тебе сюда: <https://goo.su/DDJQ83>.
+По вопросам обращаться к ним.\nПланы на будущее и то, что в разработке <https://trello.com/b/kfVkY65h/%D0%BA%D0%BA%D1%88>
+Наш канал с новостями: <t.me/kkh\\_news>\nДля списка всех команд введите \`команды\`.\nЕсли у вас есть промо-код, можете ввести его при помощи \`промо <код>\`
+Наша беседа: <https://t.me/+\\_VgA7r0PfWZiMGFi>\n\n*По вопросам пишите*  ${createMention(1, client)}`, parseMode: "MARKDOWN", chatType: message.chat.type});
+                return;
+            }
+            if (!ifExists) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Эту команду можно использовать только в личных сообщениях с ботом!", chatType: message.chat.type});
+            else return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Вы уже зарегистрированы", chatType: message.chat.type});
+        }
     }
 }
 function textReceiver(message, client) {
-    if (!get.id(message.from_user.id)) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Для взаимодействия с ботом вам необходимо сначала активировать его. Напишите боту *в ЛС* команду /start!", parseMode: "MARKDOWN"})
     let message_text = message.text.toLowerCase().split(" ");
     if (!(["кмд", "_"].includes(message_text[0]) || (message_text[0][0] == "+"))) {
         let i = 0;
@@ -74,8 +110,11 @@ function textReceiver(message, client) {
             if (i > 3) return;
             if (Object.keys(COMMANDS).includes(checkCommand)) {
                 if (Object.keys(COMMANDS[checkCommand]).includes("link")) checkCommand = COMMANDS[checkCommand].link;
-                if (COMMANDS[checkCommand].permissions == "admin" && !get.get(message.from_user.id, "isAdmin")) return;
-                if (COMMANDS[checkCommand].permissions == "owner" && message.from_user.id != 357694314) return; //ВНИМАНИЕ БЛЯТЬ
+                let internalUserId = get.internalId(message.from_user.id, client, "private");
+                if (!internalUserId) return CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text: "Для взаимодействия с ботом вам необходимо сначала активировать его. Напишите боту *в ЛС* команду /start!", parseMode: "MARKDOWN", chatType: message.chat.type});
+                if (message.chat.type != "private" && !(message.chat.id in data.groups)) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Чтобы использовать бота в группе/на сервере необходимо сначала добавить их в базу данных. Используйте команду /start", chatType: message.chat.type});
+                if (COMMANDS[checkCommand].permissions == "admin" && !get.get(internalUserId, "isAdmin")) return;
+                if (COMMANDS[checkCommand].permissions == "owner" && internalUserId != 1) return; //ВНИМАНИЕ БЛЯТЬ
                 //лог
                 eval(COMMANDS[checkCommand]["action"]);
                 break;
@@ -86,36 +125,39 @@ function textReceiver(message, client) {
         }
     }
     else if (message_text[0] == "кмд") {
-        if (!get.get(message.from_user.id, "isAdmin")) return;
+        let internalUserId = get.internalId(message.from_user.id, client, "private");
+        if (!internalUserId) return CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text: "Для взаимодействия с ботом вам необходимо сначала активировать его. Напишите боту *в ЛС* команду /start!", parseMode: "MARKDOWN", chatType: message.chat.type});
+        if (message.chat.type != "private" && !(message.chat.id in data.groups)) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Чтобы использовать бота в группе/на сервере необходимо сначала добавить их в базу данных. Используйте команду /start", chatType: message.chat.type});
+        if (!get.get(internalUserId, "isAdmin")) return;
         if (message_text.length < 3) {
             message.text = "команда кмд";
             return textReceiver(message, client);
         }
         if (message_text[1] == "_" && message.reply_to_message) userId = message.reply_to_message.from_user.id;
         else userId = message_text[1];
-        if (!get.id(userId)) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Id не найден"});
-        if (message_text[2] == "кмд") return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "э, так нельзя, бан"});
-        if (get.get(userId, "isAdmin") && message.from_user.id != 357694314) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Невозможно выполнить кмд для этого юзера!"});
-        new kmd(message, message_text);
+        let internalUserReplyId = get.internalId(userId, client, "private");
+        if (!internalUserReplyId) return CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text: "Id не найден", chatType: message.chat.type});
+        if (message.chat.type != "private" && !(message.chat.id in data.groups)) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Чтобы использовать бота в группе/на сервере необходимо сначала добавить их в базу данных. Используйте команду /start", chatType: message.chat.type});
+        if (message_text[2] == "кмд") return CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text: "э, так нельзя, бан", chatType: message.chat.type});
+        if (get.get(internalUserReplyId, "isAdmin") && internalUserId != 1) return CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text: "Невозможно выполнить кмд для этого юзера!", chatType: message.chat.type});
+        new kmd(message, client);
         message.from_user.id = userId;
-        let a = message.text.split(" ").slice(2);
-        message.text = "";
-        let b = 0;
-        for (i of a) {
-            b = a.length - 1;
-            if (b == 0) message.text += i;
-            else message.text += `${i} `;
-        }
-        message.text = message.text.slice(0, -1);
+        message.text = message.text.split(" ").slice(2).join(" ");
         textReceiver(message, client);
     }
     else if (message_text[0] == "_") {
-        let command = get.get(message.from_user.id, "lastCommand");
-        if (command == "") return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Последняя команда не обнаружена"});
-        message.text = command;
+        let internalUserId = get.internalId(message.from_user.id, client);
+        if (!internalUserId) return CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text: "Для взаимодействия с ботом вам необходимо сначала активировать его. Напишите боту *в ЛС* команду /start!", parseMode: "MARKDOWN", chatType: message.chat.type});
+        let res = get.lastCommand(internalUserId);
+        if (!res) return CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text: "Последняя команда не обнаружена", chatType: message.chat.type});
+        message.text = res.command;
+        if (res.reply_to) message.reply_to_message = {from_user: {id: res.reply_to}}
+        else message.reply_to_message = undefined;
         textReceiver(message, client);
     }
     else if (message_text[0][0] == "+") {
+        let internalUserId = get.internalId(message.from_user.id, client);
+        if (!internalUserId) return CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text: "Для взаимодействия с ботом вам необходимо сначала активировать его. Напишите боту *в ЛС* команду /start!", parseMode: "MARKDOWN", chatType: message.chat.type});
         let loxtext = message.text;
         let r = new RegExp(/ \(\d+[\.\d]* КШ\)/);
         if (r.test(message.text)) message.text = message.text.replace(r, "");
@@ -128,7 +170,7 @@ function textReceiver(message, client) {
             t = a.join(" ");
             if (["сек", "клик", "скидка", "1% скидки", "банк"].includes(t)) return new kmd(message, client, loxtext).buyBoost(t);
         }
-        return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Неверный тип апгрейда"});
+        return CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text: "Неверный тип апгрейда", chatType: message.chat.type});
     }
 }
 function choose(choices) {
@@ -164,58 +206,85 @@ let file = {
     }
 }
 let append = {
-    appendId: function (appendType, appendId, firstName = null, lastName = null) {
+    appendId: function (appendType, appendId, client, nickname) {
         if (appendType === "private") {
-            if (get.id(appendId)) return {success: false, message: `Пользователь ${appendId} уже существует`} 
-            data.users[appendId] = structuredClone(data.users.default);
-            data.users[appendId].firstName = firstName;
-            data.users[appendId].registerTime = get.time();
-            if (lastName != null) data.users[appendId].lastName = lastName;
+            if (check.internalId(get.internalId(appendId, client))) return {success: false, message: `Пользователь ${appendId} уже существует`}
+            data.lastUser++;
+            let userId = data.lastUser;
+            data.users[userId] = structuredClone(data.users[0]);
+            data.users[userId].registerTime = get.time();
+            data.users[userId].receiver = client;
+            data.users[userId].ids[client] = appendId;
             return {success: true}
         }
         else if (appendId in data.groups) return {success: false, message: `Группа ${appendId} уже существует`} 
         data.groups[appendId] = structuredClone(data.groups.default);
         return {success: true}
     },
-    appendToUser: function (userId, toAppend, appendAmount) {
+    appendToUser: function (userId, toAppend, appendAmount, reply_to) {
         let appendVariables = ["balance", "click", "sec", "sale", "bankMax", "lastCommand", "bank"];
         if (appendVariables.indexOf(toAppend) === -1) return {success: false, message: `Параметр ${toAppend} не найден`};
         appendAmount = obrabotka.kChisla(appendAmount);
         if (typeof data.users[userId][toAppend] != typeof appendAmount || isNaN(appendAmount)) return {success: false, message: "Ошибка типа"};
         if (toAppend === "lastCommand") {
-            data.users[userId][toAppend] = appendAmount;
-            data.users[userId]["timeLastCommand"] = get.time();
+            data.users[userId].lastCommand.command = appendAmount;
+            data.users[userId].lastCommand.time = get.time();
+            data.users[userId].lastCommand.reply_to = reply_to;
         }
         else data.users[userId][toAppend] += appendAmount;
         return {success: true}
     }
 }
 let get = {
-    get: function (id, toGet) {
+    get: function (id, toGet, client = null) {
         let getValues = ["balance", "click", "sec", "keyboard", "sale", "isAdmin",
-        "activeKeyboard", "mails", "timeLastBonus", "timeLastSecondBonus", "lastCommand", "bank",
-        "multiplier", "receiver", "bankMax", "rewards"]
+        "activeKeyboard", "mails", "timeLastBonus", "timeLastSecondBonus", "bank",
+        "multiplier", "receiver", "bankMax", "rewards", "clientId", "nickname", "password"]
         if (toGet == "all") return data.users[id]
-        else if (toGet == "fullName") {
-            let name = data.users[id]["firstName"];
-            if (data.users[id]["lastName"] !== null) name += ` ${data.users[id]["lastName"]}`;
-            return name;
-        }
         else if (toGet == "rewards") return Object.keys(data.users[id].rewards);
+        else if (toGet == "clientId") {
+            if (client == null) throw "client is cannot be null";
+            let res;
+            try {
+                res = data.users[id].ids[client];
+            }
+            catch {
+                res = undefined;
+            }
+            if (!res) return false;
+            return res;
+        }
         if (getValues.indexOf(toGet) == -1) return {success: false, message: "Данный параметр не найден"};
         let toReturn = data.users[id][toGet];
         return toReturn;
         
     },
     ids: function () {
-        let ids = Object.keys(data.users);
-        ids.splice(ids.indexOf('default'), 1);
+        let ids = Object.keys(data.users).filter(i => i != "0");
         return ids;
     },
-    id: function (id, type = "private") {
-        if (type == "private" && id in data.users) return true
-        if (id in data.groups) return true
-        return false
+    internalId: function (externalId, client, type = "private") { // (внешний id && client) --> получить внутренний id по внешнему id --> внутренний id | false
+        if (check.internalId(externalId)) return externalId;
+        if (type != "private") {
+            if (check.internalId(externalId, type)) return externalId;
+            return false;
+        }
+        for (let i of Object.keys(data.users)) {
+            if (data.users[i].ids[client] == externalId) return i;
+        }
+        let res = this.internalIdByNickname(externalId);
+        if (res) return res;
+        return false;
+    },
+    lastCommand: function(userId) {
+        if (!data.users[userId].lastCommand.command) return false;
+        else return data.users[userId].lastCommand;
+    },
+    internalIdByNickname: function(nickname) {
+        for (let i of Object.keys(data.users)) {
+            if (data.users[i].nickname == nickname) return i;
+        }
+        return false;
     },
     time: function () {
         return Number(Math.floor(Date.now() / 1000))
@@ -231,13 +300,32 @@ let get = {
         let bankMax = obrabotka.chisla(calc.boost(id, "bankMax").cost);
         return {sec, click, sale, bankMax};
     },
-    keyboard: function (id, keyboardType, chatType = "private") {
+    keyboard: function (id, keyboardType, client, chatType = "private") {
+        if (client == "discord") return false;
         if (chatType == "private") {
             return get.get(id, keyboardType)
         }
         else return data.groups[id][keyboardType]
     },
     data: (id) => data.users[id]
+}
+let check = {
+    externalId: function(externalId) { // внешний id --> существует ли такой внешний id --> (true && внутренний id && client) | false
+        for (let i of Object.keys(data.users)) {
+            if (Object.values(data.users[i].ids).includes(externalId)) {
+                for (let j of Object.keys(data.users[i].ids)) {
+                    if (data.users[i].ids[j] == externalId) return {success: true, id: i, client: j}
+                }
+            }
+        }
+        return {success: false}
+    },
+    internalId: function(id, type = "private") { // существует ли такой внутренний id --> true | false
+        if (type == "private" && id in data.users) return true;
+        if (id in data.groups) return true;
+        return false;
+    },
+    password: (id, password) => (get.get(id, "password") == createHash("sha512").update(password).digest('hex'))
 }
 let calc = {
     boost: function (id, boost) {
@@ -275,7 +363,7 @@ let calc = {
 }
 let keyboard = {
     upgrade: function(userId) {
-        if (!get.id(userId)) return {success: false, message: "Id не найден"};
+        if (!check.internalId(userId)) return {success: false, message: "Id не найден"};
         let res = get.keyboardCosts(userId);
         let keyboard = [[`+сек (${res.sec} КШ)`, `+клик (${res.click} КШ)`], [res.sale, `+банк (${res.bankMax} КШ)`], ["Назад"]];
         return keyboard;
@@ -365,24 +453,32 @@ let give = {
     }
 }
 let set = {
-    lastCommand: function (id, command) {
-        if (!get.id(id)) return {success: false};
-        data.users[id].lastCommand = command;
-        data.users[id].timeLastCommand = get.time();
+    lastCommand: function (id, command, reply) {
+        if (!check.internalId(id)) return {success: false};
+        if (["пароль", "привязать"].includes(command.split(" ")[0])) return {success: false};
+        data.users[id].lastCommand.command = command;
+        data.users[id].lastCommand.time = get.time();
+        data.users[id].lastCommand.reply_to = reply;
         return {success: true};
     },
     set: function (id, toSet, value) {
-        let setValues = ["isAdmin", "multiplier", "mails", "balance", "click", "sec", "sale", "bankMax", "bank", "timeLastBonus", "keyboard", "activeKeyboard"];
+        let setValues = ["isAdmin", "multiplier", "mails", "balance", "click", "sec", "sale",
+        "bankMax", "bank", "timeLastBonus", "keyboard", "activeKeyboard", "receiver", "nickname", "password"];
+        let strings = ["receiver", "nickname", "password"] // не подлежат obrabotka.kChisla
         if (setValues.indexOf(toSet) == -1) return {success: false, message: `Невозможно изменить значение ${toSet}`};
-        if (["string", "number"].indexOf(typeof value) != -1) value = obrabotka.kChisla(value)
-        if (typeof data.users[id][toSet] != typeof value || isNaN(value)) return {success: false, message: "Ошибка типа"};
+        if (["string", "number"].includes(typeof value) && !strings.includes(toSet)) {
+            value = obrabotka.kChisla(value);
+            if (isNaN(value)) return {success: false, message: "Ошибка типа"};
+        }
+        if (typeof data.users[id][toSet] != typeof value) return {success: false, message: "Ошибка типа"};
         data.users[id][toSet] = value;
         return {success: true};
     },
     keyboard: {
-        passive: function (id, type, state) {
+        passive: function (id, type, state, client) {
+            if (client == "discord") return {success: true};
             if (type == "private") {
-                if (!get.id(id)) return {success: false, message: "Неверный пользователь"};
+                if (!check.internalId(id)) return {success: false, message: "Неверный пользователь"};
                 data.users[id].keyboard = state;
                 return {success: true}
             }
@@ -392,9 +488,10 @@ let set = {
                 return {success: true}
             }
         },
-        active: function (id, type, state) {
+        active: function (id, type, state, client) {
+            if (client == "discord") return {success: true};
             if (type == "private") {
-                if (!get.id(id)) return {success: false, message: "Неверный пользователь"};
+                if (!check.internalId(id)) return {success: false, message: "Неверный пользователь"};
                 data.users[id].activeKeyboard = state;
                 return {success: true}
             }
@@ -404,6 +501,11 @@ let set = {
                 return {success: true}
             }
         }
+    },
+    clientId: function(userId, client, setId) {
+        if (typeof setId == "number") setId = String(setId);
+        data.users[userId].ids[client] = setId;
+        return {success: true};
     }
 }
 let promo = {
@@ -500,7 +602,7 @@ let promo = {
         else return {success: false, message: "Произошла ошибка при добавлении промокода"};
     },
     activate: function (userId, name) {
-        if (!get.id(userId)) return {success: false, message: "Пользователь не существует"};
+        if (!check.internalId(userId)) return {success: false, message: "Пользователь не существует"};
         if (name == "default") return {success: false, message: "Ща твой прогресс по дефолту ёбну"};
         if (!promo.check(name)) return {success: false, message: "Промокода не существует!"};
         if (data.users[userId].activatedPromos.indexOf(name) != -1) return {success: false, message: "Промокод уже активирован"};
@@ -618,45 +720,45 @@ let game = {
             
     //     }
     // },
-    btcBet: function (client, chatId, id, amount, bet) {
-        if (amount == "#r") amount = randomInt(1, get.get(id, "balance"));
-        else if (amount == "все" || amount == "всё") amount = get.get(id, "balance");
+    btcBet: function (kmd, chatId, amount, bet) {
+        if (amount == "#r") amount = randomInt(1, get.get(kmd.userInternalId, "balance"));
+        else if (amount == "все" || amount == "всё") amount = get.get(kmd.userInternalId, "balance");
         else {
             if (isNaN(parseInt(amount))) return {success: false, message: "Неверный параметр ставка\nИспользование: бит <ставка/всё> <вверх/вниз>"};
             if (amount.slice(-1) == "%") {
                 amount = amount.slice(0, -1);
                 if (amount > 100 || amount < 1) return {success: false, message: "Неверное использование процентной ставки. Процент должен быть от 1 до 100"}
-                amount = Math.round(amount / 100 * get.get(id, "balance"));
+                amount = Math.round(amount / 100 * get.get(kmd.userInternalId, "balance"));
             }
             else amount = obrabotka.kChisla(amount);
         };
-        if (amount > get.get(id, "balance") || amount <= 0) return {success: false, message: "Неверная ставка (меньше нуля или больше вашего баланса)"};
+        if (amount > get.get(kmd.userInternalId, "balance") || amount <= 0) return {success: false, message: "Неверная ставка (меньше нуля или больше вашего баланса)"};
         if (["вверх", "вниз"].indexOf(bet) == -1) return {success: false, message: "Использование: бит <ставка/всё> <вверх/вниз>"};
-        append.appendToUser(id, "balance", -amount);
-        CLIENTS[client].send(JSON.stringify({action: "sendMessage", data: {chatId, text: `Ваша ставка ${obrabotka.chisla(amount)} КШ, ждем минуту.`}}))
+        append.appendToUser(kmd.userInternalId, "balance", -amount);
+        kmd.sendMessage({chatId, text: `Ваша ставка ${obrabotka.chisla(amount)} КШ, ждем минуту.`})
         request1("https://blockchain.info/ticker", function (err, res, body) {
             if (err) {
-                append.appendToUser(id, "balance", amount);
-                return CLIENTS[client].sendMessage({chatId, text: "Произошла ошибка! Сообщите об этом разработчику!"});
+                append.appendToUser(kmd.userInternalId, "balance", amount);
+                return kmd.sendMessage({chatId, text: "Произошла ошибка! Сообщите об этом разработчику!"});
             }
             let startPrice = JSON.parse(body).RUB.sell;
-            CLIENTS[client].sendMessage({chatId, text: `Debug: startPrice = ${startPrice}`});
+            kmd.sendMessage({chatId, text: `Debug: startPrice = ${startPrice}`});
             setTimeout(() => {
                 request1("https://blockchain.info/ticker", function (err, res, body) {
                     if (err) {
-                        append.appendToUser(id, "balance", amount);
-                        return CLIENTS[client].sendMessage({chatId, text: "Произошла ошибка! Сообщите об этом разработчику!"});
+                        append.appendToUser(kmd.userInternalId, "balance", amount);
+                        return kmd.sendMessage({chatId, text: "Произошла ошибка! Сообщите об этом разработчику!"});
                     }
                     let endPrice = JSON.parse(body).RUB.sell;
-                    CLIENTS[client].sendMessage({chatId, text: `Debug: endPrice = ${endPrice}`});
+                    kmd.sendMessage({chatId, text: `Debug: endPrice = ${endPrice}`});
                     if ((startPrice < endPrice && bet == "вверх") || (startPrice > endPrice && bet == "вниз")) {
-                        append.appendToUser(id, "balance", amount * 2);
-                        data.users[id].wonBtcBets += amount;
-                        CLIENTS[client].sendMessage({chatId, text: `Вы выиграли!\nКурс BTC изменился на ${(endPrice - startPrice).toFixed(2)} RUB.\nВаш выигрыш: ${obrabotka.chisla(amount)} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`});
+                        append.appendToUser(kmd.userInternalId, "balance", amount * 2);
+                        data.users[kmd.userInternalId].wonBtcBets += amount;
+                        kmd.sendMessage({chatId, text: `Вы выиграли!\nКурс BTC изменился на ${(endPrice - startPrice).toFixed(2)} RUB.\nВаш выигрыш: ${obrabotka.chisla(amount)} КШ\nБаланс: ${obrabotka.chisla(get.get(kmd.userInternalId, "balance"))} КШ`});
                     }
                     else {
-                        data.users[id].lostBtcBets += amount;
-                        CLIENTS[client].sendMessage({chatId, text: `Вы проиграли.\nКурс BTC изменился на ${(endPrice - startPrice).toFixed(2)} RUB.\nПроиграно ${obrabotka.chisla(amount)} КШ\nБаланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ`});
+                        data.users[kmd.userInternalId].lostBtcBets += amount;
+                        kmd.sendMessage({chatId, text: `Вы проиграли.\nКурс BTC изменился на ${(endPrice - startPrice).toFixed(2)} RUB.\nПроиграно ${obrabotka.chisla(amount)} КШ\nБаланс: ${obrabotka.chisla(get.get(kmd.userInternalId, "balance"))} КШ`});
                     }
                 });
             }, 60000);
@@ -743,11 +845,50 @@ class kmd {
         this.message_text = message.text.toLowerCase().split(" ");
         this.client = client;
         let command = message.text;
+        this.userInternalId = get.internalId(this.message.from_user.id, this.client);
         if (customCommand) command = customCommand;
-        set.lastCommand(message.from_user.id, command);
+        set.lastCommand(this.userInternalId, command, (this.message.reply_to_message) ? this.message.reply_to_message.from_user.id: undefined);
+    }
+    sendMessage({userId = undefined, chatId = undefined, client = undefined, text, chatType = this.message.chat.type, ...args}) {
+
+        // {chatId, text, parseMode?, keyboard?, chatType}
+
+        if (client) chatType = "private";
+        else client = this.client;
+
+        if (chatType) {
+            if (chatType == "private") {
+                if (userId) {
+                    chatId = get.get(userId, "clientId", client);
+                    if (!chatId) {
+                        console.log("Пользователь не найден");
+                        return;
+                    }
+                    return CLIENTS[client].sendMessage({chatId, text, chatType, ...args});
+                }
+                else chatId = this.message.from_user.id;
+                return CLIENTS[client].sendMessage({chatId, text, chatType, ...args});
+            }
+            else {
+                if (!chatId) chatId = this.message.chat.id;
+                return CLIENTS[client].sendMessage({chatId, text, chatType, ...args});
+            }
+        }
+    }
+    createMention(userId, client = this.client) {
+        let externalUserId = get.get(userId, "clientId", client);
+        let username = get.get(userId, "nickname");
+        if (!username) return userId;
+        if (!externalUserId) return username;
+        if (client == "telegram") {
+            return `<a href='tg://openmessage?user_id=${externalUserId}'>${username.replace("<", "\<").replace(">", "\>")}</a>`
+        }
+        else if (client == "discord") {
+            return `<@${externalUserId}>`
+        }
     }
     top() {
-        let top = {mode: "balance", active_top: true, caller_id: this.message.from_user.id, page: 1};
+        let top = {mode: "balance", active_top: true, caller_id: this.userInternalId, page: 1, kmd: this};
         if (this.message_text[0] == "всетоп") top.active_top = false;
         if (this.message_text.length >= 2) {
             if (["клик", "к", "click"].includes(this.message_text[1])) top.mode = "click";
@@ -760,23 +901,23 @@ class kmd {
                 if (!isNaN(a)) top.page = a;
             }
         }
-        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: others.leaderbord(top), parseMode: "HTML"});
+        this.sendMessage({chatId: this.message.chat.id, text: others.leaderbord(top), parseMode: "HTML"});
     }
     buyBoost(boost) {
-        let id = this.message.from_user.id;
+        let id = this.userInternalId;
         let args = this.message_text.filter((i) => !boost.split(" ").includes(i));
         if (boost == "клик") boost = "click";
         else if (boost == "сек") boost = "sec";
         else if (["скидка", "1% скидки"].includes(boost)) boost = "sale";
         else if (boost == "банк") boost = "bankMax";
-        else return CLIENTS[this.client]
+        else return
         let amount = 1;
         if (args.length > 0) {
             if (["все", "всё"].includes(args[0])) amount = -1;
             else amount = args[0];
         }
         let cost = calc.boost(id, boost);
-        if (cost.cost == undefined) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: cost.message});
+        if (cost.cost == undefined) return this.sendMessage({chatId: this.message.chat.id, text: cost.message});
         //^^^: Отправка пользователю сообщения об ошибке покупки по причине достижения лимита ибо cost.cost == undefined только если
         //произошло достижение лимита либо неверно выбран апгрейд
         cost = cost.cost;
@@ -789,43 +930,41 @@ class kmd {
             balance = get.get(id, "balance");
             cost = calc.boost(id, boost).cost;
         }
-        if (i == 0) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Недостаточно средств. Для покупки ещё необходимо ${obrabotka.chisla(cost - balance)} КШ`});
-        else {
-            if (get.keyboard(this.message.chat.id, "activeKeyboard", this.message.chat.type)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Успешно куплено Успешно куплено апгрейдов: ${i}\nid: <code>${id}</code>
+        if (i == 0) return this.sendMessage({chatId: this.message.chat.id, text: `Недостаточно средств. Для покупки ещё необходимо ${obrabotka.chisla(cost - balance)} КШ`});
+        let type = this.message.chat.type;
+        let a = get.internalId((type == "private") ? this.message.from_user.id : this.message.chat.id, this.client, type);
+        if (get.keyboard(a, "activeKeyboard", this.client, type)) return this.sendMessage({chatId: this.message.chat.id, text: `Успешно куплено апгрейдов: ${i}
 Апгрейды: ${get.get(id, "sec")}/сек; ${get.get(id, "click")}/клик; ${get.get(id, "sale")}% скидки
 Баланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ
-В банке: ${obrabotka.chisla(get.get(id, "bank"))}/ ${obrabotka.chisla(get.get(id, "bankMax"))} КШ`, parseMode: "HTML", keyboard: keyboard.upgrade(this.message.from_user.id)});
+В банке: ${obrabotka.chisla(get.get(id, "bank"))}/ ${obrabotka.chisla(get.get(id, "bankMax"))} КШ`, parseMode: "HTML", keyboard: keyboard.upgrade(this.userInternalId)});
 
-            return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Успешно куплено Успешно куплено апгрейдов: ${i}\nid: <code>${id}</code>
+        return this.sendMessage({chatId: this.message.chat.id, text: `Успешно куплено апгрейдов: ${i}
 Апгрейды: ${get.get(id, "sec")}/сек; ${get.get(id, "click")}/клик; ${get.get(id, "sale")}% скидки
 Баланс: ${obrabotka.chisla(get.get(id, "balance"))} КШ
 В банке: ${obrabotka.chisla(get.get(id, "bank"))}/ ${obrabotka.chisla(get.get(id, "bankMax"))} КШ`, parseMode: "HTML"});
-        }
     }
     click() {
-        let userId = this.message.from_user.id;
-        accrual.click(userId);
-        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Коллекция кристальных шаров пополнена!\nБаланс: ${obrabotka.chisla(get.get(userId, "balance"))} КШ`});
+        accrual.click(this.userInternalId);
+        this.sendMessage({chatId: this.message.chat.id, text: `Коллекция кристальных шаров пополнена!\nБаланс: ${obrabotka.chisla(get.get(this.userInternalId, "balance"))} КШ`});
     }
     balance() {
         let userId;
         if (this.message_text.length > 1) {
             if (this.message_text[1] == "_" && this.message.reply_to_message) userId = this.message.reply_to_message.from_user.id;
-            else {
-                userId = this.message_text[1];
-                if (!get.id(userId)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Id не найден"});
-            }
+            else userId = this.message_text[1];
         }
         else userId = this.message.from_user.id;
-        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text:
-`Имя: ${get.get(userId, "fullName")}\nid: \`${userId}\`
+        userId = get.internalId(userId, this.client);
+        if (!check.internalId(userId)) return this.sendMessage({chatId: this.message.chat.id, text: "Id не найден"});
+        this.sendMessage({chatId: this.message.chat.id, text:
+`${this.createMention(userId)}
 Апгрейды: ${get.get(userId, "sec")}/сек; ${get.get(userId, "click")}/клик; ${get.get(userId, "sale")}% скидки
 ${(() => {
     let rewards = get.get(userId, "rewards");
     if (rewards.length == 0) return ""
     else return `Награды: ${rewards.join(", ")};\n`
 })()}Баланс: ${obrabotka.chisla(get.get(userId, "balance"))} КШ
-В банке: ${obrabotka.chisla(get.get(userId, "bank"))}/${obrabotka.chisla(get.get(userId, "bankMax"))} КШ`,parseMode: "MARKDOWN"})
+В банке: ${obrabotka.chisla(get.get(userId, "bank"))}/${obrabotka.chisla(get.get(userId, "bankMax"))} КШ`,parseMode: "HTML"})
     }
     helpCommand() {
         if (this.message_text.length < 2) {
@@ -837,11 +976,11 @@ ${(() => {
         let i = 0;
         let checkCommand = this.message_text[0];
         while (true) {
-            if (i > 3) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Команда не найдена"});
+            if (i > 3) return this.sendMessage({chatId: this.message.chat.id, text: "Команда не найдена"});
             if (Object.keys(COMMANDS).includes(checkCommand)) {
                 if (Object.keys(COMMANDS[checkCommand]).includes("link")) checkCommand = COMMANDS[checkCommand].link;
-                if (COMMANDS[checkCommand].permissions == "admin" && !get.get(this.message.from_user.id, "isAdmin")) return;
-                if (COMMANDS[checkCommand].permissions == "owner" && this.message.from_user.id != 357694314) return; //ВНИМАНИЕ БЛЯТЬ
+                if (COMMANDS[checkCommand].permissions == "admin" && !get.get(this.userInternalId, "isAdmin")) return;
+                if (COMMANDS[checkCommand].permissions == "owner" && this.userInternalId != 1) return; //ВНИМАНИЕ БЛЯТЬ
                 break
             }
             i++;
@@ -851,20 +990,20 @@ ${(() => {
         let msg = `${checkCommand} `;
         if (Object.keys(COMMANDS[checkCommand]).includes("links")) COMMANDS[checkCommand].links.forEach((i) => msg += `/ ${i} `);
         msg = msg.slice(0, -1) + `: ${COMMANDS[checkCommand].description}\nИспользование: ${COMMANDS[checkCommand].usage}`;
-        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: msg});
+        this.sendMessage({chatId: this.message.chat.id, text: msg});
     }
     sendUser() {
         if (this.message_text.length < 2) {
             this.message.text = "команда " + this.message.text;
-            new kmd(this.message, this.client).helpCommand();
+            return new kmd(this.message, this.client).helpCommand();
         }
-        let from = this.message.from_user.id;
+        let from = this.userInternalId;
         let to;
         if (this.message_text[1] == "_" && this.message.reply_to_message) to = this.message.reply_to_message.from_user.id;
-        else {
-            to = this.message_text[1];
-            if (!get.id(to)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Id не найден"});
-        }
+        else to = this.message_text[1];
+        let internalTo = get.internalId(to, this.client);
+        if (!internalTo) return this.sendMessage({chatId: this.message.chat.id, text: "Id не найден"});
+
         let type;
         if (this.message_text[0] == "послать") type = "normal";
         else if (this.message_text[0] == "послатьанон") type = "anonymous";
@@ -872,16 +1011,17 @@ ${(() => {
             normal: 1_000_000,
             anonymous: 3_000_000
         };
-        if (get.get(from, "balance") < cost[type]) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Недостаточно средств"});
+        if (get.get(from, "balance") < cost[type]) return this.sendMessage({chatId: this.message.chat.id, text: "Недостаточно средств"});
         append.appendToUser(from, "balance", -cost[type]);
         data.users[from].othersSpends += cost[type];
         if (type == "anonymous") {
-            CLIENTS[get.get(to, "receiver")].sendMessage({chatId: to, text: "Вас анонимно послали нахуй"});
-            return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Вы анонимно послали нахуй игрока ${get.get(to, "fullName")} (${to})\nЗабрано ${obrabotka.chisla(cost[type])} КШ`});
+            this.sendMessage({userId: internalTo, client: get.get(internalTo, "receiver"), text: "Вас анонимно послали нахуй"});
+            return this.sendMessage({chatId: this.message.chat.id, text: `Вы анонимно послали нахуй игрока ${this.createMention(internalTo)}\nЗабрано ${obrabotka.chisla(cost[type])} КШ`, parseMode: "HTML"});
         }
         else if (type == "normal") {
-            CLIENTS[get.get(to, "receiver")].sendMessage({chatId: to, text: `Вас послал нахуй пользователь ${get.get(from, "fullName")} (${from})`});
-            return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Вы послали нахуй игрока ${get.get(to, "fullName")} (${to})\nЗабрано ${obrabotka.chisla(cost[type])} КШ`});
+            let receiver = get.get(internalTo, "receiver");
+            this.sendMessage({userId: internalTo, client: receiver, text: `Вас послал нахуй пользователь ${this.createMention(from, receiver)}`, parseMode: "HTML"});
+            return this.sendMessage({chatId: this.message.chat.id, text: `Вы послали нахуй игрока ${this.createMention(internalTo)}\nЗабрано ${obrabotka.chisla(cost[type])} КШ`, parseMode: "HTML"});
         }
     }
     backup() {
@@ -899,24 +1039,23 @@ ${(() => {
                 const uploadStream = request({ ...parse(href), method });
                 fileStream.pipe(uploadStream);
                 fileStream.on('end', () => uploadStream.end());
-                CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Бэкап успешно выполнен и выгружен в облако!"});
+                this.sendMessage({chatId: this.message.chat.id, text: "Бэкап успешно выполнен и выгружен в облако!"});
             }
             catch (err) {
-                CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `При выгрузке бэкапа возникла ошибка:\n${err}`});
+                this.sendMessage({chatId: this.message.chat.id, text: `При выгрузке бэкапа возникла ошибка:\n${err}`});
             }
         })();
     }
     dbWrite() {
         fs.copyFileSync("usrs.json", `backups/${`backup-${dateFormat(get.time()*1000, "yyyy-mm-dd_HH.MM.ss")}.json`}`);
-        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "БД записана"});
+        return this.sendMessage({chatId: this.message.chat.id, text: "БД записана"});
     }
     commandsList() {
-        let userId = this.message.from_user.id;
         let commands = [];
-        if (userId == 357694314) Object.keys(COMMANDS).forEach((i) => {
+        if (this.userInternalId == 1) Object.keys(COMMANDS).forEach((i) => {
             if (!COMMANDS[i].link) commands.push([i, COMMANDS[i].description]);
         });
-        else if (get.get(userId, "isAdmin")) Object.keys(COMMANDS).forEach((i) => {
+        else if (get.get(this.userInternalId, "isAdmin")) Object.keys(COMMANDS).forEach((i) => {
             if (COMMANDS[i].permissions != "owner" && !COMMANDS[i].link) commands.push([i, COMMANDS[i].description]);
         });
         else Object.keys(COMMANDS).forEach((i) => {
@@ -926,41 +1065,41 @@ ${(() => {
         commands.forEach((i) => {
             msg += `${i[0].charAt(0).toUpperCase() + i[0].slice(1)}: ${i[1]}\n`
         });
-        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: msg});
+        this.sendMessage({chatId: this.message.chat.id, text: msg});
     }
     bonus() {
-        let res = give.bonus(this.message.from_user.id);
-        if (res.success) CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.data});
-        else CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
+        let res = give.bonus(this.userInternalId);
+        if (res.success) this.sendMessage({chatId: this.message.chat.id, text: res.data});
+        else this.sendMessage({chatId: this.message.chat.id, text: res.message});
     }
     bonus2() {
-        let res = give.bonus2(this.message.from_user.id);
-        if (res.success) CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.data});
-        else CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
+        let res = give.bonus2(this.userInternalId);
+        if (res.success) this.sendMessage({chatId: this.message.chat.id, text: res.data});
+        else this.sendMessage({chatId: this.message.chat.id, text: res.message});
     }
     resetId() {
-        if (this.message_text.length == 1 || (this.message_text.length > 1 && this.message_text[1] == "справка")) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Обнуляет прогресс и вы начинаете игру заново.\nЧтобы сбросить прогресс, введите `сброс подтвердить`"});
-        let toReset = 0;
+        if (this.message_text.length == 1 || (this.message_text.length > 1 && this.message_text[1] == "справка")) return this.sendMessage({chatId: this.message.chat.id, text: "Обнуляет прогресс и вы начинаете игру заново.\nЧтобы сбросить прогресс, введите `сброс подтвердить`"});
+        let toReset;
         let type = 0;
         if (this.message_text[1] == "подтвердить") {
-            toReset = this.message.from_user.id;
+            toReset = this.userInternalId;
             type = 0;
         }
         else {
-            if (!get.get(this.message.from_user.id, "isAdmin")) {
+            if (!get.get(this.userInternalId, "isAdmin")) {
                 this.message.text = "команда " + this.message.text;
                 return new kmd(this.message, this.client).helpCommand();
             }
-            toReset = this.message_text[1];
-            if (toReset == "_" && this.message.reply_to_message) toReset = this.message.reply_to_message.from_user.id;
-            if (!get.id(toReset)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Пользователя ${toReset} не существует`});
-            if (get.get(toReset, "isAdmin") && this.message.from_user.id != 357694314) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Невозможно сбросить прогресс этого пользователя"});
+            if (this.message_text[1] == "_" && this.message.reply_to_message) toReset = get.internalId(this.message.reply_to_message.from_user.id, this.client);
+            else if (check.externalId(this.message_text[1])) toReset = get.internalId(this.message_text[1], this.client);
+            if (!check.internalId(toReset)) return this.sendMessage({chatId: this.message.chat.id, text: `Пользователя ${etoReset} не существует`});
+            if (get.get(toReset, "isAdmin") && this.userInternalId != 1) return this.sendMessage({chatId: this.message.chat.id, text: "Невозможно сбросить прогресс этого пользователя"});
             type = 1;
         }
-        for (let i in data.users[toReset]) if (!data.doNotClear.includes(i)) data.users[toReset][i] = structuredClone(data.users.default[i]); //ВНИМАНИЕ БЛЯТЬ удаляется default при сбросе пофиксить
-        if (type == 0) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Ваш прогресс сброшен!"});
-        CLIENTS[get.get(toReset, "receiver")].sendMessage({chatId: toReset, text: "Ваш прогресс сброшен администратором!"});
-        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Прогресс пользователя ${get.get(toReset, "fullName")} (\`${toReset}\`) успешно сброшен!`})
+        for (let i in data.users[toReset]) if (!data.doNotClear.includes(i)) data.users[toReset][i] = structuredClone(data.users["0"][i]); //ВНИМАНИЕ БЛЯТЬ удаляется default при сбросе пофиксить
+        if (type == 0) return this.sendMessage({chatId: this.message.chat.id, text: "Ваш прогресс сброшен!"});
+        this.sendMessage({userId: toReset, client: get.get(toReset, "receiver"), text: "Ваш прогресс сброшен администратором!"});
+        return this.sendMessage({chatId: this.message.chat.id, text: `Прогресс пользователя ${this.createMention(toReset)} успешно сброшен!`, parseMode: "HTML"})
     }
     pay() {
         if (this.message_text.length < 3) {
@@ -971,14 +1110,12 @@ ${(() => {
         let from = this.message.from_user.id;
         let to;
         if (this.message_text[2] == "_" && this.message.reply_to_message) to = this.message.reply_to_message.from_user.id;
-        else {
-            to = this.message_text[2];
-            if (!get.id(to)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Id не найден"});
-        }
+        else to = this.message_text[2];
+        if (!get.internalId(to, this.client)) return this.sendMessage({chatId: this.message.chat.id, text: "Id не найден"});
         let comment;
         if (this.message_text.length > 3) comment = this.message.text.split(" ").slice(3).join(" ");
-        let res = others.pay(from, to, this.message_text[1], comment);
-        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
+        let res = others.pay(get.internalId(to, this.client), this, this.message_text[1], comment);
+        return this.sendMessage({chatId: this.message.chat.id, text: res.message, parseMode: "HTML"});
     }
     price() {
         if (this.message_text.length < 2) {
@@ -991,10 +1128,10 @@ ${(() => {
         else if (upgrade == "сек") upgrade = "sec";
         else if (["скидка", "скидки"].includes(upgrade)) upgrade = "sale";
         else if (["банк", "+банк"].includes(upgrade)) upgrade = "bankMax";
-        if (!["click", "sec", "sale", "bankMax"].includes(upgrade)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Неверный апгрейд"});
-        let res = calc.boost(this.message.from_user.id, upgrade);
-        if (res.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.data});
-        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
+        if (!["click", "sec", "sale", "bankMax"].includes(upgrade)) return this.sendMessage({chatId: this.message.chat.id, text: "Неверный апгрейд"});
+        let res = calc.boost(this.userInternalId, upgrade);
+        if (res.success) return this.sendMessage({chatId: this.message.chat.id, text: res.data});
+        return this.sendMessage({chatId: this.message.chat.id, text: res.message});
     }
     set() {
         if (this.message_text.length < 4) {
@@ -1004,15 +1141,14 @@ ${(() => {
         }
         let value = this.message_text[3];
         let toSet = this.message.text.split(" ")[2];
-        let to;
-        if (this.message_text[1] == "_" && this.message.reply_to_message) to = this.message.reply_to_message.from_user.id;
-        else {
-            to = this.message_text[1];
-            if (!get.id(to)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Id не найден"});
-        }
+        let to, eto;
+        if (this.message_text[1] == "_" && this.message.reply_to_message) eto = this.message.reply_to_message.from_user.id;
+        else eto = this.message_text[1];
+        to = get.internalId(eto, this.client);
+        if (!eto) return this.sendMessage({chatId: this.message.chat.id, text: "Id не найден"});
         if (value == "true") value = true;
         else if (value == "false") value = false;
-        if (["isAdmin", "mails", "timeLastBonus", "keyboard", "activeKeyboard", "receiver"].indexOf(toSet) != -1 && this.message.from_user.id != 357694314) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Недостаточно прав"});
+        if (["isAdmin", "keyboard", "activeKeyboard", "receiver", "password"].indexOf(toSet) != -1 && this.userInternalId != 1) return this.sendMessage({chatId: this.message.chat.id, text: "Недостаточно прав"});
         let ret, msg1, msg2;
         if (toSet == "reward" && ["-", "+"].includes(value[0])) {
             let emoji = value.slice(1);
@@ -1026,18 +1162,19 @@ ${(() => {
                 msg1 = `У вас конфисковали награду \'${emoji}\'`;
                 msg2 = `У пользователя ${to} конфискована награда \'${emoji}\'`;
             }
-            if (!ret.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: ret.message});
+            if (!ret.success) return this.sendMessage({chatId: this.message.chat.id, text: ret.message});
         }
         else {
             if (typeof value == "string" && ["-", "+"].includes(value[0])) ret = append.appendToUser(to, toSet, value);
             else ret = set.set(to, toSet, value);
-            if (!ret.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: ret.message});
+            if (!ret.success) return this.sendMessage({chatId: this.message.chat.id, text: ret.message});
             msg1 = `Вам установлено ${value} значение ${toSet} администратором`;
-            msg2 = `Пользователю ${get.get(to, "fullName")} установлено ${value} значение ${toSet}`;
+            msg2 = `Пользователю ${this.createMention(to)} установлено ${value} значение ${toSet}`;
         }
         if (msg1 && msg2) {
-            CLIENTS[get.get(to, "receiver")].sendMessage({chatId: to, text: msg1});
-            CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: msg2});
+            let receiver = get.get(to, "receiver");
+            this.sendMessage({userId: to, client: receiver, text: msg1, parseMode: "HTML"});
+            this.sendMessage({chatId: this.message.chat.id, text: msg2, parseMode: "HTML"});
         }
     }
     coin() {
@@ -1048,7 +1185,7 @@ ${(() => {
         }
         let bet = this.message_text[1];
         let side = this.message_text[2];
-        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: game.coin(this.message.from_user.id, bet, side).message});
+        this.sendMessage({chatId: this.message.chat.id, text: game.coin(this.userInternalId, bet, side).message});
     }
     bankTransfer() {
         let action;
@@ -1060,7 +1197,7 @@ ${(() => {
             return new kmd(this.message, this.client, text).helpCommand();
         }
         if (this.message_text.length > 1) value = this.message_text[1];
-        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: others.bankTransfer(this.message.from_user.id, action, value).message});
+        return this.sendMessage({chatId: this.message.chat.id, text: others.bankTransfer(this.userInternalId, action, value).message});
     }
     mailing() {
         if (this.message_text.length < 2) {
@@ -1072,24 +1209,26 @@ ${(() => {
         if (this.message_text[1] == "да") state = true;
         else if (this.message_text[1] == "нет") state = false;
         if (state != undefined) {
-            let res = set.set(this.message.from_user.id, "mails", state);
-            if (!res.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
-            if (state) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Рассылка включена.\nДля отключения введите рассылка нет"});
-            return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Рассылка отключена.\nДля включения введите рассылка да"});
+            let res = set.set(this.userInternalId, "mails", state);
+            if (!res.success) return this.sendMessage({chatId: this.message.chat.id, text: res.message});
+            if (state) return this.sendMessage({chatId: this.message.chat.id, text: "Рассылка включена.\nДля отключения введите рассылка нет"});
+            return this.sendMessage({chatId: this.message.chat.id, text: "Рассылка отключена.\nДля включения введите рассылка да"});
         }
         else if (this.message_text[1] == "создать") {
-            if (!get.get(this.message.from_user.id, "isAdmin")) return;
-            if (this.message_text.length < 3) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Использование: рассылка создать <текст>"});
+            if (!get.get(this.userInternalId, "isAdmin")) return;
+            if (this.message_text.length < 3) return this.sendMessage({chatId: this.message.chat.id, text: "Использование: рассылка создать <текст>"});
             let text = this.message.text.split(" ").slice(2).join(" ");
             text += "\n\n____\nДля отключения рассылки введите рассылка нет";
+            let receiver;
             for (let i of get.ids()) {
-                if (get.get(i, "mails") && i != "default") CLIENTS[get.get(i, "receiver")].sendMessage({chatId: i, text});
+                receiver = get.get(i, "receiver")
+                if (get.get(i, "mails")) this.sendMessage({userId: i, client: receiver, text, chatType: "private"});
             }
-            CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Рассылка отправлена"});
+            this.sendMessage({chatId: this.message.chat.id, text: "Рассылка отправлена"});
         }
     }
     promoList() {
-        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: promo.list().message});
+        return this.sendMessage({chatId: this.message.chat.id, text: promo.list().message});
     }
     promoInfo() {
         if (this.message_text.length < 2) {
@@ -1098,7 +1237,7 @@ ${(() => {
             return new kmd(this.message, this.client, text).helpCommand();
         }
         let promoName = this.message.text.split(" ").slice(1).join(" ");
-        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: promo.info(promoName).message});
+        this.sendMessage({chatId: this.message.chat.id, text: promo.info(promoName).message});
     }
     promoFullInfo() {
         if (this.message_text.length < 2) {
@@ -1107,7 +1246,7 @@ ${(() => {
             return new kmd(this.message, this.client, text).helpCommand();
         }
         let promoName = this.message.text.split(" ").slice(1).join(" ");
-        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: promo.fInfo(promoName).message});
+        this.sendMessage({chatId: this.message.chat.id, text: promo.fInfo(promoName).message});
     }
     promoDelete() {
         if (this.message_text.length < 2) {
@@ -1117,8 +1256,8 @@ ${(() => {
         }
         let promoName = this.message.text.split(" ").slice(1).join(" ");
         let res = promo.delete(promoName);
-        if (res.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Промокод удален"});
-        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
+        if (res.success) return this.sendMessage({chatId: this.message.chat.id, text: "Промокод удален"});
+        return this.sendMessage({chatId: this.message.chat.id, text: res.message});
     }
     promoAdd() {
         if (this.message_text.length < 5) {
@@ -1131,10 +1270,10 @@ ${(() => {
         let c = b[1].slice(1).split(" ");
         let paramsObj;
         try {paramsObj = JSON.parse(`{${b[0]}}`.replaceAll("'", '"'))}
-        catch (e) {return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text:`Произошла ошибка, попробуйте ещё раз!\n${e}`})}
+        catch (e) {return this.sendMessage({chatId: this.message.chat.id, text:`Произошла ошибка, попробуйте ещё раз!\n${e}`})}
         let res = promo.add(this.message_text[1], paramsObj, c[0], c[1]);
-        if (res.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Промокод успешно добавлен"});
-        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
+        if (res.success) return this.sendMessage({chatId: this.message.chat.id, text: "Промокод успешно добавлен"});
+        return this.sendMessage({chatId: this.message.chat.id, text: res.message});
     }
     promoActivate() {
         if (this.message_text.length < 2) {
@@ -1142,34 +1281,34 @@ ${(() => {
             this.message.text = "команда " + this.message.text;
             return new kmd(this.message, this.client, text).helpCommand();
         }
-        let res = promo.activate(this.message.from_user.id, this.message.text.slice(this.message.text.indexOf(" ") + 1));
-        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
+        let res = promo.activate(this.userInternalId, this.message.text.slice(this.message.text.indexOf(" ") + 1));
+        return this.sendMessage({chatId: this.message.chat.id, text: res.message});
     }
     keyboardSet() {
-        if (this.message_text.length < 2 || !["да", "нет"].includes(this.message_text[1])) {
-            let text = this.message.text;
-            this.message.text = "команда " + this.message.text;
-            return new kmd(this.message, this.client, text).helpCommand();
-        }
         let state;
-        if (this.message_text[1] == "да") state = true;
-        else if (this.message_text[1] == "нет") state = false;
         let type = this.message.chat.type;
-        let res = set.keyboard.passive(this.message.chat.id, type, state);
-        if (!res) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
-        if (state) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Клавиатура включена", keyboard: keyboard.mainMenu});
-        set.keyboard.active(this.message.chat.id, type, false);
-        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Клавиатура отключена", keyboard: -1});
+        let id = get.internalId((type == "private") ? this.message.from_user.id : this.message.chat.id, this.client, type);
+        if (this.message_text.length > 1) {
+            if (this.message_text[1] == "да") state = true;
+            else if (this.message_text[1] == "нет") state = false;
+        }
+        else state = !get.keyboard(id, "keyboard", this.client, type);
+        let res = set.keyboard.passive(id, type, state, this.client);
+        if (!res) return this.sendMessage({chatId: this.message.chat.id, text: res.message});
+        if (state) return this.sendMessage({chatId: this.message.chat.id, text: "Клавиатура включена", keyboard: keyboard.mainMenu});
+        set.keyboard.active(id, type, false, this.client);
+        this.sendMessage({chatId: this.message.chat.id, text: "Клавиатура отключена", keyboard: -1});
     }
     getUserInfo() {
         let userId;
         if (this.message_text.length < 2) userId = this.message.from_user.id;
         else if (this.message_text[1] == "_" && this.message.reply_to_message) userId = this.message.reply_to_message.from_user.id;
         else userId = this.message_text[1];
-        if (!get.id(userId)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Id ${userId} не найден`});
+        userId = get.internalId(userId, this.client);
+        if (!userId) return this.sendMessage({chatId: this.message.chat.id, text: `Id ${userId} не найден`});
         let res = get.data(userId);
-        if (res.success == false) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
-        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: JSON.stringify(res, null, "    ")});
+        if (res.success == false) return this.sendMessage({chatId: this.message.chat.id, text: res.message});
+        return this.sendMessage({chatId: this.message.chat.id, text: JSON.stringify(res, null, "    ")});
     }
     dotValue() {
         if (this.message_text.length < 2) {
@@ -1177,12 +1316,12 @@ ${(() => {
             this.message.text = "команда " + this.message.text;
             return new kmd(this.message, this.client, text).helpCommand();
         }
-        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: obrabotka.chisla(this.message_text[1])});
+        return this.sendMessage({chatId: this.message.chat.id, text: obrabotka.chisla(this.message_text[1])});
     }
     admin() {
-        let res = get.get(this.message.from_user.id, "isAdmin");
-        if (res) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Вы админ"});
-        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Вы не админ"});
+        let res = get.get(this.userInternalId, "isAdmin");
+        if (res) return this.sendMessage({chatId: this.message.chat.id, text: "Вы админ"});
+        return this.sendMessage({chatId: this.message.chat.id, text: "Вы не админ"});
     }
     removeId() {
         if (this.message_text.length < 2) {
@@ -1193,18 +1332,19 @@ ${(() => {
         let userId;
         if (this.message_text[1] == "_" && this.message.reply_to_message) userId = this.message.reply_to_message.from_user.id;
         else userId = this.message_text[1];
-        if (!get.id(userId)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Id ${userId} не найден`});
-        if (get.get(userId, "isAdmin")) CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Невозможно удалить администратора"});
+        userId = get.internalId(userId, this.client);
+        if (!userId) return this.sendMessage({chatId: this.message.chat.id, text: `Id ${userId} не найден`});
+        if (get.get(userId, "isAdmin")) this.sendMessage({chatId: this.message.chat.id, text: "Невозможно удалить администратора"});
         delete data.users[userId];
-        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Пользователь успешно удален"});
+        this.sendMessage({chatId: this.message.chat.id, text: "Пользователь успешно удален"});
     }
     usersList() {
         let text = "";
         let ids = get.ids();
         ids.forEach(i => {
-            text += `${get.get(i, "fullName")} (${i})\n`
+            text += `${this.createMention(i)} (${i})\n`
         });
-        return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Вот список всех ${ids.length} пользователей:\n${text.slice(0, -1)}`});
+        return this.sendMessage({chatId: this.message.chat.id, text: `Вот список всех ${ids.length} пользователей:\n${text.slice(0, -1)}`, parseMode: "HTML"});
     }
     btcBet() {
         if (this.message_text.length < 3) {
@@ -1212,23 +1352,25 @@ ${(() => {
             this.message.text = "команда " + this.message.text;
             return new kmd(this.message, this.client, text).helpCommand();
         }
-        let res = game.btcBet(this.client, this.message.chat.id, this.message.from_user.id, this.message_text[1], this.message_text[2]);
-        if (!res.success) CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
+        let res = game.btcBet(this, this.message.chat.id, this.message_text[1], this.message_text[2]);
+        // if (!res.success) this.sendMessage({chatId: this.message.chat.id, text: res.message});
     }
     upgrades() {
         let type = this.message.chat.type;
-        let keyboardState = get.keyboard(this.message.chat.id, "keyboard", type);
-        if (!keyboardState) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Открыто меню апгрейдов"});
-        set.keyboard.active(this.message.chat.id, type, true);
-        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Открыто меню апгрейдов", keyboard: keyboard.upgrade(this.message.from_user.id)});
+        let id = get.internalId((type == "private") ? this.message.from_user.id : this.message.chat.id, this.client, this.message.chat.type);
+        let keyboardState = get.keyboard(id, "keyboard", this.client, type);
+        if (!keyboardState) return this.sendMessage({chatId: this.message.chat.id, text: "Открыто меню апгрейдов"});
+        set.keyboard.active(id, type, true, this.client);
+        this.sendMessage({chatId: this.message.chat.id, text: "Открыто меню апгрейдов", keyboard: keyboard.upgrade(this.userInternalId)});
     }
     backKeyboardMenu() {
         let type = this.message.chat.type;
-        if (get.keyboard(this.message.chat.id, "activeKeyboard", type)) {
-            set.keyboard.active(this.message.chat.id, type, false);
-            CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Вы вышли из меню", keyboard: keyboard.mainMenu});
+        let id = get.internalId((type == "private") ? this.message.from_user.id : this.message.chat.id, this.client, this.message.chat.type);
+        if (get.keyboard(id, "activeKeyboard", this.client, type)) {
+            set.keyboard.active(id, type, false, this.client);
+            this.sendMessage({chatId: this.message.chat.id, text: "Вы вышли из меню", keyboard: keyboard.mainMenu});
         }
-        else CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Вы вышли из меню"});
+        else this.sendMessage({chatId: this.message.chat.id, text: "Вы вышли из меню"});
     }
     rewardAdd() {
         if (this.message_text.length < 5 || !this.message_text.includes("||")) {
@@ -1252,8 +1394,8 @@ ${(() => {
             this.message.text = "команда " + this.message.text;
             return new kmd(this.message, this.client, text).helpCommand();
         }
-        if (!res.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
-        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Награда успешно добавлена"});
+        if (!res.success) return this.sendMessage({chatId: this.message.chat.id, text: res.message});
+        this.sendMessage({chatId: this.message.chat.id, text: "Награда успешно добавлена"});
     }
     rewardRemove() {
         if (this.message_text.length < 2) {
@@ -1262,29 +1404,103 @@ ${(() => {
             return new kmd(this.message, this.client, text).helpCommand();
         }
         let res = reward.remove(this.message_text[1]);
-        if (!res.success) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: res.message});
-        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "Награда успешно удалена"});
+        if (!res.success) return this.sendMessage({chatId: this.message.chat.id, text: res.message});
+        this.sendMessage({chatId: this.message.chat.id, text: "Награда успешно удалена"});
     }
     rewardsUserList() {
         let user;
         if (this.message_text.length < 2) user = this.message.from_user.id;
         else if (this.message_text[1] == "_" && this.message.reply_to_message) user = this.message.reply_to_message.from_user.id;
         else user = this.message_text[1];
-        if (!get.id(user)) return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Пользователь ${user} не найден`});
+        user = get.internalId(user, this.client);
+        if (!user) return this.sendMessage({chatId: this.message.chat.id, text: `Пользователь не найден`});
         let rewardsList = reward.infoList(get.get(user, "rewards"), true, false);
-        if (rewardsList == "") return CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: "У пользователя нет наград"});
-        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Ваши награды:\n${rewardsList}`});
+        if (rewardsList == "") return this.sendMessage({chatId: this.message.chat.id, text: "У пользователя нет наград"});
+        this.sendMessage({chatId: this.message.chat.id, text: `Награды ${this.createMention(user)}:\n${rewardsList}`, parseMode: "HTML"});
     }
     rewardsAllList() {
-        CLIENTS[this.client].sendMessage({chatId: this.message.chat.id, text: `Список всех наград:\n${reward.infoList(reward.list(), true, true)}`});
+        this.sendMessage({chatId: this.message.chat.id, text: `Список всех наград:\n${reward.infoList(reward.list(), true, true)}`});
+    }
+    setReceiver() {
+        if (this.message_text.length < 2 ) {
+            let text = this.message.text;
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client, text).helpCommand();
+        }
+        let receiver;
+        if (this.message_text[1] == "телеграм") receiver = "telegram";
+        else if (this.message_text[1] == "дискорд") receiver = "discord";
+        else receiver = this.message_text[1];
+        if (!["telegram", "discord"].includes(receiver)) {
+            let text = this.message.text;
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client, text).helpCommand();
+        }
+        if (!get.get(this.userInternalId, "clientId", receiver)) return this.sendMessage({chatId: this.message.chat.id, text: `Ваш профиль не привязян к ${receiver}\nДля привязки используйте команду \`привязать\``, parseMode: "MARKDOWN"});
+        let res = set.set(this.userInternalId, "receiver", receiver);
+        if (!res.success) return this.sendMessage({chatId: this.message.chat.id, text: res.message});
+        this.sendMessage({chatId: this.message.chat.id, text: `Ресивер установлен на ${receiver}`});
+    }
+    setNickname() {
+        if (this.message_text.length < 2) {
+            let text = this.message.text;
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client, text).helpCommand();
+        }
+        if (this.message_text.length > 2) return this.sendMessage({chatId: this.message.chat.id, text: "Невозможно установить ник с пробелами"});
+        let nickname = this.message_text[1];
+        if (nickname.length > 10) return this.sendMessage({chatId: this.message.chat.id, text: "Длина ника не должна превышать 10 символов"});
+        if (get.internalIdByNickname(nickname)) return this.sendMessage({chatId: this.message.chat.id, text: "Пользователь с таким ником уже существует"});
+        let res = set.set(this.userInternalId, "nickname", nickname);
+        if (!res.success) return this.sendMessage({chatId: this.message.chat.id, text: res.message});
+        this.sendMessage({chatId: this.message.chat.id, text: `Установлен ник ${nickname}`})
+    }
+    setPassword() {
+        if (this.message_text.length < 2) {
+            let text = this.message.text;
+            this.message.text = "команда " + this.message.text;
+            return new kmd(this.message, this.client, text).helpCommand();
+        }
+        if (this.message.chat.type != "private") return this.sendMessage({chatId: this.message.chat.id, text: "Пароль можно установить только в личных сообщениях с ботом"});
+        let res = set.set(this.userInternalId, "password", createHash("sha512").update(this.message_text.slice(1).join(" ")).digest('hex'));
+        if (!res.success) return this.sendMessage({chatId: this.message.chat.id, text: res.message});
+        return this.sendMessage({chatId: this.message.chat.id, text: "Пароль успешно изменён."});
+    }
+    linkAccounts() {
+        if (this.message_text.length < 3) return this.sendMessage({chatId: this.message.chat.id, text: `Для связи аккаунтов используйте команду \'привязать <ID/ник> <пароль>\'\n\
+для установки пароля используйте команду \'пароль <ваш пароль>\' на уже привязанных платформах. Например \`пароль мега крутой пароль\`\n\n\
+Обратите внимание, что после привязки платформы к аккаунту, текущий аккаунт (${this.userInternalId}) будет безвозвратно удален.`})
+        if (this.message.chat.type != "private") return this.sendMessage({chatId: this.message.chat.id, text: "Пароль можно установить только в личных сообщениях с ботом"});
+        let accountToLink = check.externalId(this.message_text[1]);
+        if (!accountToLink.success) {
+            accountToLink = get.internalId(this.message_text[1], this.client, "private");
+            if (!accountToLink) accountToLink = get.internalIdByNickname(this.message_text[1]);
+            if (!accountToLink) return this.sendMessage({chatId: this.message.chat.id, text: "Пользователь не найден"});
+        }
+        else accountToLink = accountToLink.id;
+        if (get.get(accountToLink, "clientId", this.client)) return this.sendMessage({chatId: this.message.chat.id, text: `У данного пользователя уже есть привязанный ${this.client}`});
+        if (this.message_text.length < 4 || this.message_text[2] != "подтвердить") {
+            if (get.get(accountToLink, "password") == "") return this.sendMessage({chatId: this.message.chat.id, text: "На аккаунте, к которому вы хотите привязать данную платформу пароль не установлен. Используйте команду `пароль <ваш пароль>` на других платформах, которые уже привязаны к аккаунту, чтобы установить пароль"});
+            if (!check.password(accountToLink, this.message_text.slice(2).join(" "))) return this.sendMessage({chatId: this.message.chat.id, text: "Неверный пароль"});
+            return this.sendMessage({chatId: this.message.chat.id, text:
+`Вы уверены, что хотите привязать к аккаунту ${this.createMention(accountToLink)} текущую платформу?
+Весь ваш текущий прогресс на данном аккаунте будет безвозвратно удален
+(${obrabotka.chisla(get.get(this.userInternalId, "balance"))} КШ, ${obrabotka.chisla(get.get(this.userInternalId, "bank"))} КШ банка, ${get.get(this.userInternalId, "sec")}/сек,
+${get.get(this.userInternalId, "click")}/клик, ${get.get(this.userInternalId, "sale")}% скидки и все награды текущего аккаунта)
+Если вы подтверждаете действие, введите \`${this.message_text.slice(0, 2).join(" ")} подтвердить <ваш пароль>\``})
+        }
+        if (!check.password(accountToLink, this.message_text.slice(3).join(" "))) return this.sendMessage({chatId: this.message.chat.id, text: "Неверный пароль"});
+        set.clientId(accountToLink, this.client, this.message.from_user.id);
+        delete data.users[this.userInternalId];
+        this.sendMessage({chatId: this.message.chat.id, text: `Успешно связано с аккаунтом ${this.createMention(get.internalId(this.message.from_user.id, this.client))}`});
     }
 }
 let others = {
-    leaderbord: function ({mode, active_top, caller_id, page}) {
-        let lb_data = data;
+    leaderbord: function ({mode, active_top, caller_id, page, kmd}) {
+        let lb_data = structuredClone(data);
         let inverse;
         let sorted = [];
-        delete lb_data.users["default"];
+        delete lb_data.users[0];
         inverse = mode == "registerTime";
         for (key in lb_data.users) {
             if (active_top && get.time() - lb_data.users[key].lastCommand.time > 604800) delete lb_data.users[key]
@@ -1308,7 +1524,7 @@ let others = {
         let place = 1;
         let to_append = [];
         for (let i = 0; i < Object.keys(lb_data.users).length; i++) {
-            to_append = [place, sorted[i][0], get.get(sorted[i][0], "fullName")];
+            to_append = [place, sorted[i][0], get.get(sorted[i][0], "nickname")]; //ВНИМАНИЕ БЛЯТЬ
             if (to_append[1] == caller_id) caller_place = place - 1
             if (i != 0) {
                 if (sorted[i - 1][1] == sorted[i][1]) {
@@ -1371,25 +1587,25 @@ let others = {
         }
         msg += "\n\n"
         if (mode == "money") {
-            for (let user = start_user; user < end_user; user++) msg += `#${top[user][0]}: <a href='tg://user?id=${top[user][1]}'>${top[user][2]}</a>: ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[user][1]][order[2]])}/${obrabotka.chisla(data.users[top[user][1]]["bankMax"])}${order_words[2]}\n`
+            for (let user = start_user; user < end_user; user++) msg += `#${top[user][0]}: ${kmd.createMention(top[user][1], kmd.client)}: ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[user][1]][order[2]])}/${obrabotka.chisla(data.users[top[user][1]]["bankMax"])}${order_words[2]}\n`
             msg += "__________\n"
             msg += `Вы: #${top[caller_place][0]}: ${top[caller_place][2]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[2]])}/${obrabotka.chisla(data.users[top[caller_place][1]]["bankMax"])}${order_words[2]}\n`
         
         }
         else if (mode == "bank") {
-            for (let user = start_user; user < end_user; user++) msg += `#${top[user][0]}: <a href='tg://user?id=${top[user][1]}'>${top[user][2]}</a>: ${obrabotka.chisla(data.users[top[user][1]][order[0]])}/${obrabotka.chisla(data.users[top[user][1]]["bankMax"])}${order_words[0]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}, ${data.users[top[user][1]][order[2]]}${order_words[2]}, ${data.users[top[user][1]][order[3]]}${order_words[3]}\n`
+            for (let user = start_user; user < end_user; user++) msg += `#${top[user][0]}: ${kmd.createMention(top[user][1], kmd.client)}: ${obrabotka.chisla(data.users[top[user][1]][order[0]])}/${obrabotka.chisla(data.users[top[user][1]]["bankMax"])}${order_words[0]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}, ${data.users[top[user][1]][order[2]]}${order_words[2]}, ${data.users[top[user][1]][order[3]]}${order_words[3]}\n`
             msg += "__________\n"
             msg += `Вы: #${top[caller_place][0]}: ${data.users[top[caller_place][1]][order[0]]}/${obrabotka.chisla(data.users[top[caller_place][1]]["bankMax"])}${order_words[0]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[2]])}${order_words[2]}, ${data.users[top[caller_place][1]][order[3]]}${order_words[3]}\n`
         }
         else if (mode == "registerTime") {
-            for (let user = start_user; user < end_user; user++) msg += `#${top[user][0]}: <a href='tg://user?id=${top[user][1]}'>${top[user][2]}</a>: ${obrabotka.vremeni(data.users[top[user][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}\n`
+            for (let user = start_user; user < end_user; user++) msg += `#${top[user][0]}: ${kmd.createMention(top[user][1], kmd.client)}: ${obrabotka.vremeni(data.users[top[user][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}\n`
             msg += "__________\n"
             msg += `Вы: #${top[caller_place][0]}: ${obrabotka.vremeni(data.users[top[caller_place][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[1]])}${order_words[1]}\n`
     
         }
         else {
             for (let user = start_user; user < end_user; user++) {
-                msg += `#${top[user][0]}: <a href='tg://user?id=${top[user][1]}'>${top[user][2]}</a>: ${obrabotka.chisla(data.users[top[user][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[user][1]][order[2]])}${order_words[2]}\n`
+                msg += `#${top[user][0]}: ${kmd.createMention(top[user][1], kmd.client)}: ${obrabotka.chisla(data.users[top[user][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[user][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[user][1]][order[2]])}${order_words[2]}\n`
             }
             msg += "__________\n"
             msg += `Вы: #${top[caller_place][0]}: ${obrabotka.chisla(data.users[top[caller_place][1]][order[0]])}${order_words[0]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[1]])}${order_words[1]}, ${obrabotka.chisla(data.users[top[caller_place][1]][order[2]])}${order_words[2]}\n`
@@ -1397,15 +1613,15 @@ let others = {
         msg += `\nСтраница ${page} из ${Math.ceil(top.length / 10)}`
         return msg
     },
-    pay: function(from, to, amount, comment = undefined) {
-        if (amount == "#r") amount = randomInt(1, get.get(from, "balance"));
+    pay: function(to, kmd, amount, comment = undefined) {
+        if (amount == "#r") amount = randomInt(1, get.get(kmd.userInternalId, "balance"));
         else if (amount.slice(-1) == "%") {
             amount = obrabotka.kChisla(amount.slice(0, -1));
             if (isNaN(amount)) return {success: false, message: "Неверный тип суммы\nИспользование: перевод <сумма> <id получателя> [комментарий]"};
             if (!(amount >= 1 && amount <= 100)) return {success: false, message: "Неверное использование процентного перевода.\nИспользование: перевод <1%-100%> <id получателя> [комментарий]"};
-            amount = Math.round(get.get(from, "balance") * amount / 100);
+            amount = Math.round(get.get(kmd.userInternalId, "balance") * amount / 100);
         }
-        else if (["все", "всё"].indexOf(amount) != -1) amount = get.get(from, "balance")
+        else if (["все", "всё"].indexOf(amount) != -1) amount = get.get(kmd.userInternalId, "balance")
         else {
             amount = obrabotka.kChisla(amount);
             if (isNaN(amount)) return {success: false, message: "Неверное значение параметра суммы\nИспользование: перевод <сумма> <id получателя> [комментарий]"};
@@ -1416,18 +1632,19 @@ let others = {
             delete keys;
         }
         if (amount < 100) return {success: false, message: "Переводы меньше 100 КШ запрещены"}
-        if (amount > get.get(from, "balance")) return {success: false, message: "Недостаточно средств"}
-        append.appendToUser(from, "balance", -amount);
-        data.users[from].paidKkh += amount;
+        if (amount > get.get(kmd.userInternalId, "balance")) return {success: false, message: "Недостаточно средств"}
+        append.appendToUser(kmd.userInternalId, "balance", -amount);
+        data.users[kmd.userInternalId].paidKkh += amount;
         append.appendToUser(to, "balance", amount);
         data.users[to].receivedKkh += amount;
+        let receiver = get.get(to, "receiver");
         if (comment) {
-            CLIENTS[get.get(to, "receiver")].sendMessage({chatId: to, text: `Получен перевод ${obrabotka.chisla(amount)} КШ от пользователя ${get.get(from, "fullName")} (${from})\nСообщение: ${comment}`});
-            return {success: true, message: `Перевод ${obrabotka.chisla(amount)} КШ пользователю ${get.get(to, "fullName")} (${to}) выполнен успешно!\nКомментарий к переводу: ${comment}`};
+            kmd.sendMessage({userId: to, client: receiver, text: `Получен перевод ${obrabotka.chisla(amount)} КШ от пользователя ${kmd.createMention(kmd.userInternalId, receiver)}\nСообщение: ${comment}`, parseMode: "HTML"});
+            return {success: true, message: `Перевод ${obrabotka.chisla(amount)} КШ пользователю ${kmd.createMention(to)} выполнен успешно!\nКомментарий к переводу: ${comment}`};
         }
         else {
-            CLIENTS[get.get(to, "receiver")].sendMessage({chatId: to, text: `Получен перевод ${obrabotka.chisla(amount)} КШ от пользователя ${get.get(from, "fullName")} (${from})`});
-            return {success: true, message: `Перевод ${obrabotka.chisla(amount)} КШ пользователю ${get.get(to, "fullName")} (${to}) выполнен успешно!`};
+            kmd.sendMessage({userId: to, client: receiver, text: `Получен перевод ${obrabotka.chisla(amount)} КШ от пользователя ${kmd.createMention(kmd.userInternalId, receiver)}`, parseMode: "HTML"});
+            return {success: true, message: `Перевод ${obrabotka.chisla(amount)} КШ пользователю ${kmd.createMention(to)} выполнен успешно!`};
         }
     },
     bankTransfer: function(id, action, value = -1) {
