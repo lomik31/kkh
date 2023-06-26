@@ -112,6 +112,7 @@ function textReceiver(message, client) {
                 if (Object.keys(COMMANDS[checkCommand]).includes("link")) checkCommand = COMMANDS[checkCommand].link;
                 let internalUserId = get.internalId(message.from_user.id, client, "private");
                 if (!internalUserId) return CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text: "Для взаимодействия с ботом вам необходимо сначала активировать его. Напишите боту *в ЛС* команду /start!", parseMode: "MARKDOWN", chatType: message.chat.type});
+                if (message.chat.type != "private" && !(message.chat.id in data.groups)) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Чтобы использовать бота в группе/на сервере необходимо сначала добавить их в базу данных. Используйте команду /start", chatType: message.chat.type});
                 if (COMMANDS[checkCommand].permissions == "admin" && !get.get(internalUserId, "isAdmin")) return;
                 if (COMMANDS[checkCommand].permissions == "owner" && internalUserId != 1) return; //ВНИМАНИЕ БЛЯТЬ
                 //лог
@@ -126,6 +127,7 @@ function textReceiver(message, client) {
     else if (message_text[0] == "кмд") {
         let internalUserId = get.internalId(message.from_user.id, client, "private");
         if (!internalUserId) return CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text: "Для взаимодействия с ботом вам необходимо сначала активировать его. Напишите боту *в ЛС* команду /start!", parseMode: "MARKDOWN", chatType: message.chat.type});
+        if (message.chat.type != "private" && !(message.chat.id in data.groups)) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Чтобы использовать бота в группе/на сервере необходимо сначала добавить их в базу данных. Используйте команду /start", chatType: message.chat.type});
         if (!get.get(internalUserId, "isAdmin")) return;
         if (message_text.length < 3) {
             message.text = "команда кмд";
@@ -135,6 +137,7 @@ function textReceiver(message, client) {
         else userId = message_text[1];
         let internalUserReplyId = get.internalId(userId, client, "private");
         if (!internalUserReplyId) return CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text: "Id не найден", chatType: message.chat.type});
+        if (message.chat.type != "private" && !(message.chat.id in data.groups)) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Чтобы использовать бота в группе/на сервере необходимо сначала добавить их в базу данных. Используйте команду /start", chatType: message.chat.type});
         if (message_text[2] == "кмд") return CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text: "э, так нельзя, бан", chatType: message.chat.type});
         if (get.get(internalUserReplyId, "isAdmin") && internalUserId != 1) return CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text: "Невозможно выполнить кмд для этого юзера!", chatType: message.chat.type});
         new kmd(message, client);
