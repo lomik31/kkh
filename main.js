@@ -325,10 +325,7 @@ let check = {
         if (id in data.groups) return true;
         return false;
     },
-    password: function(id, password) {
-        if (get.get(id, "password") == createHash("sha512").update(password).digest('hex')) return true;
-        return false;
-    }
+    password: (id, password) => (get.get(id, "password") == createHash("sha512").update(password).digest('hex'))
 }
 let calc = {
     boost: function (id, boost) {
@@ -1471,8 +1468,8 @@ ${(() => {
     }
     linkAccounts() {
         if (this.message_text.length < 3) return this.sendMessage({chatId: this.message.chat.id, text: `Для связи аккаунтов используйте команду \'привязать <ID/ник> <пароль>\'\n\
-для установки пароля используйте на связываемом аккаунте команду \'пароль <пароль>\'. Например пароль мегакрутойпароль\n\n\
-Обратите внимание, что после связи аккаунтов текущий (${this.userInternalId}) будет безвозвратно удален.`})
+для установки пароля используйте команду \'пароль <ваш пароль>\' на уже привязанных платформах. Например \`пароль мега крутой пароль\`\n\n\
+Обратите внимание, что после привязки платформы к аккаунту, текущий аккаунт (${this.userInternalId}) будет безвозвратно удален.`})
         if (this.message.chat.type != "private") return this.sendMessage({chatId: this.message.chat.id, text: "Пароль можно установить только в личных сообщениях с ботом"});
         let accountToLink = check.externalId(this.message_text[1]);
         if (!accountToLink.success) {
@@ -1483,11 +1480,12 @@ ${(() => {
         else accountToLink = accountToLink.id;
         if (get.get(accountToLink, "clientId", this.client)) return this.sendMessage({chatId: this.message.chat.id, text: `У данного пользователя уже есть привязанный ${this.client}`});
         if (this.message_text.length < 4 || this.message_text[2] != "подтвердить") {
+            if (get.get(accountToLink, "password") == "") return this.sendMessage({chatId: this.message.chat.id, text: "На аккаунте, к которому вы хотите привязать данную платформу пароль не установлен. Используйте команду `пароль <ваш пароль>` на других платформах, которые уже привязаны к аккаунту, чтобы установить пароль"});
             if (!check.password(accountToLink, this.message_text.slice(2).join(" "))) return this.sendMessage({chatId: this.message.chat.id, text: "Неверный пароль"});
             return this.sendMessage({chatId: this.message.chat.id, text:
-`Вы уверены, что хотите связать аккаунт ${this.createMention(accountToLink)} c вашим текущим аккаунтом?
+`Вы уверены, что хотите привязать к аккаунту ${this.createMention(accountToLink)} текущую платформу?
 Весь ваш текущий прогресс на данном аккаунте будет безвозвратно удален
-(${obrabotka.chisla(get.get(this.userInternalId, "balance"))} КШ, ${obrabotka.chisla(get.get(this.userInternalId, "balance2"))} Балансов, ${obrabotka.chisla(get.get(this.userInternalId, "bank"))} КШ банка, ${get.get(this.userInternalId, "sec")}/сек,
+(${obrabotka.chisla(get.get(this.userInternalId, "balance"))} КШ, ${obrabotka.chisla(get.get(this.userInternalId, "bank"))} КШ банка, ${get.get(this.userInternalId, "sec")}/сек,
 ${get.get(this.userInternalId, "click")}/клик, ${get.get(this.userInternalId, "sale")}% скидки и все награды текущего аккаунта)
 Если вы подтверждаете действие, введите \`${this.message_text.slice(0, 2).join(" ")} подтвердить <ваш пароль>\``})
         }
