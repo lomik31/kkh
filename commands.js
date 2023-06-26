@@ -309,7 +309,7 @@ exports.COMMANDS = {
     "пароль": {
         description: "Установить пароль",
         action: "new kmd(message, client).setPassword()",
-        usage: "пароль <пароль>",
+        usage: "пароль <новый пароль>",
         permissions: "user"
     },
     "клава": {
@@ -318,7 +318,7 @@ exports.COMMANDS = {
     "привязать": {
         description: "Объединить аккаунты на разных платформах (связать аккаунты)",
         action: "new kmd(message, client).linkAccounts()",
-        usage: "привязать <ID> [подтвердить] <пароль>",
+        usage: "привязать <ID> [подтвердить] <ваш пароль>",
         permissions: "user"
     }
 }
