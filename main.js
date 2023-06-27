@@ -415,13 +415,20 @@ let obrabotka = {
     vremeni: function (vremya_okda) {
         return dateFormat(vremya_okda*1000, "dd.mm.yyyy HH:MM:ss");
     },
-    vremeniBonusa: function(vremya_okda) {
-        return `${dateFormat(vremya_okda*1000, "HH:MM:ss")}`;
+    flexibleVremeni: function(vremya_okda) {
+        if (vremya_okda <= 3600) return `${Math.floor(vremya_okda / 60)}мин ${vremya_okda % 60}с`;
+        if (vremya_okda <= 86400) {
+            const hours = Math.floor(vremya_okda / 3600);
+            const minutes = Math.floor((vremya_okda % 3600) / 60);
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        }
+        if (vremya_okda <= 8640000) return `${Math.floor(vremya_okda / 86400)}д ${Math.floor((vremya_okda % 86400) / 3600)}ч`;
+        return `${Math.floor(vremya_okda / 86400)}д`;
     }
 }
 let give = {
     bonus: function (id) {
-        if (get.time() - get.get(id, "timeLastBonus") < 86400) return {success: false, message: `Ежедневный бонус уже был получен сегодня\nДо следующего бонуса: ${obrabotka.vremeniBonusa(get.get(id, "timeLastBonus") + 86400 - get.time() - 10800)}`};
+        if (get.time() - get.get(id, "timeLastBonus") < 86400) return {success: false, message: `Ежедневный бонус уже был получен сегодня\nДо следующего бонуса: ${obrabotka.flexibleVremeni(get.get(id, "timeLastBonus") + 86400 - get.time() - 10800)}`};
         let mnoz = data.users[id].multiplier;
         let mnoz2 = 0;
         let t = get.time();
@@ -444,7 +451,7 @@ let give = {
         return {success: true, data: msg};
     },
     bonus2: function (id) {
-        if (get.time() - get.get(id, "timeLastSecondBonus") < 28800) return {success: false, message: `Бонус2 можно получать каждые 8 часов\nДо следующего бонуса2: ${obrabotka.vremeniBonusa(get.get(id, "timeLastSecondBonus") + 28800 - get.time() - 10800)}`}
+        if (get.time() - get.get(id, "timeLastSecondBonus") < 28800) return {success: false, message: `Бонус2 можно получать каждые 8 часов\nДо следующего бонуса2: ${obrabotka.flexibleVremeni(get.get(id, "timeLastSecondBonus") + 28800 - get.time() - 10800)}`}
         let bonus = randomInt(10000, (get.get(id, "sec") * 3600 + get.get(id, "click") * 5400) + 10000);
         append.appendToUser(id, "balance", bonus);
         data.users[id].othersProceeds += bonus;
