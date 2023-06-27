@@ -322,7 +322,7 @@ let check = {
     },
     internalId: function(id, type = "private") { // существует ли такой внутренний id --> true | false
         if (type == "private" && id in data.users) return true;
-        if (id in data.groups) return true;
+        if (type != "private" && id in data.groups) return true;
         return false;
     },
     password: (id, password) => (get.get(id, "password") == createHash("sha512").update(password).digest('hex'))
