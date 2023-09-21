@@ -1,0 +1,78 @@
+{
+    "users": {
+        "0": {
+            "balance": 0,
+            "click": 1,
+            "sec": 0,
+            "keyboard": false,
+            "sale": 0,
+            "isAdmin": false,
+            "multiplier": 1,
+            "activeKeyboard": false,
+            "mails": true,
+            "timeLastBonus": 0,
+            "lastCommand": {
+                "time": 0,
+                "command": "",
+                "reply_to": ""
+            },
+            "timeLastSecondBonus": 0,
+            "activatedPromos": [],
+            "nickname": "",
+            "registerTime": 0,
+            "lostMoneta": 0,
+            "wonMoneta": 0,
+            "lostBtcBets": 0,
+            "wonBtcBets": 0,
+            "spendKkhUpgrades": 0,
+            "earnedKkh": 0,
+            "paidKkh": 0,
+            "receivedKkh": 0,
+            "othersSpends": 0,
+            "othersProceeds": 0,
+            "bank": 0,
+            "lostRoulette": 0,
+            "wonRoulette": 0,
+            "timeLast3Bonus": [
+                0,
+                0,
+                0
+            ],
+            "receiver": "",
+            "bankMax": 1000,
+            "rewards": {},
+            "ids": {
+                "telegram": null,
+                "discord": null
+            },
+            "password": "",
+            "balance2": 0,
+            "premium": 0
+        }
+    },
+    "lastUser": 0,
+    "groups": {
+        "default": {
+            "keyboard": false,
+            "activeKeyboard": false
+        }
+    },
+    "doNotClear": [
+        "keyboard",
+        "isAdmin",
+        "multiplier",
+        "activeKeyboard",
+        "mails",
+        "timeLastBonus",
+        "lastCommand",
+        "timeLastSecondBonus",
+        "activatedPromos",
+        "timeLastCommand",
+        "nickname",
+        "registerTime",
+        "ids",
+        "rewards",
+        "receiver",
+        "password"
+    ]
+}

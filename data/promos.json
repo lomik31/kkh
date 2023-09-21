@@ -1,0 +1,14 @@
+{
+    "allPromos": {
+        "default": {
+            "activationLimit": -1,
+            "activatedTimes": 0,
+            "validity": -1,
+            "balance": 0,
+            "click": 0,
+            "sec": 0,
+            "sale": 0,
+            "multiplier": 0
+        }
+    }
+}
