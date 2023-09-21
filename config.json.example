@@ -1,0 +1,8 @@
+{
+    "tokens": {
+        "yadisk": "YOUR TOKEN HERE",
+        "telegram": "YOUR TOKEN HERE",
+        "discord": "YOUR TOKEN HERE"
+    },
+    "websocketIp": "localhost:port"
+}
