@@ -1,7 +1,7 @@
 const { randomInt, createHash } = require('crypto');
 const fs = require('fs');
 const schedule = require('node-schedule');
-const data = JSON.parse(fs.readFileSync('./usrs.json', {encoding:"utf-8"}));
+let data;
 const config = require("./config.json");
 const http = require("http");
 const { request } = require('https');
@@ -55,6 +55,18 @@ const dispatchEvent = (message, ws) => {
     if (json.event == "newCommand") commandReceiver(json.message, json.client);
 }
 server.listen(3200, () => console.log("Server started"))
+
+
+let file = {
+    path: "./data/usrs.json",
+    write: function () {
+        fs.writeFile(this.path, JSON.stringify(data, null, "    "), (err) => {if (err) console.error(err)});
+    },
+    read: function () {
+        data = JSON.parse(fs.readFileSync(this.path, {encoding:"utf-8"}));
+    }
+}
+file.read()
 
 function commandReceiver(message, client) {
     if (message.text == "/start") {
@@ -197,14 +209,7 @@ let accrual = {
         data.users[userId].earnedKkh += data.users[userId].click;
     }
 }
-let file = {
-    write: function () {
-        fs.writeFile("usrs.json", JSON.stringify(data, null, "    "), (err) => {if (err) console.error(err)});
-    },
-    read: function () {
-        data = require("usrs.json");
-    }
-}
+
 let append = {
     appendId: function (appendType, appendId, client, nickname) {
         if (appendType === "private") {
