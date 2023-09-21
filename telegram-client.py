@@ -1,7 +1,7 @@
 import websocket
 import json as JSON
 from telebot import TeleBot
-from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
+import telebot.types
 from threading import Thread
 from time import sleep
 with open("config.json", encoding="utf-8") as config:
@@ -23,9 +23,9 @@ class CONNECTION:
                 data = [chatId, text]
                 if (parseMode): data.append(parseMode)
                 if (keyboard):
-                    if (keyboard == -1): resK = ReplyKeyboardRemove()
+                    if (keyboard == -1): resK = telebot.types.ReplyKeyboardRemove()
                     else:
-                        resK = ReplyKeyboardMarkup(True)
+                        resK = telebot.types.ReplyKeyboardMarkup(True)
                         for i in keyboard: resK.add(*i)
                     try: bot.send_message(*data, reply_markup=resK)
                     except Exception as e: print(e)
