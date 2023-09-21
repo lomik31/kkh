@@ -86,13 +86,9 @@ function commandReceiver(message, client) {
         }
         if (message.chat.type == "private") {
             if (!ifExists) append.appendId(message.chat.type, id, client, message.nickname);
-            let lox = `Привет. Это бот-кликер.
+            let lox = `Приветственное сообщение.
 Сделали: ${createMention(1, client)}, ${createMention(2, client)}.
-Если ты Игорькартошка или Денисизюм, то тебе сюда: <https://goo.su/DDJQ83>.
-По вопросам обращаться к ним.\nПланы на будущее и то, что в разработке <https://trello.com/b/kfVkY65h/%D0%BA%D0%BA%D1%88>
-Наш канал с новостями: <t.me/kkh\\_news>\nДля списка всех команд введите \`команды\`.
-Если у вас есть промо-код, можете ввести его при помощи \`промо <код>\`
-Наша беседа: <https://t.me/+\\_VgA7r0PfWZiMGFi>\n\n*По вопросам пишите* ${createMention(1, client)}`;
+Разработка и поддержка остановлены.`;
             CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text: lox, parseMode: "MARKDOWN", chatType: message.chat.type});
             return;
         }
@@ -100,12 +96,9 @@ function commandReceiver(message, client) {
             if (!(message.chat.id in data.groups)) {
                 append.appendId(message.chat.type, id, client);
                 CLIENTS[client].sendMessage({chatId: message.chat.id, text: `Чат добавлен в базу данных.
-Привет. Это бот-кликер.
+Приветственное сообщение.
 Сделали: ${createMention(1, client)}, ${createMention(2, client)}.
-Если ты Игорькартошка или Денисизюм, то тебе сюда: <https://goo.su/DDJQ83>.
-По вопросам обращаться к ним.\nПланы на будущее и то, что в разработке <https://trello.com/b/kfVkY65h/%D0%BA%D0%BA%D1%88>
-Наш канал с новостями: <t.me/kkh\\_news>\nДля списка всех команд введите \`команды\`.\nЕсли у вас есть промо-код, можете ввести его при помощи \`промо <код>\`
-Наша беседа: <https://t.me/+\\_VgA7r0PfWZiMGFi>\n\n*По вопросам пишите*  ${createMention(1, client)}`, parseMode: "MARKDOWN", chatType: message.chat.type});
+Разработка и поддержка остановлены.`, parseMode: "MARKDOWN", chatType: message.chat.type});
                 return;
             }
             if (!ifExists) return CLIENTS[client].sendMessage({chatId: message.chat.id, text: "Эту команду можно использовать только в личных сообщениях с ботом!", chatType: message.chat.type});
