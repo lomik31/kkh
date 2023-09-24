@@ -87,7 +87,7 @@ function commandReceiver(message, client) {
         if (message.chat.type == "private") {
             if (!ifExists) append.appendId(message.chat.type, id, client, message.nickname);
             let lox = `Приветственное сообщение.
-Сделали: ${createMention(1, client)}, ${createMention(2, client)}.
+Сделали: lomik31, vmartin.
 Разработка и поддержка остановлены.`;
             CLIENTS[client].sendMessage({chatId: (message.chat.type == "private") ? message.from_user.id : message.chat.id, text: lox, parseMode: "MARKDOWN", chatType: message.chat.type});
             return;
@@ -97,7 +97,7 @@ function commandReceiver(message, client) {
                 append.appendId(message.chat.type, id, client);
                 CLIENTS[client].sendMessage({chatId: message.chat.id, text: `Чат добавлен в базу данных.
 Приветственное сообщение.
-Сделали: ${createMention(1, client)}, ${createMention(2, client)}.
+Сделали: lomik31, vmartin.
 Разработка и поддержка остановлены.`, parseMode: "MARKDOWN", chatType: message.chat.type});
                 return;
             }
